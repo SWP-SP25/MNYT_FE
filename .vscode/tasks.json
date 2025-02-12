@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "dev",
+			"path": "mnyt-fe",
+			"problemMatcher": [],
+			"label": "npm: dev - mnyt-fe",
+			"detail": "next dev --turbopack",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	]
+}

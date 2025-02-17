@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-
+// import "./globals.css";
+import { AntdRegistry } from '@ant-design/nextjs-registry';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import AppNavBar from "./components/app.navbar";
+import AppFooter from "./components/app.footer";
+import { Container } from 'react-bootstrap';
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -25,7 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+        <AppNavBar></AppNavBar>
+        <Container>
+          {children}
+        </Container>
+        <AppFooter></AppFooter>
       </body>
     </html>
   );

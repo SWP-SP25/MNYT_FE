@@ -1,10 +1,19 @@
 'use client'
-const Blog = () => {
-    //Tên component viết hoa chữ cái đầu tiên
+import styles from '@/app/blog/styles/blog.module.css'
+import BlogList from './components/BlogList';
+import CategoryMenu from './components/CategoryMenu';
+import FeaturedPosts from './components/FeaturedPosts';
+
+const BlogPage = () => {
     return (
-        <>
-            Đây là trang blog, sẽ nối giao diện vào sau
-        </>
-    )
+        <div className={styles.blogContainer}>
+            <CategoryMenu />
+            <div className={styles.blogContent}>
+                <FeaturedPosts />
+                <BlogList />
+            </div>
+        </div>
+    );
 }
-export default Blog;
+
+export default BlogPage;

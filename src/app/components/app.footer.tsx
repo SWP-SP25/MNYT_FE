@@ -1,13 +1,12 @@
-'use client'
+'use client';
+import "./styles/footer.css";
+
 const AppFooter = () => {
     return (
-        <div style={{
-            background: "#279357",
-            textAlign: "center",
-            padding: "5px 0"
-        }}>
+        <footer className="custom-footer">
             2025 Mầm Non Yêu Thương. All Rights Reserved.
-        </div>
-    )
+        </footer>
+    );
 }
-export default AppFooter
+
+export default AppFooter;

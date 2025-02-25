@@ -1,0 +1,162 @@
+/* Định dạng chung cho toàn trang */
+.membershipContainer {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(to bottom right, #e9ecef);
+    min-height: 100vh;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Tiêu đề chính */
+.title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* Bố cục bảng membership */
+.membershipPlans {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+/* Nút mặc định cho gói Standard */
+.defaultButton {
+    margin-top: 15px;
+    padding: 12px;
+    width: 100%;
+    background-color: #ccc;
+    color: #666;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: not-allowed;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Card của từng gói */
+.plan {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+    border-top: 6px solid #007bff;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hiệu ứng hover khi rê chuột vào từng gói */
+.plan:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Tiêu đề của gói */
+.plan h2 {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Định dạng danh sách quyền lợi */
+.plan p {
+    font-size: 1rem;
+    margin: 10px 0;
+    color: #555;
+}
+
+/* Các gói đặc biệt */
+.premium {
+    border-top-color: #ff9800;
+}
+
+.vip {
+    border-top-color: #e91e63;
+}
+
+/* Hiệu ứng nổi bật cho gói VIP */
+.vip::before {
+    content: "Best Value";
+    position: absolute;
+    top: 15px;
+    right: -45px;
+    background: #e91e63;
+    color: white;
+    padding: 5px 40px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    transform: rotate(45deg);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Nút đăng ký */
+.button {
+    margin-top: 15px;
+    padding: 12px;
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+/* Màu riêng cho các gói */
+.premium .button {
+    background-color: #ff9800;
+}
+
+.premium .button:hover {
+    background-color: #e68900;
+}
+
+.vip .button {
+    background-color: #e91e63;
+}
+
+.vip .button:hover {
+    background-color: #c2185b;
+}
+
+.membershipPlans {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.plan {
+    width: 350px;
+    min-height: 420px;
+}
+
+@media (min-width: 1400px) {
+    .membershipPlans {
+        gap: 50px;
+    }
+}
+
+.plan p {
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.plan h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}

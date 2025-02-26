@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
+import ReCAPTCHA from "react-google-recaptcha";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./page.css";
 
-const SignupPage = () => {
+const ForgotPasswordPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -16,12 +17,16 @@ const SignupPage = () => {
         setShowConfirmPassword((prev) => !prev);
     };
 
-    return (
-        <div className="signup-container">
-            <div className="signup-image"></div>
+    const handleCaptchaChange = (value: string | null) => {
+        console.log("Captcha value:", value);
+    };
 
-            <div className="signup-form">
-                <h1 className="signup-title">Đăng ký tài khoản</h1>
+    return (
+        <div className="forgot-password-container">
+            <div className="forgot-password-image"></div>
+
+            <div className="forgot-password-form">
+                <h1 className="forgot-password-title">CHÚC BẠN CÓ MỘT NGÀY TỐT LÀNH</h1>
 
                 <form className="form">
                     <div className="form-group">
@@ -31,30 +36,18 @@ const SignupPage = () => {
                         <input
                             id="username"
                             type="text"
-                            placeholder="Nhập tên tài khoản"
+                            placeholder="Email hoặc số điện thoại"
                             className="form-input"
                         />
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="email" className="form-label">
-                            Email
-                        </label>
-                        <input
-                            id="email"
-                            type="email"
-                            placeholder="Nhập email của bạn"
-                            className="form-input"
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="password" className="form-label">
-                            Mật khẩu
+                        <label htmlFor="new-password" className="form-label">
+                            Mật khẩu mới
                         </label>
                         <div className="form-password">
                             <input
-                                id="password"
+                                id="new-password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="Nhập mật khẩu của bạn"
                                 className="form-input"
@@ -71,13 +64,13 @@ const SignupPage = () => {
 
                     <div className="form-group">
                         <label htmlFor="confirm-password" className="form-label">
-                            Xác nhận mật khẩu
+                            Nhập lại mật khẩu mới
                         </label>
                         <div className="form-password">
                             <input
                                 id="confirm-password"
                                 type={showConfirmPassword ? "text" : "password"}
-                                placeholder="Xác nhận mật khẩu của bạn"
+                                placeholder="Nhập mật khẩu của bạn"
                                 className="form-input"
                             />
                             <button
@@ -90,20 +83,34 @@ const SignupPage = () => {
                         </div>
                     </div>
 
-                    <button type="submit" className="signup-button">
+                    <div className="form-group otp-recaptcha">
+                        <div className="otp-input">
+                            <label htmlFor="otp" className="form-label">
+                                OTP
+                            </label>
+                            <input
+                                id="otp"
+                                type="text"
+                                placeholder="Nhập mã OTP"
+                                className="form-input"
+                            />
+                        </div>
+
+                        <div className="recaptcha">
+                            <ReCAPTCHA
+                                sitekey="YOUR_SITE_KEY"
+                                onChange={handleCaptchaChange}
+                            />
+                        </div>
+                    </div>
+
+                    <button type="submit" className="forgot-password-button">
                         Đăng ký
                     </button>
-
-                    <p className="login-prompt">
-                        Đã có tài khoản?{" "}
-                        <a href="/login" className="signup-link">
-                            Đăng nhập ngay
-                        </a>
-                    </p>
                 </form>
             </div>
         </div>
     );
 };
 
-export default SignupPage;
+export default ForgotPasswordPage;

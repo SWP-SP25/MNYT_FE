@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from "react";
-import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaGoogle, FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
@@ -74,7 +74,11 @@ const LoginPage = () => {
   return (
     <div className="login-page-wrapper">
       <div className="login-container">
-        <div className="login-image"></div>
+        <div className="login-image">
+          <Link href="/" className="back-button">
+            <FaArrowLeft /> Trang chủ
+          </Link>
+        </div>
         <div className="login-form">
           <h1 className="login-title">CHÚC BẠN CÓ MỘT NGÀY TỐT LÀNH</h1>
 

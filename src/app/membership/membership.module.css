@@ -2,98 +2,131 @@
 .membershipContainer {
     text-align: center;
     padding: 60px 20px;
-    background: linear-gradient(to bottom right, #e9ecef);
+    background: linear-gradient(135deg, #f0f7f4 0%, #ffffff 100%);
     min-height: 100vh;
     font-family: 'Arial', sans-serif;
 }
 
 /* Tiêu đề chính */
 .title {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     font-weight: bold;
-    margin-bottom: 30px;
-    color: #333;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
+    margin-bottom: 50px;
+    color: #1a202c;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: #4a5568;
+    margin-bottom: 50px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Bố cục bảng membership */
 .membershipPlans {
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 30px;
-    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 /* Nút mặc định cho gói Standard */
 .defaultButton {
-    margin-top: 15px;
-    padding: 12px;
     width: 100%;
-    background-color: #ccc;
-    color: #666;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
     border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: bold;
+    margin-top: auto;
+    background: #e2e8f0;
+    color: #64748b;
     cursor: not-allowed;
-    transition: all 0.3s ease-in-out;
 }
 
 /* Card của từng gói */
 .plan {
     background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-    width: 300px;
-    text-align: center;
-    transition: all 0.3s ease-in-out;
-    border-top: 6px solid #007bff;
+    padding: 40px 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     position: relative;
-    overflow: hidden;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
 }
 
 /* Hiệu ứng hover khi rê chuột vào từng gói */
 .plan:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-5px);
+    border-color: #279357;
 }
 
 /* Tiêu đề của gói */
-.plan h2 {
-    font-size: 1.8rem;
-    margin-bottom: 15px;
-    color: #333;
+.planTitle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.planTitle h2 {
+    font-size: 2rem;
+    color: #1a202c;
     font-weight: bold;
 }
 
 /* Định dạng danh sách quyền lợi */
-.plan p {
+.features {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 30px 0;
+}
+
+.featureItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: left;
+    padding: 8px 0;
+}
+
+.featureItem svg {
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+.featureItem p {
+    margin: 0;
+    color: #4a5568;
     font-size: 1rem;
-    margin: 10px 0;
-    color: #555;
+    line-height: 1.5;
 }
 
 /* Các gói đặc biệt */
-.premium {
-    border-top-color: #ff9800;
-}
-
 .vip {
-    border-top-color: #e91e63;
+    background: linear-gradient(to bottom, #ffffff, #f8f9ff);
+    border-color: #279357;
 }
 
-/* Hiệu ứng nổi bật cho gói VIP */
 .vip::before {
-    content: "Best Value";
+    content: "Phổ biến nhất";
     position: absolute;
-    top: 15px;
-    right: -45px;
-    background: #e91e63;
+    top: 12px;
+    right: -35px;
+    background: #279357;
     color: white;
-    padding: 5px 40px;
-    font-size: 0.8rem;
+    padding: 8px 40px;
+    font-size: 0.9rem;
     font-weight: bold;
     transform: rotate(45deg);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -101,32 +134,24 @@
 
 /* Nút đăng ký */
 .button {
-    margin-top: 15px;
-    padding: 12px;
     width: 100%;
-    background-color: #007bff;
-    color: white;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
     border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: bold;
+    margin-top: auto;
+    background: #279357;
+    color: white;
     cursor: pointer;
-    transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease;
 }
 
 .button:hover {
-    background-color: #0056b3;
+    background: #1e7a45;
 }
 
 /* Màu riêng cho các gói */
-.premium .button {
-    background-color: #ff9800;
-}
-
-.premium .button:hover {
-    background-color: #e68900;
-}
-
 .vip .button {
     background-color: #e91e63;
 }
@@ -135,28 +160,21 @@
     background-color: #c2185b;
 }
 
-.membershipPlans {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.plan {
-    width: 350px;
-    min-height: 420px;
-}
-
-@media (min-width: 1400px) {
+/* Responsive */
+@media (max-width: 1024px) {
     .membershipPlans {
-        gap: 50px;
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
-.plan p {
-    font-size: 1.05rem;
-    line-height: 1.6;
-}
-
-.plan h2 {
-    font-size: 2rem;
-    margin-bottom: 20px;
+@media (max-width: 768px) {
+    .membershipPlans {
+        grid-template-columns: 1fr;
+    }
+    
+    .plan {
+        max-width: 500px;
+        margin: 0 auto;
+        width: 100%;
+    }
 }

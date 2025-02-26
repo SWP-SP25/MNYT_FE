@@ -33,7 +33,7 @@ export default function RootLayout({
         <Container>
           {children}
         </Container>
-        <AppFooter></AppFooter>
+        {<AppFooter></AppFooter>}
       </body>
     </html>
   );

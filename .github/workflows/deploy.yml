@@ -1,0 +1,74 @@
+name: Deploy NextJS App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKER_IMAGE: nextjs-app
+  DOCKER_CONTAINER: nextjs-container
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check || npm run tsc
+
+      - name: Build application
+        run: npm run build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: false
+          tags: ${{ env.DOCKER_IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Pull latest code
+            cd /path/to/your/app
+            git pull origin main
+
+            # Stop and remove existing container
+            docker stop ${{ env.DOCKER_CONTAINER }} || true
+            docker rm ${{ env.DOCKER_CONTAINER }} || true
+
+            # Remove old image
+            docker rmi ${{ env.DOCKER_IMAGE }}:latest || true
+
+            # Build new image
+            docker build -t ${{ env.DOCKER_IMAGE }}:latest .
+
+            # Run new container
+            docker run -d \
+              --name ${{ env.DOCKER_CONTAINER }} \
+              -p 3000:3000 \
+              --restart unless-stopped \
+              ${{ env.DOCKER_IMAGE }}:latest 

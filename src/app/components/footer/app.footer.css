@@ -1,0 +1,66 @@
+.app-footer {
+    background-color: #279357;
+    color: white;
+    padding: 40px 0 0;
+}
+
+.footer-main {
+    padding-bottom: 40px;
+}
+
+.footer-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    position: relative;
+    color: white;
+    padding-bottom: 5px;
+}
+
+.title-underline {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background-color: white;
+}
+
+.footer-contact p,
+.footer-links p {
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: white;
+    line-height: 1.6;
+}
+
+.footer-links p {
+    cursor: pointer;
+}
+
+.footer-links p:hover {
+    opacity: 0.8;
+}
+
+.footer-copyright {
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-copyright p {
+    margin: 0;
+    font-size: 16px;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .footer-main {
+        padding-bottom: 20px;
+    }
+
+    .footer-title {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+}

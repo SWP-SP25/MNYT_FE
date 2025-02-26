@@ -7,7 +7,9 @@ import Form from 'react-bootstrap/Form';
 import FormControl from 'react-bootstrap/FormControl';
 import Button from 'react-bootstrap/Button';
 import Link from 'next/link';
-
+import Image from 'next/image';
+import Logo from '@/app/img/Logo.ico';
+import './app.navbar.css';
 const AppNavBar = () => {
     const [search, setSearch] = useState("");
 
@@ -17,28 +19,36 @@ const AppNavBar = () => {
         // Chức năng tìm kiếm ở đây
     };
     return (
-        <Navbar expand="lg" className="bg-body-tertiary">
+        <Navbar expand="lg" className="custom-navbar">
             <Container>
-                <Link href="/" passHref legacyBehavior>
-                    <Navbar.Brand>Mầm Non Yêu Thương</Navbar.Brand>
-                </Link>
+                <div className="brand">
+                    <Image
+                        src={Logo}
+                        alt="Logo"
+                        width={40}
+                        height={40}
+                    />
+                    <Link href="/" passHref legacyBehavior>
+                        <Navbar.Brand>Mầm Non Yêu Thương</Navbar.Brand>
+                    </Link>
+                </div>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
-                    {/*Begin of Search bar */}
-                    <Form className="d-flex me-auto" onSubmit={handleSearch}>
+                    {/* Begin of Search bar */}
+                    <Form className="search-form" onSubmit={handleSearch}>
                         <FormControl
                             type="search"
                             placeholder="Chúng tôi có thể giúp gì cho bạn"
-                            className="me-2"
+                            className="search-input"
                             aria-label="Search"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
-                        <Button variant="outline-success" type="submit">🔍</Button>
+                        <Button className="search-btn" type="submit">🔍</Button>
                     </Form>
-                    {/*End of search bar*/}
-                    {/*Begin of menu nav*/}
-                    <Nav className="me-auto">
+                    {/* End of search bar */}
+                    {/* Begin of menu nav */}
+                    <Nav className="nav-links">
                         <Link href="/reminder" passHref legacyBehavior>
                             <Nav.Link>Reminder</Nav.Link>
                         </Link>
@@ -52,17 +62,19 @@ const AppNavBar = () => {
                             <Nav.Link>Membership</Nav.Link>
                         </Link>
                     </Nav>
-                    {/*End of menu nav*/}
-                    {/*Begin of Login/Register*/}
-                    <Nav className="ms-auto d-flex align-items-center">
+                    {/* End of menu nav */}
+                    {/* Begin of Login/Register */}
+                    <Nav className="auth-section">
+                        <div className="notification-bell">🔔</div>
+                        <div className="vertical-divider"></div>
                         <Link href="/login" passHref legacyBehavior>
                             <Nav.Link>Đăng Nhập</Nav.Link>
                         </Link>
                         <Link href="/register" passHref legacyBehavior>
-                            <Nav.Link>Đăng Ký</Nav.Link>
+                            <Nav.Link className="register-btn">Đăng Ký</Nav.Link>
                         </Link>
                     </Nav>
-                    {/*End of Login/Register*/}
+                    {/* End of Login/Register */}
                 </Navbar.Collapse>
             </Container>
         </Navbar>

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import "./page.css";
+import Link from "next/link";
 
 const SignupPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -96,9 +97,9 @@ const SignupPage = () => {
 
                     <p className="login-prompt">
                         Đã có tài khoản?{" "}
-                        <a href="/login" className="signup-link">
+                        <Link href="/login" className="signup-link">
                             Đăng nhập ngay
-                        </a>
+                        </Link>
                     </p>
                 </form>
             </div>

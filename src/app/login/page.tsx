@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import "./page.css";
+import Link from "next/link";
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -56,9 +57,9 @@ const LoginPage = () => {
                         <label className="remember-me">
                             <input type="checkbox" className="checkbox" /> Ghi nhớ tôi
                         </label>
-                        <a href="/forgotpassword" className="forgot-password">
+                        <Link href="/forgotpassword" className="forgot-password">
                             Bạn quên mật khẩu?
-                        </a>
+                        </Link>
                     </div>
 
                     <button type="submit" className="login-button">
@@ -73,9 +74,9 @@ const LoginPage = () => {
 
                 <p className="signup-prompt">
                     Bạn chưa có tài khoản?{" "}
-                    <a href="/register" className="signup-link">
+                    <Link href="/register" className="signup-link">
                         Đăng ký ngay
-                    </a>
+                    </Link>
                 </p>
             </div>
         </div>

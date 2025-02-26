@@ -1,73 +1,135 @@
+.forgot-password-page-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: #1a202c;
+    z-index: 1000;
+}
+
 .forgot-password-container {
     display: flex;
     height: 100vh;
-    background-color: #ffffff;
-    /* Đảm bảo nền trắng như mẫu */
-    font-family: Arial, sans-serif;
-    border-radius: 2rem;
-    /* Tăng bo góc cho cả khối */
-    overflow: hidden;
+    background-color: #1a202c;
 }
 
-
 .forgot-password-image {
-    flex: 1;
-    background-image: url("../img/login.png");
+    flex: 1.2;
+    background-image: url('../img/login.png');
     background-size: cover;
     background-position: center;
-    border-radius: 1rem 0 0 1rem;
+    border-radius: 0 20px 20px 0;
+    position: relative;
+}
+
+.forgot-password-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 0 20px 20px 0;
 }
 
 .forgot-password-form {
+    flex: 0.8;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    width: 100%;
-    max-width: 450px;
-    background-color: #ffffff;
-    border-radius: 0 1rem 1rem 0;
-    padding: 2.5rem 2rem;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 60px;
+    background-color: #1a202c;
+    color: white;
 }
 
 .forgot-password-title {
-    font-size: 1.75rem;
+    font-size: 32px;
     font-weight: bold;
-    margin-bottom: 2rem;
-    color: #2d3748;
+    margin-bottom: 40px;
+    text-align: center;
+    color: white;
+}
+
+.step-indicator {
+    color: #279357;
+    font-size: 16px;
+    margin-bottom: 20px;
     text-align: center;
 }
 
-.form {
-    width: 100%;
-}
-
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 24px;
 }
 
 .form-label {
     display: block;
-    font-size: 0.9rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    color: #4a5568;
+    margin-bottom: 10px;
+    color: #e2e8f0;
+    font-size: 15px;
 }
 
 .form-input {
     width: 100%;
-    padding: 0.875rem;
-    border: 1px solid #cbd5e0;
-    border-radius: 0.375rem;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s;
+    padding: 14px 16px;
+    border: 1px solid #2d3748;
+    border-radius: 8px;
+    background-color: #2d3748;
+    color: white;
+    font-size: 16px;
+    transition: all 0.2s ease;
 }
 
 .form-input:focus {
-    border-color: #3182ce;
-    box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.5);
+    outline: none;
+    border-color: #279357;
+    box-shadow: 0 0 0 3px rgba(39, 147, 87, 0.2);
+}
+
+.help-text {
+    font-size: 14px;
+    color: #a0aec0;
+    margin-top: 8px;
+}
+
+.error-message {
+    color: #fc8181;
+    font-size: 14px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.forgot-password-button {
+    width: 100%;
+    padding: 14px;
+    background-color: #279357;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.forgot-password-button:hover {
+    background-color: #1f7a47;
+}
+
+.back-to-login {
+    text-align: center;
+    margin-top: 24px;
+}
+
+.back-link {
+    color: #279357;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.back-link:hover {
+    text-decoration: underline;
 }
 
 .form-password {
@@ -76,49 +138,12 @@
 
 .password-toggle {
     position: absolute;
+    right: 16px;
     top: 50%;
-    right: 0.75rem;
     transform: translateY(-50%);
     background: none;
     border: none;
-    color: #3182ce;
+    color: #a0aec0;
     cursor: pointer;
-    font-size: 1.25rem;
-}
-
-.recaptcha-placeholder {
-    border: 1px solid #cbd5e0;
-    border-radius: 0.375rem;
-    background-color: #f7fafc;
-    padding: 0.875rem;
-    text-align: center;
-    font-size: 0.875rem;
-    color: #718096;
-}
-
-.forgot-password-button {
-    width: 100%;
-    padding: 1rem;
-    background-color: #3182ce;
-    color: white;
-    font-size: 1.1rem;
-    border: none;
-    border-radius: 0.5rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.forgot-password-button:hover {
-    background-color: #2c5282;
-}
-
-.g-recaptcha {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 1.5rem;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
+    padding: 0;
 }

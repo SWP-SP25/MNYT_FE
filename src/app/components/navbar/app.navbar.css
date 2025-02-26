@@ -1,0 +1,109 @@
+.custom-navbar {
+    background-color: #fff !important;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 10px 15px;
+    border-bottom: 2px solid #279357;
+}
+
+.custom-navbar .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand .navbar-brand {
+    color: #279357;
+    font-weight: bold;
+    margin: 0;
+}
+
+.search-form {
+    position: relative;
+    margin: 0 2rem;
+}
+
+.search-input {
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 1px solid #e0e0e0;
+    width: 300px;
+    background-color: #f8f9fa;
+}
+
+.search-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent !important;
+    border: none;
+    color: #666 !important;
+    padding: 5px 10px;
+}
+
+.search-btn:hover {
+    color: #279357 !important;
+}
+
+.nav-links {
+    margin-right: auto;
+}
+
+.nav-links .nav-link {
+    color: #666;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+}
+
+.nav-links .nav-link:hover {
+    color: #279357;
+}
+
+.auth-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.auth-section .nav-link {
+    color: #666;
+    padding: 0.5rem 0.75rem;
+}
+
+.notification-bell {
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.vertical-divider {
+    width: 1px;
+    height: 20px;
+    background-color: #e0e0e0;
+    margin: 0 5px;
+}
+
+.register-btn {
+    color: #279357 !important;
+    font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+    .search-form {
+        margin: 1rem 0;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    .auth-section {
+        margin-top: 1rem;
+    }
+}

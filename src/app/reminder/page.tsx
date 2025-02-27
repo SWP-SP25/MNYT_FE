@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
-import { FaPlus, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaPlus, FaChevronLeft, FaChevronRight, FaSun } from 'react-icons/fa';
 import './page.css';
 
 interface Event {
@@ -9,43 +9,48 @@ interface Event {
   time: string;
   title: string;
   date: Date;
+  type: 'primary' | 'secondary';
 }
 
 const ReminderPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [view, setView] = useState<'Day' | 'Week' | 'Month' | 'Year'>('Week');
 
-  // Mock data for events
   const events: Event[] = [
     {
       id: '1',
       time: '8:00 AM',
       title: 'Hẹn đi khám thai',
-      date: new Date(2024, 1, 22)
+      date: new Date(2024, 1, 22),
+      type: 'primary'
     },
     {
       id: '2',
       time: '10:00 AM',
       title: 'Đi mua đồ cho con',
-      date: new Date(2024, 1, 22)
+      date: new Date(2024, 1, 22),
+      type: 'secondary'
     },
     {
       id: '3',
       time: '1:00 PM',
       title: 'Đi ăn trưa',
-      date: new Date(2024, 1, 22)
+      date: new Date(2024, 1, 22),
+      type: 'primary'
     },
     {
       id: '4',
       time: '9:00 AM',
       title: 'Đi tiêm vắc xin',
-      date: new Date(2024, 1, 24)
+      date: new Date(2024, 1, 24),
+      type: 'primary'
     },
     {
       id: '5',
       time: '10:00 AM',
       title: 'Đi tập yoga cho bà bầu',
-      date: new Date(2024, 1, 25)
+      date: new Date(2024, 1, 25),
+      type: 'secondary'
     }
   ];
 
@@ -88,67 +93,153 @@ const ReminderPage = () => {
     setSelectedDate(new Date());
   };
 
+  const renderMiniCalendar = () => {
+    const today = new Date();
+    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).getDay();
+    
+    const days = [];
+    for (let i = 0; i < firstDayOfMonth; i++) {
+      days.push(<div key={`empty-${i}`} className="calendar-day-mini" />);
+    }
+    
+    for (let i = 1; i <= daysInMonth; i++) {
+      const isToday = i === today.getDate();
+      const hasEvent = events.some(event => event.date.getDate() === i);
+      days.push(
+        <div
+          key={i}
+          className={`calendar-day-mini ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''}`}
+        >
+          {i}
+        </div>
+      );
+    }
+    
+    return days;
+  };
+
   return (
-    <div className="main-content">
-      <div className="reminder-container">
-        <div className="reminder-header">
-          <div className="header-left">
-            <h2>
-              February 2024
-              <button className="add-button">
-                <FaPlus size={14} />
-              </button>
+    <div className="reminder-layout">
+      <div className="reminder-sidebar">
+        <div className="mini-calendar">
+          <div className="month-header">
+            <h2 className="month-title">
+              February <span>2024</span>
             </h2>
+            <button className="add-button">
+              <FaPlus size={14} />
+            </button>
           </div>
           
-          <div className="header-navigation">
-            <div className="nav-arrows">
-              <button onClick={handlePrevWeek}><FaChevronLeft /></button>
-              <button className="today-button" onClick={handleToday}>Today</button>
-              <button onClick={handleNextWeek}><FaChevronRight /></button>
+          <div className="weekday-header">
+            {daysOfWeek.map(day => (
+              <span key={day}>{day.slice(0, 1)}</span>
+            ))}
+          </div>
+          
+          <div className="calendar-grid-mini">
+            {renderMiniCalendar()}
+          </div>
+        </div>
+
+        <div className="important-days">
+          <div className="important-day">
+            <div className="day-header">
+              <div className="day-date">HÔM NAY 2/22/2021</div>
+              <div className="day-weather">
+                55°/40° <FaSun />
+              </div>
+              <div className="important-tag">NGÀY QUAN TRỌNG</div>
+            </div>
+            <div className="day-events">
+              {events.slice(0, 2).map(event => (
+                <div key={event.id} className="event">
+                  <div className="event-time">{event.time}</div>
+                  <div className="event-title">{event.title}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="calendar-container">
+        <div className="calendar-header">
+          <h2>February 2024</h2>
+          <div className="view-controls">
+            <div className="nav-buttons">
+              <button className="nav-button" onClick={handlePrevWeek}>
+                <FaChevronLeft />
+              </button>
+              <button className="nav-button" onClick={handleToday}>
+                Today
+              </button>
+              <button className="nav-button" onClick={handleNextWeek}>
+                <FaChevronRight />
+              </button>
             </div>
             
             <div className="view-options">
-              <button className={view === 'Day' ? 'active' : ''} onClick={() => setView('Day')}>Day</button>
-              <button className={view === 'Week' ? 'active' : ''} onClick={() => setView('Week')}>Week</button>
-              <button className={view === 'Month' ? 'active' : ''} onClick={() => setView('Month')}>Month</button>
-              <button className={view === 'Year' ? 'active' : ''} onClick={() => setView('Year')}>Year</button>
+              <button
+                className={`view-option ${view === 'Day' ? 'active' : ''}`}
+                onClick={() => setView('Day')}
+              >
+                Day
+              </button>
+              <button
+                className={`view-option ${view === 'Week' ? 'active' : ''}`}
+                onClick={() => setView('Week')}
+              >
+                Week
+              </button>
+              <button
+                className={`view-option ${view === 'Month' ? 'active' : ''}`}
+                onClick={() => setView('Month')}
+              >
+                Month
+              </button>
+              <button
+                className={`view-option ${view === 'Year' ? 'active' : ''}`}
+                onClick={() => setView('Year')}
+              >
+                Year
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="calendar-grid">
-          <div className="weekday-header">
-            <div className="weekday-cell"></div> {/* Empty cell for time column */}
-            {getWeekDates().map((date, index) => (
-              <div key={index} className="weekday-cell">
-                <div className="weekday-name">{daysOfWeek[index]}</div>
-                <div className="weekday-date">{date.getDate()}</div>
+        <div className="week-grid">
+          <div className="time-column">
+            <div className="time-column-header"></div>
+            {Array.from({ length: 15 }, (_, i) => i + 7).map(hour => (
+              <div key={hour} className="time-slot">
+                {hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
               </div>
             ))}
           </div>
 
-          <div className="time-grid">
-            {Array.from({ length: 17 }, (_, i) => i + 7).map((hour) => (
-              <div key={hour} className="time-row">
-                <div className="time-label">
-                  {hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
-                </div>
-                {getWeekDates().map((date, dateIndex) => (
-                  <div key={dateIndex} className="time-cell">
-                    {getEventsForDate(date)
-                      .filter(event => parseInt(event.time) === hour)
-                      .map(event => (
-                        <div key={event.id} className="event-item">
-                          <span className="event-time">{event.time}</span>
-                          <span className="event-title">{event.title}</span>
-                        </div>
-                      ))}
-                  </div>
-                ))}
+          {getWeekDates().map((date, index) => (
+            <div key={index} className="day-column">
+              <div className="day-header">
+                <div className="day-name">{daysOfWeek[date.getDay()]}</div>
+                <div className="day-number">{date.getDate()}</div>
               </div>
-            ))}
-          </div>
+              
+              {Array.from({ length: 15 }, (_, i) => i + 7).map(hour => (
+                <div key={hour} className="time-block">
+                  {getEventsForDate(date)
+                    .filter(event => parseInt(event.time) === hour)
+                    .map(event => (
+                      <div key={event.id} className={`event-block ${event.type}`}>
+                        <div className="event-time">{event.time}</div>
+                        <div className="event-title">{event.title}</div>
+                      </div>
+                    ))}
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
     </div>

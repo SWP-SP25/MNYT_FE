@@ -1,10 +1,8 @@
-'use client'
-const Dashboard = () => {
-    //Tên component viết hoa chữ cái đầu tiên
-    return (
-        <>
-            Đây là trang dashboard, sẽ nối giao diện vào sau
-        </>
-    )
+'use client';
+
+import Dashboard from '@/app/components/dashboard';
+
+export default function DashboardPage() {
+    return <Dashboard />;
 }
-export default Dashboard;
+

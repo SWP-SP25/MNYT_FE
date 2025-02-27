@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
@@ -10,8 +10,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Logo from '@/app/img/Logo.ico';
 import './app.navbar.css';
+import { BsBell } from 'react-icons/bs';
+import { Overlay, Popover } from 'react-bootstrap';
+
 const AppNavBar = () => {
     const [search, setSearch] = useState("");
+    const [showNotifications, setShowNotifications] = useState(false);
+    const notificationTarget = useRef(null);
 
     const handleSearch = (e: { preventDefault: () => void; }) => {
         e.preventDefault();
@@ -65,11 +70,37 @@ const AppNavBar = () => {
                     {/* End of menu nav */}
                     {/* Begin of Login/Register */}
                     <Nav className="auth-section">
-                        <div className="notification-bell">🔔</div>
-                        <div className="vertical-divider"></div>
+                        <div ref={notificationTarget}>
+                            <Nav.Link
+                                className="notification-bell"
+                                onClick={() => setShowNotifications(!showNotifications)}
+                            >
+                                <BsBell />
+                            </Nav.Link>
+                        </div>
+
+                        <Overlay
+                            target={notificationTarget.current}
+                            show={showNotifications}
+                            placement="bottom"
+                            rootClose
+                            onHide={() => setShowNotifications(false)}
+                        >
+                            <Popover id="notifications-popover">
+                                <Popover.Header as="h3">Thông báo</Popover.Header>
+                                <Popover.Body>
+                                    <div className="notifications-list">
+                                        {/* Đây là nơi để thêm danh sách thông báo */}
+                                        <p>Không có thông báo mới</p>
+                                    </div>
+                                </Popover.Body>
+                            </Popover>
+                        </Overlay>
+
                         <Link href="/login" passHref legacyBehavior>
                             <Nav.Link>Đăng Nhập</Nav.Link>
                         </Link>
+                        <div className="vertical-divider"></div>
                         <Link href="/register" passHref legacyBehavior>
                             <Nav.Link className="register-btn">Đăng Ký</Nav.Link>
                         </Link>

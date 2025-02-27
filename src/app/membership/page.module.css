@@ -1,0 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
+
+/* Định dạng chung cho toàn trang */
+.membershipContainer {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #f0f7f4 0%, #ffffff 100%);
+    min-height: 100vh;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Tiêu đề chính */
+.title {
+    font-size: 2.8rem;
+    font-weight: bold;
+    margin-bottom: 50px;
+    color: #1a202c;
+}
+
+.subtitle {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.5rem;
+    color: #666;
+    text-align: center;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+/* Bố cục bảng membership */
+.membershipPlans {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Nút mặc định cho gói Standard */
+.defaultButton {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    margin-top: auto;
+    background: #e2e8f0;
+    color: #64748b;
+    cursor: not-allowed;
+}
+
+/* Card của từng gói */
+.plan {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+/* Hiệu ứng hover khi rê chuột vào từng gói */
+.plan:hover {
+    transform: translateY(-5px);
+    border-color: #279357;
+}
+
+/* Tiêu đề của gói */
+.planTitle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.planTitle h2 {
+    font-size: 2rem;
+    color: #1a202c;
+    font-weight: bold;
+}
+
+/* Định dạng danh sách quyền lợi */
+.features {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 30px 0;
+}
+
+.featureItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: left;
+    padding: 8px 0;
+}
+
+.featureItem svg {
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+.featureItem p {
+    margin: 0;
+    color: #4a5568;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Các gói đặc biệt */
+.vip {
+    background: linear-gradient(to bottom, #ffffff, #f8f9ff);
+    border-color: #279357;
+}
+
+.vip::before {
+    content: "Phổ biến nhất";
+    position: absolute;
+    top: 12px;
+    right: -35px;
+    background: #279357;
+    color: white;
+    padding: 8px 40px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transform: rotate(45deg);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Nút đăng ký */
+.button {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    margin-top: auto;
+    background: #279357;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.button:hover {
+    background: #1e7a45;
+}
+
+/* Màu riêng cho các gói */
+.vip .button {
+    background-color: #e91e63;
+}
+
+.vip .button:hover {
+    background-color: #c2185b;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .membershipPlans {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .membershipPlans {
+        grid-template-columns: 1fr;
+    }
+
+    .plan {
+        max-width: 500px;
+        margin: 0 auto;
+        width: 100%;
+    }
+}

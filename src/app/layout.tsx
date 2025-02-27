@@ -27,6 +27,10 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+        <title>Mầm Non Yêu Thương</title>
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {!excludedPaths.includes(pathname) && <AppNavBar />}
         <Container>

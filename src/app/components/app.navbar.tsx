@@ -9,6 +9,7 @@ import Button from 'react-bootstrap/Button';
 import Image from 'next/image';
 import "./styles/navbar.css"; // Import CSS mới chỉ dành cho Navbar
 import Logo from '../auth/login/public/logo.ico';  // Điều chỉnh đường dẫn tùy theo vị trí file logo
+import { BsBell } from 'react-icons/bs';
 
 const AppNavBar = () => {
     const [search, setSearch] = useState("");
@@ -48,19 +49,18 @@ const AppNavBar = () => {
 
                     {/* Menu điều hướng */}
                     <Nav className="nav-links">
-                        <Nav.Link href="/reminder/">Reminder</Nav.Link>
-                        <Nav.Link href="/dashboard/">Dashboard</Nav.Link>
+                        <Nav.Link href="/reminder">Reminder</Nav.Link>
+                        <Nav.Link href="/dashboard">Dashboard</Nav.Link>
                         <Nav.Link href="/blog">Blog</Nav.Link>
                         <Nav.Link href="/membership">Membership</Nav.Link>
                     </Nav>
 
                     {/* Nút Đăng nhập / Đăng ký */}
                     <Nav className="auth-section">
-                        <Nav.Link href="/notifications" className="notification-bell">
-                            🔔
+                        <Nav.Link href="#" className="notification-bell">
+                            <BsBell />
                         </Nav.Link>
                         <Nav.Link href="/auth/login">Đăng Nhập</Nav.Link>
-                        <div className="vertical-divider"></div>
                         <Nav.Link href="/auth/signup">Đăng Ký</Nav.Link>
                     </Nav>
 

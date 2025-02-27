@@ -18,7 +18,7 @@
 .brand-logo {
     width: 40px;
     height: 40px;
-    background-image: url('/src/app/auth/login/img/logo.ico');
+    background-image: url('/src/app/auth/login/public/logo.ico');
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -98,11 +98,6 @@
     border-radius: 5px;
 }
 
-.notification-bell {
-    font-size: 20px;
-    margin-right: 10px;
-}
-
 .vertical-divider {
     width: 1px;
     height: 20px;
@@ -113,4 +108,13 @@
 .register-btn {
     font-weight: bold;
     color: #279357 !important;
+}
+
+.notification-bell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0.5rem;
+    
 }

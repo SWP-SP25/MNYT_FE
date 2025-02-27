@@ -1,16 +1,14 @@
-.forgot-password-page-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
+body {
+  margin: 0;
+  padding: 0;
   height: 100vh;
   background-color: #1a202c;
-  z-index: 1000;
 }
 
 .forgot-password-container {
-  display: flex;
+  width: 100%;
   height: 100vh;
+  display: flex;
   background-color: #1a202c;
 }
 
@@ -50,6 +48,7 @@
   margin-bottom: 40px;
   text-align: center;
   color: white;
+  line-height: 1.4;
 }
 
 .step-indicator {
@@ -57,6 +56,10 @@
   font-size: 16px;
   margin-bottom: 20px;
   text-align: center;
+  font-weight: 500;
+  background-color: rgba(39, 147, 87, 0.1);
+  padding: 10px;
+  border-radius: 8px;
 }
 
 .form-group {
@@ -98,9 +101,13 @@
   font-size: 14px;
   margin-bottom: 16px;
   text-align: center;
+  background-color: rgba(252, 129, 129, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #fc8181;
 }
 
-.forgot-password-button {
+.login-button {
   width: 100%;
   padding: 14px;
   background-color: #279357;
@@ -113,19 +120,24 @@
   transition: background-color 0.3s;
 }
 
-.forgot-password-button:hover {
+.login-button:hover {
   background-color: #1f7a47;
 }
 
 .back-to-login {
   text-align: center;
   margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #2d3748;
 }
 
 .back-link {
   color: #279357;
   text-decoration: none;
   font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .back-link:hover {
@@ -146,4 +158,57 @@
   color: #a0aec0;
   cursor: pointer;
   padding: 0;
+}
+
+.forgot-password-button {
+  width: 100%;
+  padding: 14px;
+  background-color: #279357;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-bottom: 16px;
+}
+
+.forgot-password-button:hover {
+  background-color: #1f7a47;
+}
+
+.forgot-password-button:disabled {
+  background-color: #4a5568;
+  cursor: not-allowed;
+}
+
+.form {
+  width: 100%;
+}
+
+.form-input[type="text"] {
+  letter-spacing: 2px;
+  font-size: 18px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .forgot-password-container {
+    flex-direction: column;
+  }
+
+  .forgot-password-image {
+    display: none;
+  }
+
+  .forgot-password-form {
+    flex: 1;
+    padding: 32px 24px;
+  }
+
+  .forgot-password-title {
+    font-size: 24px;
+    margin-bottom: 32px;
+  }
 }

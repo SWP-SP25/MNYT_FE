@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import AppNavBar from "./components/app.navbar";
 import AppFooter from "./components/app.footer";
 import { Container } from 'react-bootstrap';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -23,17 +24,23 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <AppNavBar></AppNavBar>
-        <Container>
-          {children}
-        </Container>
-        {<AppFooter></AppFooter>}
+      <body className={`${geistSans.variable} ${geistMono.variable}`} style={{ 
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+          <AppNavBar />
+          <main style={{ flex: 1 }}>
+            <Container>
+              {children}
+            </Container>
+          </main>
+          <AppFooter />
       </body>
     </html>
   );

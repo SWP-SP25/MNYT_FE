@@ -93,6 +93,26 @@
     font-weight: bold;
 }
 
+.auth-buttons {
+    display: flex;
+    align-items: center;
+}
+
+.auth-link {
+    color: #666 !important;
+    padding: 0.5rem 0.75rem !important;
+    transition: color 0.3s ease !important;
+}
+
+.auth-link:hover {
+    color: #279357 !important;
+}
+
+.divider {
+    color: #666;
+    margin: 0 5px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 991px) {
     .search-form {

@@ -1,39 +1,57 @@
-"use client";
+'use client';
 
 import React, { useState } from "react";
 import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
+import Link from 'next/link';
 import "./page.css";
-import Link from "next/link";
 
 const SignupPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [formData, setFormData] = useState({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: ""
+    });
+    const [error, setError] = useState("");
 
-    const togglePasswordVisibility = () => {
-        setShowPassword((prev) => !prev);
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        setError("");
     };
 
-    const toggleConfirmPasswordVisibility = () => {
-        setShowConfirmPassword((prev) => !prev);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        // Xử lý đăng ký
     };
 
     return (
         <div className="signup-container">
             <div className="signup-image"></div>
-
             <div className="signup-form">
                 <h1 className="signup-title">Đăng ký tài khoản</h1>
 
-                <form className="form">
+                {error && <div className="error-message">{error}</div>}
+
+                <form className="form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label htmlFor="username" className="form-label">
                             Tên tài khoản
                         </label>
                         <input
                             id="username"
+                            name="username"
                             type="text"
                             placeholder="Nhập tên tài khoản"
                             className="form-input"
+                            value={formData.username}
+                            onChange={handleInputChange}
+                            required
                         />
                     </div>
 
@@ -43,9 +61,13 @@ const SignupPage = () => {
                         </label>
                         <input
                             id="email"
+                            name="email"
                             type="email"
                             placeholder="Nhập email của bạn"
                             className="form-input"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            required
                         />
                     </div>
 
@@ -56,14 +78,18 @@ const SignupPage = () => {
                         <div className="form-password">
                             <input
                                 id="password"
+                                name="password"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="Nhập mật khẩu của bạn"
                                 className="form-input"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                required
                             />
                             <button
                                 type="button"
                                 className="password-toggle"
-                                onClick={togglePasswordVisibility}
+                                onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </button>
@@ -71,20 +97,24 @@ const SignupPage = () => {
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="confirm-password" className="form-label">
+                        <label htmlFor="confirmPassword" className="form-label">
                             Xác nhận mật khẩu
                         </label>
                         <div className="form-password">
                             <input
-                                id="confirm-password"
+                                id="confirmPassword"
+                                name="confirmPassword"
                                 type={showConfirmPassword ? "text" : "password"}
                                 placeholder="Xác nhận mật khẩu của bạn"
                                 className="form-input"
+                                value={formData.confirmPassword}
+                                onChange={handleInputChange}
+                                required
                             />
                             <button
                                 type="button"
                                 className="password-toggle"
-                                onClick={toggleConfirmPasswordVisibility}
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             >
                                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                             </button>
@@ -97,7 +127,7 @@ const SignupPage = () => {
 
                     <p className="login-prompt">
                         Đã có tài khoản?{" "}
-                        <Link href="/login" className="signup-link">
+                        <Link href="/auth/login" className="login-link">
                             Đăng nhập ngay
                         </Link>
                     </p>

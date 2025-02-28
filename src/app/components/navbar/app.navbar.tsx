@@ -10,13 +10,15 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Logo from '@/app/img/Logo.ico';
 import './app.navbar.css';
-import { BsBell } from 'react-icons/bs';
+import { BsBell, BsSearch } from 'react-icons/bs';
 import { Overlay, Popover } from 'react-bootstrap';
+import { useAuth } from '@/hooks/useAuth';
 
 const AppNavBar = () => {
     const [search, setSearch] = useState("");
     const [showNotifications, setShowNotifications] = useState(false);
     const notificationTarget = useRef(null);
+    const { user, logout } = useAuth();
 
     const handleSearch = (e: { preventDefault: () => void; }) => {
         e.preventDefault();
@@ -27,12 +29,16 @@ const AppNavBar = () => {
         <Navbar expand="lg" className="custom-navbar">
             <Container>
                 <div className="brand">
-                    <Image
-                        src={Logo}
-                        alt="Logo"
-                        width={40}
-                        height={40}
-                    />
+                    <Link href="/" passHref legacyBehavior>
+                        <a>
+                            <Image
+                                src={Logo}
+                                alt="Logo"
+                                width={40}
+                                height={40}
+                            />
+                        </a>
+                    </Link>
                     <Link href="/" passHref legacyBehavior>
                         <Navbar.Brand>Mầm Non Yêu Thương</Navbar.Brand>
                     </Link>
@@ -49,7 +55,9 @@ const AppNavBar = () => {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
-                        <Button className="search-btn" type="submit">🔍</Button>
+                        <Button className="search-btn" type="submit">
+                            <BsSearch />
+                        </Button>
                     </Form>
                     {/* End of search bar */}
                     {/* Begin of menu nav */}
@@ -97,13 +105,35 @@ const AppNavBar = () => {
                             </Popover>
                         </Overlay>
 
-                        <Link href="/login" passHref legacyBehavior>
-                            <Nav.Link>Đăng Nhập</Nav.Link>
-                        </Link>
-                        <div className="vertical-divider"></div>
-                        <Link href="/register" passHref legacyBehavior>
-                            <Nav.Link className="register-btn">Đăng Ký</Nav.Link>
-                        </Link>
+                        <div className="flex items-center gap-4">
+                            {user ? (
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm text-gray-600">
+                                        Xin chào, <span className="font-medium text-gray-800"></span>
+                                    </span>
+                                    <button
+                                        onClick={() => logout()}
+                                        className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-800 border border-gray-300 rounded-full hover:bg-gray-50 transition-all"
+                                    >
+                                        Đăng xuất
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="auth-buttons">
+                                    <Link href="/login" passHref legacyBehavior>
+                                        <Nav.Link className="auth-link">
+                                            Đăng Nhập
+                                        </Nav.Link>
+                                    </Link>
+                                    <span className="divider">|</span>
+                                    <Link href="/register" passHref legacyBehavior>
+                                        <Nav.Link className="auth-link">
+                                            Đăng Ký
+                                        </Nav.Link>
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
                     </Nav>
                     {/* End of Login/Register */}
                 </Navbar.Collapse>

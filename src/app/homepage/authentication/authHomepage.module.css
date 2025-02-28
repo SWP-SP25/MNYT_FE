@@ -1,0 +1,26 @@
+.authContainer {
+    padding: 2rem;
+    width: 100%;
+}
+
+.dashboard {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.userContent {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.userInfo {
+    margin-top: 1rem;
+}
+
+.userInfo p {
+    margin: 0.5rem 0;
+}

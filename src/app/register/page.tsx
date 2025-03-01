@@ -127,7 +127,7 @@ const SignupPage = () => {
 
                     <p className="login-prompt">
                         Đã có tài khoản?{" "}
-                        <Link href="/auth/login" className="login-link">
+                        <Link href="/login" className="login-link">
                             Đăng nhập ngay
                         </Link>
                     </p>

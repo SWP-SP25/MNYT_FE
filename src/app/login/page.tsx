@@ -50,83 +50,85 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="login-container">
-            <div className="login-image"></div>
+        <div className="login-page-wrapper">
+            <div className="login-container">
+                <div className="login-image"></div>
 
-            <div className="login-form">
-                <h1 className="login-title">CHÚC BẠN CÓ MỘT NGÀY TỐT LÀNH</h1>
+                <div className="login-form">
+                    <h1 className="login-title">CHÚC BẠN CÓ MỘT NGÀY TỐT LÀNH</h1>
 
-                <form className="form">
-                    <div className="form-group">
-                        <label htmlFor="username" className="form-label">
-                            Tên tài khoản
-                        </label>
-                        <input
-                            id="username"
-                            name="emailOrUsername"
-                            type="text"
-                            placeholder="Email hoặc số điện thoại"
-                            className="form-input"
-                            value={formData.emailOrUsername}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="password" className="form-label">
-                            Mật khẩu
-                        </label>
-                        <div className="form-password">
+                    <form className="form">
+                        <div className="form-group">
+                            <label htmlFor="username" className="form-label">
+                                Tên tài khoản
+                            </label>
                             <input
-                                id="password"
-                                name="password"
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Nhập mật khẩu của bạn"
+                                id="username"
+                                name="emailOrUsername"
+                                type="text"
+                                placeholder="Email hoặc số điện thoại"
                                 className="form-input"
-                                value={formData.password}
+                                value={formData.emailOrUsername}
                                 onChange={handleInputChange}
                             />
-                            <button
-                                type="button"
-                                className="password-toggle"
-                                onClick={togglePasswordVisibility}
-                            >
-                                {showPassword ? <FaEyeSlash /> : <FaEye />}
-                            </button>
                         </div>
-                    </div>
 
-                    <div className="form-options">
-                        <label className="remember-me">
-                            <input
-                                type="checkbox"
-                                name="rememberMe"
-                                className="checkbox"
-                                checked={formData.rememberMe}
-                                onChange={handleInputChange}
-                            /> Ghi nhớ tôi
-                        </label>
-                        <Link href="/forgotpassword" className="forgot-password">
-                            Bạn quên mật khẩu?
+                        <div className="form-group">
+                            <label htmlFor="password" className="form-label">
+                                Mật khẩu
+                            </label>
+                            <div className="form-password">
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Nhập mật khẩu của bạn"
+                                    className="form-input"
+                                    value={formData.password}
+                                    onChange={handleInputChange}
+                                />
+                                <button
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={togglePasswordVisibility}
+                                >
+                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="form-options">
+                            <label className="remember-me">
+                                <input
+                                    type="checkbox"
+                                    name="rememberMe"
+                                    className="checkbox"
+                                    checked={formData.rememberMe}
+                                    onChange={handleInputChange}
+                                /> Ghi nhớ tôi
+                            </label>
+                            <Link href="/forgotpassword" className="forgot-password">
+                                Bạn quên mật khẩu?
+                            </Link>
+                        </div>
+
+                        <button type="submit" className="login-button" onClick={handleSubmit}>
+                            {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+                        </button>
+
+                        <button type="button" className="google-login">
+                            <FaGoogle className="google-icon" /> Hoặc đăng nhập với tài khoản
+                            Google
+                        </button>
+                    </form>
+
+                    <p className="signup-prompt">
+                        Bạn chưa có tài khoản?{" "}
+                        <Link href="/register" className="signup-link">
+                            Đăng ký ngay
                         </Link>
-                    </div>
-
-                    <button type="submit" className="login-button" onClick={handleSubmit}>
-                        {loading ? "Đang đăng nhập..." : "Đăng nhập"}
-                    </button>
-
-                    <button type="button" className="google-login">
-                        <FaGoogle className="google-icon" /> Hoặc đăng nhập với tài khoản
-                        Google
-                    </button>
-                </form>
-
-                <p className="signup-prompt">
-                    Bạn chưa có tài khoản?{" "}
-                    <Link href="/register" className="signup-link">
-                        Đăng ký ngay
-                    </Link>
-                </p>
+                    </p>
+                </div>
             </div>
         </div>
     );

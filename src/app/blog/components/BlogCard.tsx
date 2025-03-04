@@ -1,4 +1,4 @@
-import styles from '@/app/blog/styles/blog.module.css';
+import styles from './components.module.css';
 import { FaRegHeart, FaRegComment, FaTag, FaClock } from 'react-icons/fa';
 import Link from 'next/link';
 import Image from 'next/image';

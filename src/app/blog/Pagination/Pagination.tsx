@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import styles from '@/app/blog/styles/blog.module.css';
+import styles from './pagination.module.css';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 
 interface PaginationProps {

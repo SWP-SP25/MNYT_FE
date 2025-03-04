@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import { useFetch } from '@/hooks/useFetch';
+import useLocalStorage from './useLocalStorage';
 
 interface AuthUser {
     token: string;
@@ -28,10 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const API_URL = "https://api-mnyt.purintech.id.vn/api/Authentication";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<AuthUser | null>(() => {
-        const savedUser = localStorage.getItem('user');
-        return savedUser ? JSON.parse(savedUser) : null;
-    });
+    const [user, setUser] = useLocalStorage<AuthUser | null>('user', null);
     const { fetchData, loading, error } = useFetch();
 
     const login = async (credentials: LoginCredentials) => {

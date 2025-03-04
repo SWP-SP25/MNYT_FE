@@ -1,0 +1,57 @@
+.sidebar {
+    position: sticky;
+    top: 24px;
+    height: fit-content;
+}
+
+.statsCard,
+.topMembers,
+.trendingTopics {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.5s ease-out;
+}
+
+.statItem {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+    color: #4b5563;
+}
+
+.memberList {
+    margin-top: 16px;
+}
+
+.memberItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+    transition: transform 0.3s ease;
+}
+
+.memberItem:hover {
+    transform: translateX(4px);
+}
+
+.memberItem img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid #279357;
+    padding: 2px;
+}
+
+@media (max-width: 1280px) {
+    .sidebar {
+        position: static;
+        width: 100%;
+    }
+}

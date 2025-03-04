@@ -1,4 +1,4 @@
-import styles from '@/app/blog/styles/blog.module.css';
+import styles from './components.module.css';
 import BlogCard from './BlogCard';
 
 const dummyPosts = [
@@ -8,7 +8,7 @@ const dummyPosts = [
         author: {
             id: 1,
             name: "Mai Anh",
-            avatar: "/avatars/default.png",
+            avatar: "/src/app/blog/public/ava1.jpg",
             role: "member" as const,
             postCount: 15
         },

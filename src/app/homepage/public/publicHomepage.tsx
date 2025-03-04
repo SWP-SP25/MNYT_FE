@@ -1,7 +1,9 @@
+'use client';
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./publicHomepage.module.css";
 import { FaCalendarAlt, FaBabyCarriage, FaBookMedical, FaUserMd } from 'react-icons/fa';
+import AppSlider from "@/app/components/slider/app.slider";
 
 interface HomePageProps {
     // Có thể thêm props nếu cần
@@ -11,6 +13,8 @@ const HomePage: React.FC<HomePageProps> = () => {
     return (
         <div className={styles.page}>
             <main className={styles.main}>
+                
+            <AppSlider />
                 {/* Hero Section */}
                 <section className={styles.hero}>
                     <div className={styles.heroContent}>

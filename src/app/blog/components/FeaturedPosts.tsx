@@ -1,4 +1,4 @@
-import styles from '@/app/blog/styles/blog.module.css';
+import styles from './components.module.css';
 const featuredPosts = [
     { id: 1, title: "Kinh nghiệm chăm sóc mẹ bầu khỏe mạnh", views: 5000 },
     { id: 2, title: "Bí quyết giảm đau lưng khi mang thai", views: 4200 },

@@ -1,116 +1,187 @@
-"use client";
+'use client';
 
 import React, { useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Link from 'next/link';
 import "./page.css";
 
 const ForgotPasswordPage = () => {
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [step, setStep] = useState(1);
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-    const togglePasswordVisibility = () => {
-        setShowPassword((prev) => !prev);
-    };
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setStep(2);
+    } catch (error) {
+      setError("Có lỗi xảy ra khi gửi email");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const toggleConfirmPasswordVisibility = () => {
-        setShowConfirmPassword((prev) => !prev);
-    };
+  const handleOtpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStep(3);
+  };
 
-    const handleCaptchaChange = (value: string | null) => {
-        console.log("Captcha value:", value);
-    };
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setError("Mật khẩu không khớp!");
+      return;
+    }
+    // Xử lý đổi mật khẩu
+  };
 
-    return (
-        <div className="forgot-password-container">
-            <div className="forgot-password-image"></div>
+  return (
+    <div className="forgot-container">
+      <div className="forgot-image"></div>
+      <div className="forgot-form">
+        <div className="forgot-content">
+          <h1 className="forgot-title">Khôi phục mật khẩu</h1>
+          <p className="forgot-subtitle">
+            {step === 1 && "Bước 1/3: Xác nhận email"}
+            {step === 2 && "Bước 2/3: Nhập mã xác nhận"}
+            {step === 3 && "Bước 3/3: Đặt mật khẩu mới"}
+          </p>
 
-            <div className="forgot-password-form">
-                <h1 className="forgot-password-title">CHÚC BẠN CÓ MỘT NGÀY TỐT LÀNH</h1>
+          {error && <div className="forgot-error">{error}</div>}
 
-                <form className="form">
-                    <div className="form-group">
-                        <label htmlFor="username" className="form-label">
-                            Tên tài khoản
-                        </label>
-                        <input
-                            id="username"
-                            type="text"
-                            placeholder="Email hoặc số điện thoại"
-                            className="form-input"
-                        />
-                    </div>
+          {step === 1 && (
+            <form onSubmit={handleEmailSubmit}>
+              <div className="form-group">
+                <label htmlFor="email">
+                  Email của bạn
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="Nhập email đã đăng ký"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
 
-                    <div className="form-group">
-                        <label htmlFor="new-password" className="form-label">
-                            Mật khẩu mới
-                        </label>
-                        <div className="form-password">
-                            <input
-                                id="new-password"
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Nhập mật khẩu của bạn"
-                                className="form-input"
-                            />
-                            <button
-                                type="button"
-                                className="password-toggle"
-                                onClick={togglePasswordVisibility}
-                            >
-                                {showPassword ? <FaEyeSlash /> : <FaEye />}
-                            </button>
-                        </div>
-                    </div>
+              <button 
+                type="submit" 
+                className="forgot-button"
+                disabled={isLoading}
+              >
+                {isLoading ? "Đang gửi..." : "Gửi mã xác nhận"}
+              </button>
+            </form>
+          )}
 
-                    <div className="form-group">
-                        <label htmlFor="confirm-password" className="form-label">
-                            Nhập lại mật khẩu mới
-                        </label>
-                        <div className="form-password">
-                            <input
-                                id="confirm-password"
-                                type={showConfirmPassword ? "text" : "password"}
-                                placeholder="Nhập mật khẩu của bạn"
-                                className="form-input"
-                            />
-                            <button
-                                type="button"
-                                className="password-toggle"
-                                onClick={toggleConfirmPasswordVisibility}
-                            >
-                                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                            </button>
-                        </div>
-                    </div>
+          {step === 2 && (
+            <form onSubmit={handleOtpSubmit}>
+              <div className="form-group">
+                <label htmlFor="otp">
+                  Mã xác nhận
+                </label>
+                <input
+                  id="otp"
+                  type="text"
+                  placeholder="Nhập mã xác nhận từ email"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  required
+                  className="otp-input"
+                  maxLength={6}
+                />
+                <p className="form-help">Mã xác nhận đã được gửi đến email của bạn</p>
+              </div>
 
-                    <div className="form-group otp-recaptcha">
-                        <div className="otp-input">
-                            <label htmlFor="otp" className="form-label">
-                                OTP
-                            </label>
-                            <input
-                                id="otp"
-                                type="text"
-                                placeholder="Nhập mã OTP"
-                                className="form-input"
-                            />
-                        </div>
+              <button type="submit" className="forgot-button">
+                Xác nhận mã
+              </button>
+            </form>
+          )}
 
-                        <div className="recaptcha">
-                            <ReCAPTCHA
-                                sitekey="YOUR_SITE_KEY"
-                                onChange={handleCaptchaChange}
-                            />
-                        </div>
-                    </div>
+          {step === 3 && (
+            <form onSubmit={handlePasswordSubmit}>
+              <div className="form-group password-group">
+                <label htmlFor="newPassword">
+                  Mật khẩu mới
+                </label>
+                <div className="password-field">
+                  <input
+                    id="newPassword"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Nhập mật khẩu mới"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
 
-                    <button type="submit" className="forgot-password-button">
-                        Đăng ký
-                    </button>
-                </form>
-            </div>
+              <div className="form-group password-group">
+                <label htmlFor="confirmPassword">
+                  Xác nhận mật khẩu
+                </label>
+                <div className="password-field">
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Nhập lại mật khẩu mới"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" className="forgot-button">
+                Đổi mật khẩu
+              </button>
+            </form>
+          )}
+
+          <div className="forgot-switch">
+            {step === 1 ? (
+              <Link href="/login">
+                Quay lại đăng nhập
+              </Link>
+            ) : (
+              <button 
+                type="button" 
+                className="back-button"
+                onClick={() => setStep(step - 1)}
+              >
+                Quay lại bước trước
+              </button>
+            )}
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default ForgotPasswordPage;

@@ -1,0 +1,31 @@
+.container {
+    padding: 20px;
+}
+
+.calendar {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.formWrapper {
+    margin-left: 20px;
+}
+
+.calendarDay {
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.calendarDay:hover {
+    background-color: #f5f5f5;
+}
+
+.hasReminder {
+    background-color: #e6f7ff;
+}
+
+.hasReminder:hover {
+    background-color: #bae7ff;
+}

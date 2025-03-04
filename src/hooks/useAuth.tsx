@@ -28,23 +28,27 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const API_URL = "https://api-mnyt.purintech.id.vn/api/Authentication";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<AuthUser | null>(null);
+    const [user, setUser] = useState<AuthUser | null>(() => {
+        const savedUser = localStorage.getItem('user');
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
     const { fetchData, loading, error } = useFetch();
 
     const login = async (credentials: LoginCredentials) => {
         try {
-            const response = await fetchData<{success: boolean; data: AuthUser}>(
+            const response = await fetchData<{ success: boolean; data: AuthUser }>(
                 `${API_URL}/login`,
                 {
                     method: 'POST',
                     body: JSON.stringify(credentials)
                 }
-            );
-
-            if (response.success) {
-                setUser(response.data);
-                localStorage.setItem('token', response.data.token);
-            }
+            ).then(response => {
+                if (response.success) {
+                    setUser(response.data);
+                    localStorage.setItem('token', response.data.token);
+                    localStorage.setItem('user', JSON.stringify(response.data));
+                }
+            });
         } catch (error) {
             throw error;
         }
@@ -53,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const logout = async () => {
         setUser(null);
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
     };
 
     return (

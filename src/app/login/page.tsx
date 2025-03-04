@@ -6,7 +6,7 @@ import "./page.css";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-
+import AuthenticatedHomePage from "../homepage/authentication/authHomepage";
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();

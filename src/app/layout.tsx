@@ -1,8 +1,7 @@
 'use client'
-import './globals.css'
+import '../app/globals.css'
 import { Geist, Geist_Mono } from "next/font/google";
 import { usePathname } from "next/navigation";
-import { AntdRegistry } from '@ant-design/nextjs-registry';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import AppNavBar from "./components/navbar/app.navbar";
 import AppFooter from "./components/footer/app.footer";
@@ -17,6 +16,7 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,11 +32,13 @@ export default function RootLayout({
         <title>Mầm Non Yêu Thương</title>
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {!excludedPaths.includes(pathname) && <AppNavBar />}
-        <Container>
-          {children}
-        </Container>
-        {!excludedPaths.includes(pathname) && <AppFooter />}
+        <AuthProvider>
+          {!excludedPaths.includes(pathname) && <AppNavBar />}
+          <Container>
+            {children}
+          </Container>
+          {!excludedPaths.includes(pathname) && <AppFooter />}
+        </AuthProvider>
       </body>
     </html>
   );

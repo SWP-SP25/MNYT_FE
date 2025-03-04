@@ -29,7 +29,7 @@ const LoginPage = () => {
     };
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
+        
         try {
             console.log(formData);
             await login({
@@ -43,12 +43,12 @@ const LoginPage = () => {
             }
 
             // Chuyển hướng sau khi đăng nhập thành công
-            router.push('/');
+            router.push('/dashboard');
         } catch (err) {
             console.error('Lỗi đăng nhập:', err);
         }
     };
-
+    
     return (
         <div className="login-container">
             <div className="login-image"></div>
@@ -98,8 +98,8 @@ const LoginPage = () => {
 
                     <div className="form-options">
                         <label className="remember-me">
-                            <input
-                                type="checkbox"
+                            <input 
+                                type="checkbox" 
                                 name="rememberMe"
                                 className="checkbox"
                                 checked={formData.rememberMe}

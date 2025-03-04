@@ -27,17 +27,25 @@ const LoginPage = () => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        
         try {
             await login({
                 emailOrUsername: formData.emailOrUsername,
                 password: formData.password
             });
-            router.push('/');
+
+            // Lưu remember me nếu được chọn
+            if (formData.rememberMe) {
+                localStorage.setItem('rememberMe', 'true');
+            }
+
+            // Chuyển hướng sau khi đăng nhập thành công
+            router.push('/dashboard');
         } catch (err) {
             console.error('Lỗi đăng nhập:', err);
         }
     };
-
+    
     return (
         <div className="login-container">
             <div className="login-image"></div>
@@ -88,8 +96,18 @@ const LoginPage = () => {
                             </div>
                         </div>
 
-                        <Link href="/forgotpassword" className="forgot-link">
-                            Quên mật khẩu?
+                    <div className="form-options">
+                        <label className="remember-me">
+                            <input 
+                                type="checkbox" 
+                                name="rememberMe"
+                                className="checkbox"
+                                checked={formData.rememberMe}
+                                onChange={handleInputChange}
+                            /> Ghi nhớ tôi
+                        </label>
+                        <Link href="/forgotpassword" className="forgot-password">
+                            Bạn quên mật khẩu?
                         </Link>
 
                         <button 

@@ -6,6 +6,7 @@ import "./page.css";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { MdRememberMe } from "react-icons/md";
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -35,9 +36,9 @@ const LoginPage = () => {
             });
 
             // Lưu remember me nếu được chọn
-            if (formData.rememberMe) {
+            /*if (formData.rememberMe) {
                 localStorage.setItem('rememberMe', 'true');
-            }
+            }*/
 
             // Chuyển hướng sau khi đăng nhập thành công
             router.push('/dashboard');
@@ -96,39 +97,41 @@ const LoginPage = () => {
                             </div>
                         </div>
 
-                    <div className="form-options">
-                        <label className="remember-me">
-                            <input 
-                                type="checkbox" 
-                                name="rememberMe"
-                                className="checkbox"
-                                checked={formData.rememberMe}
-                                onChange={handleInputChange}
-                            /> Ghi nhớ tôi
-                        </label>
-                        <Link href="/forgotpassword" className="forgot-password">
-                            Bạn quên mật khẩu?
-                        </Link>
+                        <div className="form-options">
+    <label className="remember-me">
+        <input 
+            type="checkbox" 
+            name="rememberMe"
+            className="checkbox"
+            //checked={formData.rememberMe}
+            onChange={handleInputChange}
+        /> Ghi nhớ tôi
+    </label>
+    <Link href="/forgotpassword" className="forgot-password">
+        Bạn quên mật khẩu?
+    </Link>
+</div>
 
-                        <button 
-                            type="submit" 
-                            className="login-button"
-                            disabled={loading}
-                        >
-                            {loading ? "Đang xử lý..." : "Đăng nhập"}
-                        </button>
+<button 
+    type="submit" 
+    className="login-button"
+    disabled={loading}
+>
+    {loading ? "Đang xử lý..." : "Đăng nhập"}
+</button>
 
-                        <button type="button" className="google-login">
-                            <FaGoogle /> Đăng nhập với Google
-                        </button>
-                    </form>
+<button type="button" className="google-login">
+    <FaGoogle /> Đăng nhập với Google
+</button>
+</form> {/* Đóng form đúng chỗ */}
 
-                    <div className="login-switch">
-                        Chưa có tài khoản? {" "}
-                        <Link href="/register">
-                            Đăng ký ngay
-                        </Link>
-                    </div>
+<div className="login-switch">
+    Chưa có tài khoản? {" "}
+    <Link href="/register">
+        Đăng ký ngay
+    </Link>
+</div>
+
                 </div>
             </div>
         </div>

@@ -16,6 +16,13 @@ interface LoginCredentials {
     password: string;
 }
 
+interface RegisterCredentials
+{
+    username: string;
+    enail: string;
+    password: string;   
+}
+
 interface AuthContextType {
     user: AuthUser | null;
     loading: boolean;
@@ -57,6 +64,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
     };
+
+    // const register = async (credentials: RegisterCredentials) => 
+    // {
+    //     try
+    //     {
+    //         const reponse = await fetchData <{success : boolean; data: }>
+    //     }
+    //     catch (error)
+    //     {
+    //         throw error;
+    //     }
+    // }
 
     return (
         <AuthContext.Provider value={{ user, loading, error, login, logout }}>

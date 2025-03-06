@@ -1,16 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Row, Col, Container } from 'react-bootstrap';
+import { Grid, Container, Alert, Snackbar } from '@mui/material';
 import Calendar from '../components/Calendar';
 import ReminderForm from '../components/ReminderForm';
 import type { Reminder } from '@/types/reminder';
 import type { Moment } from 'moment';
-import { message } from 'antd';
-import styles from './page.module.css';
 
 export default function ReminderPage() {
     const [reminders, setReminders] = useState<Reminder[]>([]);
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        message: '',
+        severity: 'success' as 'success' | 'info' | 'warning' | 'error'
+    });
 
     const handleAddReminder = (newReminder: Omit<Reminder, 'id'>) => {
         const reminder: Reminder = {
@@ -18,7 +21,11 @@ export default function ReminderPage() {
             id: Date.now().toString(),
         };
         setReminders(prev => [...prev, reminder]);
-        message.success('Đã tạo reminder thành công!');
+        setSnackbar({
+            open: true,
+            message: 'Đã tạo reminder thành công!',
+            severity: 'success'
+        });
     };
 
     const handleDayClick = (date: Moment) => {
@@ -30,27 +37,46 @@ export default function ReminderPage() {
             const reminderList = dayReminders
                 .map(r => `${r.time} - ${r.title}`)
                 .join('\n');
-            message.info(`Reminders cho ngày ${date.format('DD/MM/YYYY')}:\n${reminderList}`);
+            setSnackbar({
+                open: true,
+                message: `Reminders cho ngày ${date.format('DD/MM/YYYY')}:\n${reminderList}`,
+                severity: 'info'
+            });
         }
     };
 
+    const handleCloseSnackbar = () => {
+        setSnackbar(prev => ({ ...prev, open: false }));
+    };
+
     return (
-        <Container fluid className={styles.container}>
-            <Row>
-                <Col md={8}>
-                    <div className={styles.calendar}>
-                        <Calendar
-                            reminders={reminders}
-                            onDayClick={handleDayClick}
-                        />
-                    </div>
-                </Col>
-                <Col md={4}>
-                    <div className={styles.formWrapper}>
-                        <ReminderForm onSubmit={handleAddReminder} />
-                    </div>
-                </Col>
-            </Row>
+        <Container maxWidth="xl" sx={{ py: 3 }}>
+            <Grid container spacing={3}>
+                <Grid item xs={12} md={8}>
+                    <Calendar
+                        reminders={reminders}
+                        onDayClick={handleDayClick}
+                    />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                    <ReminderForm onSubmit={handleAddReminder} />
+                </Grid>
+            </Grid>
+
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert
+                    onClose={handleCloseSnackbar}
+                    severity={snackbar.severity}
+                    sx={{ whiteSpace: 'pre-line' }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 }

@@ -4,15 +4,28 @@ import React, { useState } from "react";
 import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import Link from 'next/link';
 import "./page.css";
+import { register } from "node:module";
+import { useFetch } from "@/hooks/useFetch";
+import { AuthUser } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 const SignupPage = () => {
+    const { fetchData, loading, error: fetchError } = useFetch();
+    const router = useRouter();
+
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [formData, setFormData] = useState({
         username: "",
         email: "",
         password: "",
-        confirmPassword: ""
+        confirmPassword: "",
+        fullName: "",
+        phoneNumber: "0987123456",
+        address: "",
+        role: "Member",
+        isExternal: false,
+        externalProvider: "",
     });
     const [error, setError] = useState("");
 
@@ -26,8 +39,22 @@ const SignupPage = () => {
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
+        const API_URL = "https://api-mnyt.purintech.id.vn/api/Authentication";
         e.preventDefault();
+        console.log("data to login", formData);
         // Xử lý đăng ký
+        await fetchData<{ success: boolean; data: AuthUser }>(`${API_URL}/register`,
+            {
+                method: "POST",
+                body: JSON.stringify(formData)
+            }).then(response => {
+                if (response.success) {
+                    console.log("Đăng ký thành công");
+                } else {
+                    console.log("Đăng ký thất bại");
+                }
+                router.push("/login");
+            });
     };
 
     return (
@@ -127,7 +154,7 @@ const SignupPage = () => {
 
                     <p className="login-prompt">
                         Đã có tài khoản?{" "}
-                        <Link href="/auth/login" className="login-link">
+                        <Link href="/login" className="login-link">
                             Đăng nhập ngay
                         </Link>
                     </p>

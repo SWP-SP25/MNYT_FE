@@ -18,7 +18,7 @@ const AppNavBar = () => {
     const [search, setSearch] = useState("");
     const [showNotifications, setShowNotifications] = useState(false);
     const notificationTarget = useRef(null);
-    const { user, logout } = useAuth();
+    const { user, loading, logout } = useAuth();
 
     const handleSearch = (e: { preventDefault: () => void; }) => {
         e.preventDefault();
@@ -106,10 +106,14 @@ const AppNavBar = () => {
                         </Overlay>
 
                         <div className="flex items-center gap-4">
-                            {user ? (
+                            {loading ? (
+                                <span className="text-sm text-gray-600">Đang tải...</span>
+                            ) : user ? (
                                 <div className="flex items-center gap-3">
                                     <span className="text-sm text-gray-600">
-                                        Xin chào, <span className="font-medium text-gray-800"></span>
+                                        Xin chào, <span className="font-medium text-gray-800">
+                                            {user.fullName || user.userName || 'Người dùng'}
+                                        </span>
                                     </span>
                                     <button
                                         onClick={() => logout()}

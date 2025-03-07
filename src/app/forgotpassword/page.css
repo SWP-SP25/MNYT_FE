@@ -41,11 +41,9 @@ body, html {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0.1),
-        rgba(255, 255, 255, 0.2)
-    );
+    background: linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.2));
 }
 
 /* Phần form */
@@ -267,12 +265,26 @@ body, html {
     }
 }
 
+/* Success message */
+.forgot-success {
+    background-color: #f0fff4;
+    color: #2f855a;
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    border: 1px solid #9ae6b4;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .forgot-form {
         padding: 40px;
     }
-    
     .forgot-title {
         font-size: 28px;
     }

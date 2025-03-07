@@ -7,6 +7,8 @@ import AppNavBar from "./components/navbar/app.navbar";
 import AppFooter from "./components/footer/app.footer";
 import { Container } from 'react-bootstrap';
 import { AuthProvider } from '@/hooks/useAuth';
+
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -34,9 +36,9 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AuthProvider>
           {!excludedPaths.includes(pathname) && <AppNavBar />}
-          <Container>
-            {children}
-          </Container>
+
+          {children}
+
           {!excludedPaths.includes(pathname) && <AppFooter />}
         </AuthProvider>
       </body>

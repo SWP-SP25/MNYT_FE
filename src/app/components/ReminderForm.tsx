@@ -1,77 +1,86 @@
 import React from 'react';
-import { Form, Input, DatePicker, TimePicker, Button } from 'antd';
-import { Card } from 'react-bootstrap';
+import { TextField, Button, Card, CardHeader, CardContent } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import type { Reminder } from '@/types/reminder';
-import moment from 'moment';
 
 interface ReminderFormProps {
     onSubmit: (reminder: Omit<Reminder, 'id'>) => void;
 }
 
 const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit }) => {
-    const [form] = Form.useForm();
+    const [formData, setFormData] = React.useState({
+        title: '',
+        date: null,
+        time: null,
+        description: ''
+    });
 
-    const handleSubmit = (values: any) => {
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
         const reminder = {
-            title: values.title,
-            date: values.date.format('YYYY-MM-DD'),
-            time: values.time.format('HH:mm'),
-            description: values.description || '',
+            title: formData.title,
+            date: formData.date?.format('YYYY-MM-DD'),
+            time: formData.time?.format('HH:mm'),
+            description: formData.description || '',
         };
 
         onSubmit(reminder);
-        form.resetFields();
+        setFormData({ title: '', date: null, time: null, description: '' });
     };
 
     return (
         <Card>
-            <Card.Header>
-                <h4>Tạo Reminder</h4>
-            </Card.Header>
-            <Card.Body>
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={handleSubmit}
-                >
-                    <Form.Item
-                        name="title"
+            <CardHeader title="Tạo Reminder" />
+            <CardContent>
+                <form onSubmit={handleSubmit}>
+                    <TextField
+                        fullWidth
                         label="Tiêu đề"
-                        rules={[{ required: true, message: 'Vui lòng nhập tiêu đề!' }]}
-                    >
-                        <Input />
-                    </Form.Item>
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        required
+                        margin="normal"
+                    />
 
-                    <Form.Item
-                        name="date"
-                        label="Ngày"
-                        rules={[{ required: true, message: 'Vui lòng chọn ngày!' }]}
-                    >
-                        <DatePicker style={{ width: '100%' }} />
-                    </Form.Item>
+                    <LocalizationProvider dateAdapter={AdapterMoment}>
+                        <DatePicker
+                            label="Ngày"
+                            value={formData.date}
+                            onChange={(newValue) => setFormData({ ...formData, date: newValue })}
+                            sx={{ width: '100%', mt: 2, mb: 2 }}
+                        />
 
-                    <Form.Item
-                        name="time"
-                        label="Thời gian"
-                        rules={[{ required: true, message: 'Vui lòng chọn thời gian!' }]}
-                    >
-                        <TimePicker style={{ width: '100%' }} format="HH:mm" />
-                    </Form.Item>
+                        <TimePicker
+                            label="Thời gian"
+                            value={formData.time}
+                            onChange={(newValue) => setFormData({ ...formData, time: newValue })}
+                            sx={{ width: '100%', mb: 2 }}
+                        />
+                    </LocalizationProvider>
 
-                    <Form.Item
-                        name="description"
+                    <TextField
+                        fullWidth
                         label="Mô tả"
-                    >
-                        <Input.TextArea rows={4} />
-                    </Form.Item>
+                        multiline
+                        rows={4}
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        margin="normal"
+                    />
 
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
-                            Lưu Reminder
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </Card.Body>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        fullWidth
+                        sx={{ mt: 2 }}
+                    >
+                        Lưu Reminder
+                    </Button>
+                </form>
+            </CardContent>
         </Card>
     );
 };

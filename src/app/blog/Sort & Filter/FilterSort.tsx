@@ -26,8 +26,8 @@ const sortOptions = [
 
 const FilterSort: FC<FilterSortProps> = ({
     activeCategory = 'all',
-    onCategoryChange = () => {},
-    onSortChange = () => {}
+    onCategoryChange = () => { },
+    onSortChange = () => { }
 }) => {
     const [localActiveCategory, setLocalActiveCategory] = useState(activeCategory);
 
@@ -43,9 +43,8 @@ const FilterSort: FC<FilterSortProps> = ({
                 {categories.map((category) => (
                     <button
                         key={category.id}
-                        className={`${styles.categoryButton} ${
-                            localActiveCategory === category.id ? styles.active : ''
-                        }`}
+                        className={`${styles.categoryButton} ${localActiveCategory === category.id ? styles.active : ''
+                            }`}
                         onClick={() => handleCategoryChange(category.id)}
                     >
                         {category.label}

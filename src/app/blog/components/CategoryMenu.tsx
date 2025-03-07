@@ -1,12 +1,28 @@
-import styles from '@/app/blog/styles/blog.module.css';
-const categories = ["Kinh nghiệm", "Tâm sự", "Sức khỏe mẹ & bé", "Thời trang", "Dinh dưỡng"];
+'use client';
+import styles from '../styles/blog.module.css';  // Sửa lại đường dẫn import
 
 const CategoryMenu = () => {
+    const categories = [
+        { id: 'all', name: 'Tất cả' },
+        { id: 'experience', name: 'Kinh nghiệm' },
+        { id: 'sharing', name: 'Tâm sự' },
+        { id: 'health', name: 'Sức khỏe mẹ & bé' },
+        { id: 'fashion', name: 'Thời trang' },
+        { id: 'nutrition', name: 'Dinh dưỡng' }
+    ];
+
     return (
-        <div className={styles.categoryMenu}>
-            {categories.map((category, index) => (
-                <button key={index} className={styles.categoryButton}>{category}</button>
-            ))}
+        <div className={styles.filterSortContainer}>
+            <div className={styles.categories}>
+                {categories.map((category) => (
+                    <button 
+                        key={category.id} 
+                        className={`${styles.categoryButton} ${category.id === 'all' ? styles.active : ''}`}
+                    >
+                        {category.name}
+                    </button>
+                ))}
+            </div>
         </div>
     );
 }

@@ -22,7 +22,7 @@ const BlogPage = () => {
                     }}
                 />
                 <BlogList />
-                <Pagination
+                <Pagination 
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={(page) => {

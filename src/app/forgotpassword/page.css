@@ -5,8 +5,7 @@
     box-sizing: border-box;
 }
 
-body,
-html {
+body, html {
     margin: 0;
     padding: 0;
     width: 100%;
@@ -260,7 +259,6 @@ html {
         opacity: 0;
         transform: translateY(-10px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -287,7 +285,6 @@ html {
     .forgot-form {
         padding: 40px;
     }
-
     .forgot-title {
         font-size: 28px;
     }

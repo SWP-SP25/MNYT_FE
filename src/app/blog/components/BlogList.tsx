@@ -1,4 +1,4 @@
-import styles from '@/app/blog/styles/blog.module.css';
+import styles from './components.module.css';
 import BlogCard from './BlogCard';
 
 const dummyPosts = [

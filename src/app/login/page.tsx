@@ -54,12 +54,20 @@ const LoginPage = () => {
 
     const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        
         try {
             await login({
                 emailOrUsername: loginData.username,
                 password: loginData.password
             });
-            router.push('/');
+
+            // Lưu remember me nếu được chọn
+            if (formData.rememberMe) {
+                localStorage.setItem('rememberMe', 'true');
+            }
+
+            // Chuyển hướng sau khi đăng nhập thành công
+            router.push('/dashboard');
         } catch (err) {
             console.error('Lỗi đăng nhập:', err);
         }

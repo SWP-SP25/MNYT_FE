@@ -12,9 +12,9 @@ type Member = {
 const Sidebar = () => {
     // Tách data ra để dễ quản lý
     const topMembers: Member[] = [
-        { name: "Mai Anh", posts: 150, avatar: "/avatars/default.png" },
-        { name: "Ngọc Linh", posts: 120, avatar: "/avatars/default.png" },
-        { name: "Hương Giang", posts: 98, avatar: "/avatars/default.png" },
+        { name: "Mai Anh", posts: 150, avatar: "/images/mai-anh.jpg" },
+        { name: "Ngọc Linh", posts: 120, avatar: "/images/huong-giang.jpg" },
+        { name: "Hương Giang", posts: 98, avatar: "/images/ngoc-linh.jpg" },
     ];
 
     const trendingTags = [
@@ -77,7 +77,7 @@ const Sidebar = () => {
                             href={`/tag/${encodeURIComponent(tag)}`} 
                             className={styles.trendingTag}
                         >
-                            #{tag}
+                            {tag}
                         </Link>
                     ))}
                 </div>

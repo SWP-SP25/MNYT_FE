@@ -53,6 +53,8 @@ const Pagination: FC<PaginationProps> = ({
     const handlePageChange = (page: number) => {
         if (page >= 1 && page <= totalPages && page !== currentPage) {
             onPageChange(page);
+            // Scroll to top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -64,28 +66,29 @@ const Pagination: FC<PaginationProps> = ({
                 disabled={currentPage === 1}
                 aria-label="Trang trước"
             >
-                <IoChevronBack />
+                <IoChevronBack size={16} />
             </button>
 
-            {getPageNumbers().map((pageNumber, index) => (
-                pageNumber === '...' ? (
-                    <span key={`dots-${index}`} className={styles.paginationDots}>
-                        {pageNumber}
-                    </span>
-                ) : (
-                    <button
-                        key={`page-${pageNumber}`}
-                        className={`${styles.paginationButton} ${
-                            currentPage === pageNumber ? styles.active : ''
-                        }`}
-                        onClick={() => handlePageChange(Number(pageNumber))}
-                        aria-current={currentPage === pageNumber ? 'page' : undefined}
-                        aria-label={`Trang ${pageNumber}`}
-                    >
-                        {pageNumber}
-                    </button>
-                )
-            ))}
+            <div className={styles.paginationNumbers}>
+                {getPageNumbers().map((pageNumber, index) => (
+                    pageNumber === '...' ? (
+                        <span key={`dots-${index}`} className={styles.paginationDots}>
+                            {pageNumber}
+                        </span>
+                    ) : (
+                        <button
+                            key={`page-${pageNumber}`}
+                            className={`${styles.paginationButton} ${
+                                currentPage === pageNumber ? styles.active : ''
+                            }`}
+                            onClick={() => handlePageChange(Number(pageNumber))}
+                            aria-current={currentPage === pageNumber ? 'page' : undefined}
+                        >
+                            {pageNumber}
+                        </button>
+                    )
+                ))}
+            </div>
 
             <button
                 className={`${styles.paginationButton} ${styles.next}`}
@@ -93,7 +96,7 @@ const Pagination: FC<PaginationProps> = ({
                 disabled={currentPage === totalPages}
                 aria-label="Trang sau"
             >
-                <IoChevronForward />
+                <IoChevronForward size={16} />
             </button>
         </nav>
     );

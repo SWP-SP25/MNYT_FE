@@ -55,3 +55,69 @@
         width: 100%;
     }
 }
+
+/* Trending Topics */
+.trendingTopics {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.trendingTopics h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 20px;
+}
+
+.tagCloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.trendingTag {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px 8px 24px; /* Thêm padding bên trái cho dấu # */
+    background: #f3f4f6;
+    border-radius: 20px;
+    color: #279357;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.trendingTag::before {
+    content: "#";
+    position: absolute;
+    left: 12px;
+    color: inherit;
+    opacity: 0.7;
+}
+
+.trendingTag:hover {
+    background: #279357;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(39, 147, 87, 0.15);
+}
+
+@media (max-width: 768px) {
+    .tagCloud {
+        gap: 8px;
+    }
+    
+    .trendingTag {
+        font-size: 13px;
+        padding: 6px 14px 6px 20px;
+    }
+    
+    .trendingTag::before {
+        left: 10px;
+    }
+}

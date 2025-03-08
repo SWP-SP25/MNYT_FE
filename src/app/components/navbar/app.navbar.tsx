@@ -126,7 +126,7 @@ const AppNavBar = () => {
                                         </Nav.Link>
                                     </Link>
                                     <span className="divider">|</span>
-                                    <Link href="/register" passHref legacyBehavior>
+                                    <Link href="/login?mode=register" passHref legacyBehavior>
                                         <Nav.Link className="auth-link">
                                             Đăng Ký
                                         </Nav.Link>

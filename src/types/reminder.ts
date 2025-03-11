@@ -4,4 +4,15 @@ export interface Reminder {
     date: string;
     time: string;
     description: string;
+    start: string;
+    status: 'skip' | 'done' | 'pending';
+    tag: string;
+    isDefault?: boolean;
+    color?: string;
+}
+
+export interface ApiResponse {
+    success: boolean;
+    data: Reminder[];
+    message?: string;
 } 

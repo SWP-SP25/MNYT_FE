@@ -1,10 +1,7 @@
 'use client';
 import { useAuth } from "@/hooks/useAuth";
-import styles from "./authHomepage.module.css";
-import AppSlider from "../../components/slider/app.slider";
-import Link from "next/link";
-import Image from "next/image";
-import { FaCalendarAlt, FaBabyCarriage, FaBookMedical, FaUserMd } from 'react-icons/fa';
+import styles from "./auth-homepage.module.css";
+import AppSlider from "../../components/slider/app-slider";
 
 const AuthenticatedHomePage = () => {
     const { user } = useAuth();
@@ -17,7 +14,7 @@ const AuthenticatedHomePage = () => {
         <div className={styles.page}>
             <main className={styles.main}>
                 <AppSlider />
-                
+
                 {/* Hero Section */}
                 <section className={styles.hero}>
                     <div className={styles.heroContent}>

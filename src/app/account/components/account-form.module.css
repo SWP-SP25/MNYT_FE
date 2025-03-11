@@ -1,0 +1,17 @@
+/* src/components/AccountForm.module.css */
+.formLabel {
+    margin: 10px 0 5px;
+}
+
+.formInput {
+    margin-bottom: 15px;
+}
+
+.saveButton {
+    background: #007bff;
+    color: white;
+}
+
+.saveButton:hover {
+    background: #0056b3;
+}

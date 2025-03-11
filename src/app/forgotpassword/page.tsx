@@ -3,11 +3,9 @@
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import "./page.css";
 
 const ForgotPasswordPage = () => {
-    const router = useRouter();
     const [step, setStep] = useState(1);
     const [email, setEmail] = useState("");
     const [otp, setOtp] = useState("");
@@ -17,104 +15,32 @@ const ForgotPasswordPage = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
 
     const handleEmailSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        setError("");
-        setSuccessMessage("");
-
         try {
-            const response = await fetch('/api/auth/forgot-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Có lỗi xảy ra');
-            }
-
-            setSuccessMessage(data.message);
+            await new Promise(resolve => setTimeout(resolve, 1000));
             setStep(2);
-        } catch (error: any) {
-            setError(error.message);
+        } catch (error) {
+            setError("Có lỗi xảy ra khi gửi email");
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleOtpSubmit = async (e: React.FormEvent) => {
+    const handleOtpSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
-        setError("");
-        setSuccessMessage("");
-
-        try {
-            const response = await fetch('/api/auth/forgot-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, otp }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Có lỗi xảy ra');
-            }
-
-            setSuccessMessage(data.message);
-            setStep(3);
-        } catch (error: any) {
-            setError(error.message);
-        } finally {
-            setIsLoading(false);
-        }
+        setStep(3);
     };
 
-    const handlePasswordSubmit = async (e: React.FormEvent) => {
+    const handlePasswordSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
-        setError("");
-        setSuccessMessage("");
-
         if (newPassword !== confirmPassword) {
             setError("Mật khẩu không khớp!");
-            setIsLoading(false);
             return;
         }
-
-        try {
-            const response = await fetch('/api/auth/forgot-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, otp, newPassword }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Có lỗi xảy ra');
-            }
-
-            setSuccessMessage(data.message);
-            setTimeout(() => {
-                router.push('/login');
-            }, 2000);
-        } catch (error: any) {
-            setError(error.message);
-        } finally {
-            setIsLoading(false);
-        }
+        // Xử lý đổi mật khẩu
     };
 
     return (
@@ -130,7 +56,6 @@ const ForgotPasswordPage = () => {
                     </p>
 
                     {error && <div className="forgot-error">{error}</div>}
-                    {successMessage && <div className="forgot-success">{successMessage}</div>}
 
                     {step === 1 && (
                         <form onSubmit={handleEmailSubmit}>
@@ -174,17 +99,12 @@ const ForgotPasswordPage = () => {
                                     required
                                     className="otp-input"
                                     maxLength={6}
-                                    disabled={isLoading}
                                 />
                                 <p className="form-help">Mã xác nhận đã được gửi đến email của bạn</p>
                             </div>
 
-                            <button
-                                type="submit"
-                                className="forgot-button"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? "Đang xác nhận..." : "Xác nhận mã"}
+                            <button type="submit" className="forgot-button">
+                                Xác nhận mã
                             </button>
                         </form>
                     )}
@@ -203,7 +123,6 @@ const ForgotPasswordPage = () => {
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
                                         required
-                                        disabled={isLoading}
                                     />
                                     <button
                                         type="button"
@@ -215,7 +134,7 @@ const ForgotPasswordPage = () => {
                                 </div>
                             </div>
 
-                            <div className="form-group">
+                            <div className="form-group password-group">
                                 <label htmlFor="confirmPassword">
                                     Xác nhận mật khẩu
                                 </label>
@@ -227,7 +146,6 @@ const ForgotPasswordPage = () => {
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         required
-                                        disabled={isLoading}
                                     />
                                     <button
                                         type="button"
@@ -239,12 +157,8 @@ const ForgotPasswordPage = () => {
                                 </div>
                             </div>
 
-                            <button
-                                type="submit"
-                                className="forgot-button"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? "Đang xử lý..." : "Đổi mật khẩu"}
+                            <button type="submit" className="forgot-button">
+                                Đổi mật khẩu
                             </button>
                         </form>
                     )}
@@ -259,7 +173,6 @@ const ForgotPasswordPage = () => {
                                 type="button"
                                 className="back-button"
                                 onClick={() => setStep(step - 1)}
-                                disabled={isLoading}
                             >
                                 Quay lại bước trước
                             </button>

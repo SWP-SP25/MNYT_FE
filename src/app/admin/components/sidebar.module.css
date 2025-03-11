@@ -1,0 +1,38 @@
+.sidebar {
+    width: 250px;
+    background: white;
+    padding: 2rem 1rem;
+    border-right: 1px solid #eee;
+}
+
+.menuGroup {
+    margin-bottom: 2rem;
+}
+
+.menuGroup h3 {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+    padding-left: 1rem;
+}
+
+.menuItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #666;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.menuItem:hover {
+    background: #f5f7fb;
+    color: #333;
+}
+
+.menuItem.active {
+    background: #e3f2fd;
+    color: #1976d2;
+}

@@ -6,20 +6,28 @@ import "./page.css";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import AuthenticatedHomePage from "../homepage/authentication/authHomepage";
+import AuthenticatedHomePage from "../homepage/authentication/auth-homepage";
+import Cookies from "js-cookie";
+import { signIn, useSession } from "next-auth/react";
+import { cleanDigitSectionValue } from "@mui/x-date-pickers/internals/hooks/useField/useField.utils";
+import { clearScreenDown } from "readline";
+
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
-    const { login, loading, error } = useAuth();
+    const { login, loading } = useAuth();
+    const { data: session } = useSession();
 
     const togglePasswordVisibility = () => {
         setShowPassword((prev) => !prev);
     };
+
     const [formData, setFormData] = useState({
         emailOrUsername: '',
         password: '',
         rememberMe: false
     });
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
@@ -27,27 +35,53 @@ const LoginPage = () => {
             [name]: type === 'checkbox' ? checked : value
         }));
     };
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         try {
-            console.log(formData);
             await login({
                 emailOrUsername: formData.emailOrUsername,
                 password: formData.password
             });
 
-            // Lưu remember me nếu được chọn
+            // Lấy thông tin user từ cookie sau khi đăng nhập
+            const userData = Cookies.get('user');
+            if (userData) {
+                const user = JSON.parse(userData);
+                // Nếu là Admin thì chuyển đến trang admin
+                if (user.role === 'Admin') {
+                    router.push('/admin');
+                } else {
+                    router.push('/');
+                }
+            }
+
             if (formData.rememberMe) {
                 localStorage.setItem('rememberMe', 'true');
             }
-
-            // Chuyển hướng sau khi đăng nhập thành công
-            router.push('/');
         } catch (err) {
             console.error('Lỗi đăng nhập:', err);
         }
     };
+
+    const handleGoogleLogin = async () => {
+        try {
+            const result = await signIn('google', {
+                callbackUrl: '/', // URL chuyển hướng sau khi đăng nhập thành công
+                redirect: true,
+            });
+            console.log("Test tsjadkl;jajsld ");
+        } catch (error) {
+            console.error('Google login error:', error);
+        }
+    };
+
+    React.useEffect(() => {
+        if (session) {
+            router.push('/');
+        }
+    }, [session, router]);
 
     return (
         <div className="login-container">
@@ -56,7 +90,7 @@ const LoginPage = () => {
             <div className="login-form">
                 <h1 className="login-title">CHÚC BẠN CÓ MỘT NGÀY TỐT LÀNH</h1>
 
-                <form className="form">
+                <form className="form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label htmlFor="username" className="form-label">
                             Tên tài khoản
@@ -111,13 +145,17 @@ const LoginPage = () => {
                         </Link>
                     </div>
 
-                    <button type="submit" className="login-button" onClick={handleSubmit}>
+                    <button type="submit" className="login-button">
                         {loading ? "Đang đăng nhập..." : "Đăng nhập"}
                     </button>
 
-                    <button type="button" className="google-login">
-                        <FaGoogle className="google-icon" /> Hoặc đăng nhập với tài khoản
-                        Google
+                    <button
+                        type="button"
+                        className="google-login"
+                        onClick={handleGoogleLogin}
+                    >
+                        <FaGoogle className="google-icon" />
+                        Đăng nhập với tài khoản Google
                     </button>
                 </form>
 

@@ -47,8 +47,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ).then(response => {
                 if (response.success) {
                     setUser(response.data);
-                    // Lưu token và user vào cookie
-                    Cookies.set('token', response.data.token, { expires: 7 }); // Hết hạn sau 7 ngày
+                    // Lưu token và user
+                    Cookies.set('token', response.data.token, { expires: 7 });
                     Cookies.set('user', JSON.stringify(response.data), { expires: 7 });
                 }
             });

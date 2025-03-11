@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import styles from "./publicHomepage.module.css";
+import styles from "./public-homepage.module.css";
 import { FaCalendarAlt, FaBabyCarriage, FaBookMedical, FaUserMd } from 'react-icons/fa';
 
 interface HomePageProps {
@@ -17,7 +17,7 @@ const HomePage: React.FC<HomePageProps> = () => {
                         <h1>Chào Mừng Đến Với Mầm Non Yêu Thương</h1>
                         <p>Đồng hành cùng mẹ trong hành trình thai kỳ và chăm sóc em bé</p>
                         <div className={styles.heroButtons}>
-                            <Link href="/auth/signup" className={styles.primaryButton}>
+                            <Link href="/register" className={styles.primaryButton}>
                                 Đăng Ký Ngay
                             </Link>
                             <Link href="/blog" className={styles.secondaryButton}>
@@ -92,7 +92,7 @@ const HomePage: React.FC<HomePageProps> = () => {
                     <div className={styles.ctaContent}>
                         <h2>Bắt Đầu Hành Trình Của Bạn</h2>
                         <p>Đăng ký ngay để nhận được những thông tin hữu ích và theo dõi thai kỳ</p>
-                        <Link href="/auth/signup" className={styles.ctaButton}>
+                        <Link href="/register" className={styles.ctaButton}>
                             Tham Gia Ngay
                         </Link>
                     </div>

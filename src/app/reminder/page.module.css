@@ -1,11 +1,57 @@
 .container {
     padding: 20px;
+    min-height: calc(100vh - 64px);
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+}
+
+.headerActions {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    position: relative;
+    z-index: 1;
 }
 
 .calendar {
     background-color: white;
     border-radius: 8px;
+    padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Tùy chỉnh style cho FullCalendar */
+.calendar :global(.fc) {
+    font-family: inherit;
+}
+
+.calendar :global(.fc-toolbar-title) {
+    font-size: 1.2rem !important;
+    font-weight: 600;
+}
+
+.calendar :global(.fc-button) {
+    background-color: #1976d2 !important;
+    border-color: #1976d2 !important;
+}
+
+.calendar :global(.fc-event) {
+    background-color: #1976d2;
+    border: none;
+    padding: 2px 5px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.calendar :global(.fc-day-today) {
+    background-color: #e3f2fd !important;
+}
+
+.calendar :global(.fc-timegrid-slot) {
+    height: 40px !important;
 }
 
 .formWrapper {
@@ -28,4 +74,109 @@
 
 .hasReminder:hover {
     background-color: #bae7ff;
+}
+
+.eventContent {
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    height: 100%;
+    width: 100%;
+}
+
+.checkedEvent {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.eventTitle {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.eventTime {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+/* Tùy chỉnh thêm cho FullCalendar */
+.calendar :global(.fc-timegrid-event) {
+    min-height: 30px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+}
+
+.calendar :global(.fc-timegrid-event-harness) {
+    margin: 0 !important;
+}
+
+.calendar :global(.fc-timegrid-col-frame) {
+    min-height: 100% !important;
+}
+
+.calendar :global(.fc-timegrid-slot) {
+    height: 30px !important;
+}
+
+.calendar :global(.fc-timegrid-slot-lane) {
+    border-bottom: 1px solid #eee !important;
+}
+
+.calendar :global(.fc-event:hover) {
+    opacity: 0.9;
+}
+
+.calendar :global(.fc-event-main) {
+    padding: 0 !important;
+}
+
+.reminderList {
+    padding: 16px;
+    height: 100%;
+}
+
+.reminderListTitle {
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.reminderItem {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    transition: background-color 0.2s;
+}
+
+.reminderItem:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.noReminders {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.reminderListHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.closeButton {
+    color: #666;
+}
+
+.closeButton:hover {
+    color: #333;
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.statusSelect {
+    min-width: 120px;
 }

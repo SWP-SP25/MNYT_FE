@@ -1,7 +1,7 @@
 'use client';
 import { useAuth } from "@/hooks/useAuth";
-import styles from "./authHomepage.module.css";
-import AppSlider from "../../components/slider/app.slider";
+import styles from "./auth-homepage.module.css";
+import AppSlider from "../../components/slider/app-slider";
 
 const AuthenticatedHomePage = () => {
     const { user } = useAuth();

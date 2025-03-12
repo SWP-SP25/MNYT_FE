@@ -164,11 +164,11 @@ a.secondary {
   }
 }
 
-/* @media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
   .logo {
     filter: invert();
   }
-} */
+}
 
 .loadingContainer {
   display: flex;

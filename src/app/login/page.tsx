@@ -6,17 +6,12 @@ import "./page.css";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import AuthenticatedHomePage from "../homepage/authentication/auth-homepage";
 import Cookies from "js-cookie";
-import { signIn, useSession } from "next-auth/react";
-import { cleanDigitSectionValue } from "@mui/x-date-pickers/internals/hooks/useField/useField.utils";
-import { clearScreenDown } from "readline";
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     const { login, loading } = useAuth();
-    const { data: session } = useSession();
 
     const togglePasswordVisibility = () => {
         setShowPassword((prev) => !prev);
@@ -25,13 +20,14 @@ const LoginPage = () => {
     const [formData, setFormData] = useState({
         emailOrUsername: '',
         password: '',
+        rememberMe: false
     });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: value
+            [name]: type === 'checkbox' ? checked : value
         }));
     };
 
@@ -57,122 +53,91 @@ const LoginPage = () => {
             }
 
             if (formData.rememberMe) {
-                localStorage.setItem('rememberMe', 'true');
+                Cookies.set('rememberMe', 'true');
             }
         } catch (err) {
             console.error('Lỗi đăng nhập:', err);
         }
     };
 
-    const handleGoogleLogin = async () => {
-        try {
-            const result = await signIn('google', {
-                callbackUrl: '/', // URL chuyển hướng sau khi đăng nhập thành công
-                redirect: true,
-            });
-            console.log("Test tsjadkl;jajsld ");
-        } catch (error) {
-            console.error('Google login error:', error);
-        }
-    };
-
-    React.useEffect(() => {
-        if (session) {
-            router.push('/');
-        }
-    }, [session, router]);
-
     return (
         <div className="login-container">
             <div className="login-image"></div>
-            <div className="login-form">
-                <div className="login-content">
-                    <h1 className="login-title">Đăng nhập</h1>
-                    <p className="login-subtitle">Chào mừng bạn đã quay trở lại!</p>
 
-                    <form className="form" onSubmit={handleSubmit}>
-                        <div className="form-group">
-                            <label htmlFor="username" className="form-label">
-                                Tên tài khoản
-                            </label>
+            <div className="login-form">
+                <h1 className="login-title">CHÚC BẠN CÓ MỘT NGÀY TỐT LÀNH</h1>
+
+                <form className="form" onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="username" className="form-label">
+                            Tên tài khoản
+                        </label>
+                        <input
+                            id="username"
+                            name="emailOrUsername"
+                            type="text"
+                            placeholder="Email hoặc số điện thoại"
+                            className="form-input"
+                            value={formData.emailOrUsername}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="password" className="form-label">
+                            Mật khẩu
+                        </label>
+                        <div className="form-password">
                             <input
-                                id="username"
-                                name="emailOrUsername"
-                                type="text"
-                                placeholder="Email hoặc số điện thoại"
+                                id="password"
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Nhập mật khẩu của bạn"
                                 className="form-input"
-                                value={formData.emailOrUsername}
+                                value={formData.password}
                                 onChange={handleInputChange}
                             />
-                        </div>
-
-                        <form onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label htmlFor="emailOrUsername">
-                                    Email hoặc số điện thoại
-                                </label>
-                                <input
-                                    id="emailOrUsername"
-                                    name="emailOrUsername"
-                                    type="text"
-                                    placeholder="Nhập email hoặc số điện thoại"
-                                    value={formData.emailOrUsername}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group password-group">
-                                <label htmlFor="password">
-                                    Mật khẩu
-                                </label>
-                                <div className="password-field">
-                                    <input
-                                        id="password"
-                                        name="password"
-                                        type={showPassword ? "text" : "password"}
-                                        placeholder="Nhập mật khẩu của bạn"
-                                        value={formData.password}
-                                        onChange={handleInputChange}
-                                        required
-                                    />
-                                    <button
-                                        type="button"
-                                        className="password-toggle"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                    >
-                                        {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <button type="submit" className="login-button">
-                                {loading ? "Đang đăng nhập..." : "Đăng nhập"}
-                            </button>
-
                             <button
                                 type="button"
-                                className="google-login"
-                                onClick={handleGoogleLogin}
+                                className="password-toggle"
+                                onClick={togglePasswordVisibility}
                             >
-                                <FaGoogle className="google-icon" />
-                                Đăng nhập với tài khoản Google
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </button>
-                        </form>
+                        </div>
+                    </div>
 
-                        <button type="button" className="google-login">
-                            <FaGoogle /> Đăng nhập với Google
-                        </button>
-                    </form> {/* Đóng form đúng chỗ */}
-
-                    <div className="login-switch">
-                        Chưa có tài khoản? {" "}
-                        <Link href="/register">
-                            Đăng ký ngay
+                    <div className="form-options">
+                        <label className="remember-me">
+                            <input
+                                type="checkbox"
+                                name="rememberMe"
+                                className="checkbox"
+                                checked={formData.rememberMe}
+                                onChange={handleInputChange}
+                            /> Ghi nhớ tôi
+                        </label>
+                        <Link href="/forgotpassword" className="forgot-password">
+                            Bạn quên mật khẩu?
                         </Link>
                     </div>
 
-                </div>
+                    <button type="submit" className="login-button">
+                        {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+                    </button>
+
+                    <button type="button" className="google-login">
+                        <FaGoogle className="google-icon" /> Hoặc đăng nhập với tài khoản
+                        Google
+                    </button>
+                </form>
+
+                <p className="signup-prompt">
+                    Bạn chưa có tài khoản?{" "}
+                    <Link href="/register" className="signup-link">
+                        Đăng ký ngay
+                    </Link>
+                </p>
             </div>
         </div>
     );

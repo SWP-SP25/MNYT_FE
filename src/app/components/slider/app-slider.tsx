@@ -5,7 +5,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
-import styles from './app.slider.module.css';
+import styles from './app-slider.module.css';
 import Image from 'next/image';
 import { useState } from 'react';
 
@@ -14,12 +14,12 @@ const AppSlider = () => {
 
     const slidesData = [
         {
-            image: 'https://res.cloudinary.com/duhhxflsl/image/upload/v1741071642/Sample_tets_1_2_kxqgow.jpg',
+            image: 'https://res.cloudinary.com/duhhxflsl/image/upload/v1741328121/z6383025962394_93f109e1a70471dd09258840233c4071_ggo74l.jpg',
             title: 'Slide 1',
             content: 'Nội dung slide 1'
         },
         {
-            image: 'https://res.cloudinary.com/duhhxflsl/image/upload/v1741071641/Sample_tets_1_1_j93hmg.jpg',
+            image: 'https://res.cloudinary.com/duhhxflsl/image/upload/v1741328121/z6383025874967_66b5f79ade62dbd96a5fbb746cec0286_floi7r.jpg',
             title: 'Slide 2',
             content: 'Nội dung slide 2'
         }

@@ -81,35 +81,6 @@ export const MainContent: React.FC = () => {
             });
         }
         return FetusStandard;
-
-
-        // for (let week = 20; week <= 40; week += 0.5) {
-        //     data.push({
-        //         week: week,
-        //         length: 45 + (week - 20) * 2.75,
-        //         category: 'Giới hạn trên (WHO)'
-        //     });
-        //     data.push({
-        //         week: week,
-        //         length: 42 + (week - 20) * 2.2,
-        //         category: 'Giới hạn dưới (WHO)'
-        //     });
-        //     if (week <= 28 && week >= 20) {
-        //         data.push({
-        //             week: week,
-        //             length: 44 + (week - 20) * 2.4,
-        //             category: 'Chiều dài thực tế'
-        //         });
-        //     }
-        //     if (week >= 28) {
-        //         data.push({
-        //             week: week,
-        //             length: 63 + (week - 28) * 0.4,
-        //             category: 'Chiều dài ước tính'
-        //         });
-        //     }
-        // }
-        // return data;
     };
 
     // Data cho biểu đồ đường kính đầu
@@ -281,8 +252,51 @@ export const MainContent: React.FC = () => {
     };
 
     const getStatusColor = () => {
-        // Logic để xác định trạng thái dựa trên dữ liệu
-        return '#52c41a'; // Mặc định là màu xanh
+        // Chỉ xử lý khi đang ở biểu đồ cân nặng
+        if (activeChart === 'weight' && fetalWeightStandard) {
+            // Lấy tuần thai hiện tại (ví dụ tuần 28)
+            const currentWeek = 28; // Bạn có thể thay đổi giá trị này hoặc lấy từ dữ liệu người dùng
+            //chỗ này lấy từ api người dùng
+            // Tìm dữ liệu của tuần thai hiện tại
+            const currentWeekData = fetalWeightStandard.find(
+                standard => standard.period === currentWeek
+            );
+
+            // Giả sử có một giá trị cân nặng hiện tại (có thể lấy từ form cập nhật)
+            const currentWeight = 1499; // Đơn vị: gram
+            //chỗ này lấy từ api người dùng
+            if (currentWeekData) {
+                const { minimum, maximum } = currentWeekData;
+
+                // Kiểm tra trạng thái
+                if (currentWeight < minimum) {
+                    return {
+                        color: '#ff4d4f', // Màu đỏ - cảnh báo
+                        status: 'Em bé có cân nặng thấp hơn bình thường',
+                        detail: `Cân nặng hiện tại (${currentWeight}g) thấp hơn mức tối thiểu (${minimum}g) cho tuần ${currentWeek}`
+                    };
+                } else if (currentWeight > maximum) {
+                    return {
+                        color: '#faad14', // Màu vàng - cảnh báo nhẹ
+                        status: 'Em bé có cân nặng cao hơn bình thường',
+                        detail: `Cân nặng hiện tại (${currentWeight}g) cao hơn mức tối đa (${maximum}g) cho tuần ${currentWeek}`
+                    };
+                } else {
+                    return {
+                        color: '#52c41a', // Màu xanh - bình thường
+                        status: 'Em bé đang phát triển bình thường',
+                        detail: `Cân nặng hiện tại (${currentWeight}g) nằm trong khoảng cho phép (${minimum}g - ${maximum}g)`
+                    };
+                }
+            }
+        }
+
+        // Mặc định trả về trạng thái bình thường
+        return {
+            color: '#52c41a',
+            status: 'Em bé đang phát triển bình thường',
+            detail: 'Các chỉ số nằm trong khoảng bình thường'
+        };
     };
 
     return (
@@ -344,13 +358,14 @@ export const MainContent: React.FC = () => {
                     <motion.div variants={fadeInUp}>
                         <Card
                             style={{
-                                backgroundColor: getStatusColor(),
+                                backgroundColor: getStatusColor().color,
                                 height: '100%',
                                 color: 'white'
                             }}
                         >
                             <h3>Trạng Thái Phát Triển</h3>
-                            <p>Em Bé Của Bạn Đang Phát Triển Bình Thường</p>
+                            <p>{getStatusColor().status}</p>
+                            <p style={{ fontSize: '14px' }}>{getStatusColor().detail}</p>
                             <a href="#" style={{ color: 'white' }}>Xem Chi Tiết →</a>
                         </Card>
                     </motion.div>

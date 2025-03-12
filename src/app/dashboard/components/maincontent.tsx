@@ -4,15 +4,19 @@ import { Card, Row, Col, Button, Space, Radio, Modal } from 'antd';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { useRouter } from 'next/navigation';
-import { UpdateForm } from './form.update';
+import { UpdateForm } from './form-update';
 import { motion } from 'framer-motion';
-
+import useAxios from '@/hooks/useFetchAxios';
+import { FetusStandard } from '@/types/fetusStandard';
+//Tùy chỉnh các hiệu ứng chuyển động cho các phần tử trong giao diện bằng cách sử dụng thư viện framer-motion
+//Định nghĩa hiệu ứng "Fade In Up" cho các phần tử
 const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.5 }
 };
-
+//Định nghĩa hiệu ứng "Stagger Container" cho các phần tử
+//Stagger Container: Hiệu ứng cho phép chúng ta chuyển động từng phần tử trong một nhóm phần tử
 const staggerContainer = {
     animate: {
         transition: {
@@ -21,41 +25,91 @@ const staggerContainer = {
     }
 };
 
+//Phần này để tạo giao diện cho trang Dashboard
 export const MainContent: React.FC = () => {
     const router = useRouter();
     const [activeChart, setActiveChart] = useState('length');
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const { response: fetalLengthStandard, error: fetalLengthError, loading: fetalLengthLoading } = useAxios<FetusStandard[]>({
+        url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/length/singleton',
+        method: 'get'
 
+    });
+    const { response: fetalHeadStandard, error: fetalHeadError, loading: fetalHeadLoading } = useAxios<FetusStandard[]>({
+        url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/head/singleton',
+        method: 'get'
+
+    });
+    const { response: fetalWeightStandard, error: fetalWeightError, loading: fetalWeightLoading } = useAxios<FetusStandard[]>({
+        url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/weight/singleton',
+        method: 'get'
+
+    });
+    console.log("list", fetalLengthStandard);
     // Data cho biểu đồ chiều dài
     const generateLengthData = () => {
-        const data = [];
-        for (let week = 20; week <= 40; week += 0.5) {
-            data.push({
-                week: week,
-                length: 45 + (week - 20) * 2.75,
-                category: 'Giới hạn trên (WHO)'
-            });
-            data.push({
-                week: week,
-                length: 42 + (week - 20) * 2.2,
-                category: 'Giới hạn dưới (WHO)'
-            });
-            if (week <= 28 && week >= 20) {
-                data.push({
-                    week: week,
-                    length: 44 + (week - 20) * 2.4,
-                    category: 'Chiều dài thực tế'
+        const FetusStandard: any[] = [];
+        if (fetalLengthStandard) {
+            fetalLengthStandard.forEach(standard => {
+                // console.log("sau for each", FetusStandard);
+                // console.log("kiểm tra từng đối tượng standard", standard);
+                FetusStandard.push({
+                    week: standard.period,
+                    length: standard.maximum,
+                    category: 'Giới hạn trên (WHO)'
                 });
-            }
-            if (week >= 28) {
-                data.push({
-                    week: week,
-                    length: 63 + (week - 28) * 0.4,
-                    category: 'Chiều dài ước tính'
+                FetusStandard.push({
+                    week: standard.period,
+                    length: standard.minimum,
+                    category: 'Giới hạn dưới (WHO)'
                 });
-            }
+                if (standard.period <= 28 && standard.period >= 20) {
+                    FetusStandard.push({
+                        week: standard.period,
+                        length: (standard.maximum + standard.minimum) / 2,
+                        category: 'Chiều dài thực tế'
+                    });
+                }
+                if (standard.period >= 28) {
+                    FetusStandard.push({
+                        week: standard.period,
+                        value: (standard.maximum + standard.minimum) / 2,
+                        category: 'Chiều dài ước tính'
+                    });
+                }
+
+            });
         }
-        return data;
+        return FetusStandard;
+
+
+        // for (let week = 20; week <= 40; week += 0.5) {
+        //     data.push({
+        //         week: week,
+        //         length: 45 + (week - 20) * 2.75,
+        //         category: 'Giới hạn trên (WHO)'
+        //     });
+        //     data.push({
+        //         week: week,
+        //         length: 42 + (week - 20) * 2.2,
+        //         category: 'Giới hạn dưới (WHO)'
+        //     });
+        //     if (week <= 28 && week >= 20) {
+        //         data.push({
+        //             week: week,
+        //             length: 44 + (week - 20) * 2.4,
+        //             category: 'Chiều dài thực tế'
+        //         });
+        //     }
+        //     if (week >= 28) {
+        //         data.push({
+        //             week: week,
+        //             length: 63 + (week - 28) * 0.4,
+        //             category: 'Chiều dài ước tính'
+        //         });
+        //     }
+        // }
+        // return data;
     };
 
     // Data cho biểu đồ đường kính đầu
@@ -92,34 +146,37 @@ export const MainContent: React.FC = () => {
 
     // Data cho biểu đồ cân nặng
     const generateWeightData = () => {
-        const data = [];
-        for (let week = 20; week <= 40; week += 0.5) {
-            data.push({
-                week: week,
-                weight: 400 + (week - 20) * 150,
-                category: 'Giới hạn trên (WHO)'
-            });
-            data.push({
-                week: week,
-                weight: 300 + (week - 20) * 100,
-                category: 'Giới hạn dưới (WHO)'
-            });
-            if (week <= 28 && week >= 20) {
-                data.push({
-                    week: week,
-                    weight: 350 + (week - 20) * 120,
-                    category: 'Cân nặng thực tế'
+        const FetusStandard: any[] = [];
+        if (fetalWeightStandard) {
+            fetalWeightStandard.forEach(standard => {
+                FetusStandard.push({
+                    week: standard.period,
+                    weight: standard.maximum,
+                    category: 'Giới hạn trên (WHO)'
                 });
-            }
-            if (week >= 28) {
-                data.push({
-                    week: week,
-                    weight: 1310 + (week - 28) * 180,
-                    category: 'Cân nặng ước tính'
+                FetusStandard.push({
+                    week: standard.period,
+                    weight: standard.minimum,
+                    category: 'Giới hạn dưới (WHO)'
                 });
-            }
+                if (standard.period <= 28 && standard.period >= 20) {
+                    FetusStandard.push({
+                        week: standard.period,
+                        weight: (standard.maximum + standard.minimum) / 2,
+                        category: 'Cân nặng thực tế'
+                    });
+                }
+                if (standard.period >= 28) {
+                    FetusStandard.push({
+                        week: standard.period,
+                        weight: (standard.maximum + standard.minimum) / 2,
+                        category: 'Cân nặng ước tính'
+                    });
+                }
+
+            });
         }
-        return data;
+        return FetusStandard;
     };
 
     const getChartData = () => {
@@ -134,6 +191,8 @@ export const MainContent: React.FC = () => {
                 return generateLengthData();
         }
     };
+    // console.log("activeChart", activeChart);
+    console.log("Dữ liệu chart trả về", getChartData());
 
     const getChartOptions = () => {
         const data = getChartData();
@@ -143,7 +202,10 @@ export const MainContent: React.FC = () => {
         const lowerLimit = data.filter(d => d.category.includes('Giới hạn dưới')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.value : d.weight]);
         const actual = data.filter(d => d.category.includes('thực tế')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.value : d.weight]);
         const predicted = data.filter(d => d.category.includes('ước tính')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.value : d.weight]);
-
+        console.log("upperLimit", upperLimit);
+        console.log("lowerLimit", lowerLimit);
+        console.log("actual", actual);
+        console.log("predicted", predicted);
         return {
             chart: {
                 type: 'spline',
@@ -166,10 +228,10 @@ export const MainContent: React.FC = () => {
                         activeChart === 'head' ? 'Đường Kính Đầu (mm)' :
                             'Cân Nặng (g)'
                 },
-                min: activeChart === 'length' ? 40 :
+                min: activeChart === 'length' ? 0 :
                     activeChart === 'head' ? 70 :
                         200,
-                max: activeChart === 'length' ? 100 :
+                max: activeChart === 'length' ? 500 :
                     activeChart === 'head' ? 120 :
                         4000
             },

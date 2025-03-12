@@ -2,7 +2,7 @@
 import React from 'react';
 import { Layout, Row, Col } from 'antd';
 import { Sidebar } from '../dashboard/sidebar/app-sidebar';
-import { UpdateForm } from '../dashboard/components/form.update';
+import { UpdateForm } from '../dashboard/components/form-update';
 import { useRouter } from 'next/navigation';
 
 const { Content } = Layout;

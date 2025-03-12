@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Layout, Row, Col } from 'antd';
 import { Sidebar } from '../sidebar/app-sidebar';
 import { MainContent } from './maincontent';
-import { UpdateForm } from './form.update';
+import { UpdateForm } from './form-update';
 
 const { Content } = Layout;
 

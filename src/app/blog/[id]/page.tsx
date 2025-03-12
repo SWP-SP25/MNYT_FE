@@ -81,8 +81,28 @@ const BlogDetail = () => {
             try {
                 setLoading(true);
                 // Fetch post details
-                const postData = await blogService.getPostById(id as string);
-                setPost(postData);
+                // const postData = await blogService.getPostById(id as string);
+                const postData = {
+                    "success": true,
+                    "data": {
+                      "id": 0,
+                      "title": "string",
+                      "description": "string",
+                      "authorId": 0,
+                      "authorName": "string",
+                      "period": 0,
+                      "status": "string",
+                      "publishedDay": "2025-03-08",
+                      "likeCount": 0,
+                      "commentCount": 0,
+                      "bookmarkCount": 0
+                    },
+                    "message": "string",
+                    "errors": [
+                      "string"
+                    ]
+                  }
+                setPost(postData.data);
 
                 // Fetch comments
                 const commentsData = await commentService.getPostComments(id as string);
@@ -192,24 +212,24 @@ const BlogDetail = () => {
         <div className={styles.blogDetailContainer}>
             {/* Header */}
             <div className={styles.blogHeader}>
-                <div className={styles.category} style={{ backgroundColor: post.category.color }}>
-                    {post.category.name}
+                <div className={styles.category} style={{ backgroundColor: /*post.category.color*/ "green"}}>
+                    {/* {post.category.name} */"abc"}
                 </div>
                 <h1 className={styles.title}>{post.title}</h1>
                 
                 <div className={styles.authorInfo}>
-                    <Image
+                    {/* <Image
                         src={post.author.avatar}
                         alt={post.author.name}
                         width={48}
                         height={48}
                         className={styles.authorAvatar}
-                    />
+                    /> */}
                     <div className={styles.authorMeta}>
-                        <span className={styles.authorName}>{post.author.name}</span>
+                        <span className={styles.authorName}>{/*post.author.name*/"abc"}</span>
                         <span className={styles.postDate}>
                             <FaClock />
-                            {formatDistanceToNow(post.createdAt, { locale: vi, addSuffix: true })}
+                            {/* {formatDistanceToNow(post.createdAt, { locale: vi, addSuffix: true })} */}
                         </span>
                     </div>
                 </div>
@@ -247,16 +267,16 @@ const BlogDetail = () => {
             {/* Author Bio Box */}
             <div className={styles.authorBioBox}>
                 <div className={styles.authorBioHeader}>
-                    <Image
+                    {/* <Image
                         src={post.author.avatar}
                         alt={post.author.name}
                         width={80}
                         height={80}
                         className={styles.authorBioAvatar}
-                    />
+                    /> */}
                     <div className={styles.authorBioInfo}>
-                        <h3>{post.author.name}</h3>
-                        <p className={styles.authorBioText}>{post.author.bio}</p>
+                        <h3>{/*post.author.name*/"abc"}</h3>
+                        {/* <p className={styles.authorBioText}>{post.author.bio}</p> */}
                     </div>
                 </div>
                 <div className={styles.authorStats}>
@@ -274,9 +294,9 @@ const BlogDetail = () => {
 
             {/* Tags */}
             <div className={styles.tags}>
-                {post.tags.map((tag, index) => (
+                {/* {post.tags.map((tag, index) => (
                     <span key={index} className={styles.tag}>#{tag}</span>
-                ))}
+                ))} */}
             </div>
 
             {/* Interaction Bar */}
@@ -290,7 +310,7 @@ const BlogDetail = () => {
                 </button>
                 <button className={styles.interactionButton}>
                     <FaRegComment />
-                    <span>{post.comments.length}</span>
+                    <span>{/*post.comments.length*/"abc"}</span>
                 </button>
                 <button className={styles.interactionButton} onClick={handleShare}>
                     <FaShare />
@@ -324,7 +344,7 @@ const BlogDetail = () => {
 
                 {/* Comments List */}
                 <div className={styles.commentsList}>
-                    {comments.map((comment) => (
+                    {/* {comments.map((comment) => (
                         <div key={comment.id} className={styles.commentItem}>
                             <Image
                                 src={comment.user.avatar}
@@ -352,7 +372,7 @@ const BlogDetail = () => {
                                 </div>
                             </div>
                         </div>
-                    ))}
+                    ))} */}
                 </div>
             </div>
 

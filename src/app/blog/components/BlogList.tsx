@@ -21,8 +21,153 @@ export default function BlogList({ category, currentPage, onPageChange }: BlogLi
         const fetchPosts = async () => {
             try {
                 setLoading(true);
-                const response = await blogService.getAllPosts(currentPage, 10, category);
-                
+                // const response = await blogService.getAllPosts(currentPage, 10, category);
+                const response = {
+                    "success": true,
+                    "data": {
+                      "pageIndex": 0,
+                      "totalPages": 0,
+                      "totalCount": 0,
+                      "items": [
+                        {
+                          "id": 0,
+                          "title": "string",
+                          "description": "string",
+                          "authorId": 0,
+                          "authorName": "string",
+                          "period": 0,
+                          "status": "string",
+                          "publishedDay": "2025-03-08",
+                          "likeCount": 0,
+                          "commentCount": 0,
+                          "bookmarkCount": 0
+                        },
+                        {
+                            "id": 0,
+                            "title": "string",
+                            "description": "string",
+                            "authorId": 0,
+                            "authorName": "string",
+                            "period": 0,
+                            "status": "string",
+                            "publishedDay": "2025-03-08",
+                            "likeCount": 0,
+                            "commentCount": 0,
+                            "bookmarkCount": 0
+                          },
+                          {
+                            "id": 0,
+                            "title": "string",
+                            "description": "string",
+                            "authorId": 0,
+                            "authorName": "string",
+                            "period": 0,
+                            "status": "string",
+                            "publishedDay": "2025-03-08",
+                            "likeCount": 0,
+                            "commentCount": 0,
+                            "bookmarkCount": 0
+                          },
+                          {
+                            "id": 0,
+                            "title": "string",
+                            "description": "string",
+                            "authorId": 0,
+                            "authorName": "string",
+                            "period": 0,
+                            "status": "string",
+                            "publishedDay": "2025-03-08",
+                            "likeCount": 0,
+                            "commentCount": 0,
+                            "bookmarkCount": 0
+                          },
+                          {
+                            "id": 0,
+                            "title": "string",
+                            "description": "string",
+                            "authorId": 0,
+                            "authorName": "string",
+                            "period": 0,
+                            "status": "string",
+                            "publishedDay": "2025-03-08",
+                            "likeCount": 0,
+                            "commentCount": 0,
+                            "bookmarkCount": 0
+                          },
+                          {
+                            "id": 0,
+                            "title": "string",
+                            "description": "string",
+                            "authorId": 0,
+                            "authorName": "string",
+                            "period": 0,
+                            "status": "string",
+                            "publishedDay": "2025-03-08",
+                            "likeCount": 0,
+                            "commentCount": 0,
+                            "bookmarkCount": 0
+                          },
+                          {
+                            "id": 0,
+                            "title": "string",
+                            "description": "string",
+                            "authorId": 0,
+                            "authorName": "string",
+                            "period": 0,
+                            "status": "string",
+                            "publishedDay": "2025-03-08",
+                            "likeCount": 0,
+                            "commentCount": 0,
+                            "bookmarkCount": 0
+                          },
+                          {
+                            "id": 0,
+                            "title": "string",
+                            "description": "string",
+                            "authorId": 0,
+                            "authorName": "string",
+                            "period": 0,
+                            "status": "string",
+                            "publishedDay": "2025-03-08",
+                            "likeCount": 0,
+                            "commentCount": 0,
+                            "bookmarkCount": 0
+                          },
+                          {
+                            "id": 0,
+                            "title": "string",
+                            "description": "string",
+                            "authorId": 0,
+                            "authorName": "string",
+                            "period": 0,
+                            "status": "string",
+                            "publishedDay": "2025-03-08",
+                            "likeCount": 0,
+                            "commentCount": 0,
+                            "bookmarkCount": 0
+                          },
+                          {
+                            "id": 0,
+                            "title": "string",
+                            "description": "string",
+                            "authorId": 0,
+                            "authorName": "string",
+                            "period": 0,
+                            "status": "string",
+                            "publishedDay": "2025-03-08",
+                            "likeCount": 0,
+                            "commentCount": 0,
+                            "bookmarkCount": 0
+                          },
+                      ],
+                      "hasPreviousPage": true,
+                      "hasNextPage": true
+                    },
+                    "message": "string",
+                    "errors": [
+                      "string"
+                    ]
+                  }
                 if (response.success && response.data) {
                     setPosts(response.data.items);
                     setTotalPages(response.data.totalPages);
@@ -109,7 +254,7 @@ export default function BlogList({ category, currentPage, onPageChange }: BlogLi
 
                         {/* Author info */}
                         <div className={styles.authorInfo}>
-                            {post.author.avatar && (
+                            {/* {post.author.avatar && (
                                 <Image
                                     src={post.author.avatar}
                                     alt={post.author.name}
@@ -117,9 +262,9 @@ export default function BlogList({ category, currentPage, onPageChange }: BlogLi
                                     height={24}
                                     className={styles.authorAvatar}
                                 />
-                            )}
+                            )} */}
                             <span className={styles.authorName}>
-                                {post.author.name}
+                                {post.authorName}
                             </span>
                         </div>
 

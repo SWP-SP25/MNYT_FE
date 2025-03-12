@@ -16,6 +16,7 @@ const LoginPage = () => {
     
     const [showLoginPassword, setShowLoginPassword] = useState(false);
     const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
 
     const [loginData, setLoginData] = useState({
         username: '',
@@ -62,7 +63,7 @@ const LoginPage = () => {
             });
 
             // Lưu remember me nếu được chọn
-            if (formData.rememberMe) {
+            if (rememberMe) {
                 localStorage.setItem('rememberMe', 'true');
             }
 
@@ -111,6 +112,18 @@ const LoginPage = () => {
                         <i className="password-icon" onClick={() => setShowLoginPassword(!showLoginPassword)}>
                             {showLoginPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
                         </i>
+                    </div>
+
+                    <div className="remember-me">
+                        <label className="checkbox-container">
+                            <input 
+                                type="checkbox" 
+                                checked={rememberMe} 
+                                onChange={(e) => setRememberMe(e.target.checked)} 
+                            />
+                            <span className="checkmark"></span>
+                        </label>
+                        <span>Ghi nhớ đăng nhập</span>
                     </div>
 
                     <div className="forgot-link">

@@ -389,3 +389,78 @@ body {
 .input-box .password-icon:hover {
     color: #4795b1;
 }
+
+/* Remember Me Checkbox */
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: -5px 0 15px;
+}
+
+.remember-me label {
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Custom Checkbox Container */
+.checkbox-container {
+    position: relative;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+}
+
+/* Hide default checkbox */
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* Custom checkbox design */
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 18px;
+    width: 18px;
+    background-color: transparent;
+    border: 2px solid #55A6C3;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.checkbox-container:hover input ~ .checkmark {
+    background-color: rgba(85, 166, 195, 0.1);
+}
+
+/* When checked */
+.checkbox-container input:checked ~ .checkmark {
+    background-color: #55A6C3;
+    border-color: #55A6C3;
+}
+
+/* Checkmark icon */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Show checkmark when checked */
+.checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+}

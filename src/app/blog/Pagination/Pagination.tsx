@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import styles from './pagination.module.css';
+import styles from '@/app/blog/styles/blog.module.css';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 
 interface PaginationProps {
@@ -11,7 +11,7 @@ interface PaginationProps {
 const Pagination: FC<PaginationProps> = ({
     currentPage = 1,
     totalPages = 10,
-    onPageChange = () => {}
+    onPageChange = () => { }
 }) => {
     // Tính toán range của các trang sẽ hiển thị
     const getPageNumbers = () => {

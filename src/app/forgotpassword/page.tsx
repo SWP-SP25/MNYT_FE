@@ -74,8 +74,8 @@ const ForgotPasswordPage = () => {
                 />
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="forgot-button"
                 disabled={isLoading}
               >
@@ -169,8 +169,8 @@ const ForgotPasswordPage = () => {
                 Quay lại đăng nhập
               </Link>
             ) : (
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="back-button"
                 onClick={() => setStep(step - 1)}
               >
@@ -180,7 +180,55 @@ const ForgotPasswordPage = () => {
           </div>
         </div>
       </div>
-    </div>
+
+      <div className="form-group password-group">
+        <label htmlFor="confirmPassword">
+          Xác nhận mật khẩu
+        </label>
+        <div className="password-field">
+          <input
+            id="confirmPassword"
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder="Nhập lại mật khẩu mới"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+          <button
+            type="button"
+            className="password-toggle"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" className="forgot-button">
+        Đổi mật khẩu
+      </button>
+    </form>
+  )
+}
+
+<div className="forgot-switch">
+  {step === 1 ? (
+    <Link href="/login">
+      Quay lại đăng nhập
+    </Link>
+  ) : (
+    <button
+      type="button"
+      className="back-button"
+      onClick={() => setStep(step - 1)}
+    >
+      Quay lại bước trước
+    </button>
+  )}
+</div>
+        </div >
+      </div >
+    </div >
   );
 };
 

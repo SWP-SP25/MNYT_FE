@@ -1,19 +1,27 @@
 import { createContext, useContext, useState } from 'react';
 import { useFetch } from '@/hooks/useFetch';
-import useLocalStorage from './useLocalStorage';
+import Cookies from 'js-cookie';
 
-interface AuthUser {
+export interface AuthUser {
     token: string;
     user: {
         id: string;
-        username: string;
+        userName: string;
         email: string;
+        role: string;
     };
 }
 
 interface LoginCredentials {
     emailOrUsername: string;
     password: string;
+}
+
+interface RegisterCredentials
+{
+    username: string;
+    enail: string;
+    password: string;   
 }
 
 interface AuthContextType {
@@ -29,7 +37,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const API_URL = "https://api-mnyt.purintech.id.vn/api/Authentication";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useLocalStorage<AuthUser | null>('user', null);
+    const [user, setUser] = useState<AuthUser | null>(() => {
+        const savedUser = Cookies.get('user');
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
     const { fetchData, loading, error } = useFetch();
 
     const login = async (credentials: LoginCredentials) => {
@@ -43,8 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ).then(response => {
                 if (response.success) {
                     setUser(response.data);
-                    localStorage.setItem('token', response.data.token);
-                    localStorage.setItem('user', JSON.stringify(response.data));
+                    // Lưu token và user
+                    Cookies.set('token', response.data.token, { expires: 7 });
+                    Cookies.set('user', JSON.stringify(response.data), { expires: 7 });
                 }
             });
         } catch (error) {
@@ -54,9 +66,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = async () => {
         setUser(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        // Xóa token và user khỏi cookie
+        Cookies.remove('token');
+        Cookies.remove('user');
     };
+
+    // const register = async (credentials: RegisterCredentials) => 
+    // {
+    //     try
+    //     {
+    //         const reponse = await fetchData <{success : boolean; data: }>
+    //     }
+    //     catch (error)
+    //     {
+    //         throw error;
+    //     }
+    // }
 
     return (
         <AuthContext.Provider value={{ user, loading, error, login, logout }}>

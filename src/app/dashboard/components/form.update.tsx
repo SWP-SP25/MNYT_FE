@@ -1,16 +1,33 @@
 'use client'
 import React from 'react';
-import { Form, Input, Button, Card } from 'antd';
+import { Form, Input, Button, Space } from 'antd';
+import { motion } from 'framer-motion';
 
-export const UpdateForm: React.FC = () => {
+interface UpdateFormProps {
+    onClose?: () => void;
+}
+
+const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.5 }
+};
+
+export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
     const [form] = Form.useForm();
 
     const onFinish = (values: any) => {
         console.log('Form values:', values);
+        // Here you would typically make an API call to update the data
+        onClose?.();
     };
 
     return (
-        <Card title="Cập nhật chỉ số thai nhi" style={{ margin: '20px' }}>
+        <motion.div
+            initial="initial"
+            animate="animate"
+            variants={fadeInUp}
+        >
             <Form
                 form={form}
                 layout="vertical"
@@ -53,19 +70,25 @@ export const UpdateForm: React.FC = () => {
                 </Form.Item>
 
                 <Form.Item
-                    label="Cân nặng ước tính của thai nhi (EFW)"
+                    label="Cân nặng ước tính (EFW)"
                     name="efw"
                 >
                     <Input />
                 </Form.Item>
 
                 <Form.Item>
-                    <Button type="primary" htmlType="submit" block>
-                        Cập nhật
-                    </Button>
+                    <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+                        <Button onClick={onClose}>
+                            Hủy
+                        </Button>
+                        <Button type="primary" htmlType="submit">
+                            Cập nhật
+                        </Button>
+                    </Space>
                 </Form.Item>
             </Form>
-        </Card>
+        </motion.div>
     );
 };
+
 export default UpdateForm;

@@ -7,229 +7,138 @@ import "./page.css";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import Cookies from "js-cookie";
 
 const LoginPage = () => {
     const [isActive, setIsActive] = useState(false);
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const { login, loading, error } = useAuth();
-    
-    const [showLoginPassword, setShowLoginPassword] = useState(false);
-    const [showRegisterPassword, setShowRegisterPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
+    const { login, loading } = useAuth();
 
-    const [loginData, setLoginData] = useState({
-        username: '',
-        password: '',
-    });
-
-    const [registerData, setRegisterData] = useState({
-        username: '',
-        email: '',
-        password: '',
-    });
-
-    useEffect(() => {
-        // Kiểm tra nếu có query parameter 'mode=register' thì hiển thị form đăng ký
-        const mode = searchParams.get('mode');
-        if (mode === 'register') {
-            setIsActive(true);
-        }
-    }, [searchParams]);
-
-    const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setLoginData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+    const togglePasswordVisibility = () => {
+        setShowPassword((prev) => !prev);
     };
 
-    const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setRegisterData(prev => ({
+    const [formData, setFormData] = useState({
+        emailOrUsername: '',
+        password: '',
+        rememberMe: false
+    });
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
             ...prev,
-            [name]: value
+            [name]: type === 'checkbox' ? checked : value
         }));
     };
 
     const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        
+
         try {
             await login({
                 emailOrUsername: loginData.username,
                 password: loginData.password
             });
 
-            // Lưu remember me nếu được chọn
-            if (rememberMe) {
-                localStorage.setItem('rememberMe', 'true');
+            // Lấy thông tin user từ cookie sau khi đăng nhập
+            const userData = Cookies.get('user');
+            if (userData) {
+                const user = JSON.parse(userData);
+                // Nếu là Admin thì chuyển đến trang admin
+                if (user.role === 'Admin') {
+                    router.push('/admin');
+                } else {
+                    router.push('/');
+                }
             }
 
-            // Chuyển hướng sau khi đăng nhập thành công
-            router.push('/dashboard');
+            if (formData.rememberMe) {
+                Cookies.set('rememberMe', 'true');
+            }
         } catch (err) {
             console.error('Lỗi đăng nhập:', err);
         }
     };
 
-    const handleRegisterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        // Xử lý đăng ký
-        console.log('Register data:', registerData);
-    };
-
     return (
-        <div className={`container ${isActive ? 'active' : ''}`}>
-            {/* Login Form */}
-            <div className="form-box login">
-                <form onSubmit={handleLoginSubmit}>
-                    <h1>Đăng nhập</h1>
-                    {error && <div className="error-message">{error}</div>}
-                    
-                    <div className="input-box">
-                        <input 
-                            type="text" 
-                            name="username"
-                            placeholder="Tên đăng nhập" 
-                            value={loginData.username}
-                            onChange={handleLoginChange}
-                            required 
-                        />
-                        <i><BsPersonFill /></i>
-                    </div>
+        <div className="login-container">
+            <div className="login-image"></div>
 
-                    <div className="input-box">
-                        <input 
-                            type={showLoginPassword ? "text" : "password"}
-                            name="password" 
-                            placeholder="Mật khẩu"
-                            value={loginData.password}
-                            onChange={handleLoginChange}
-                            required 
-                        />
-                        <i className="password-icon" onClick={() => setShowLoginPassword(!showLoginPassword)}>
-                            {showLoginPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
-                        </i>
-                    </div>
+            <div className="login-form">
+                <h1 className="login-title">CHÚC BẠN CÓ MỘT NGÀY TỐT LÀNH</h1>
 
-                    <div className="remember-me">
-                        <label className="checkbox-container">
-                            <input 
-                                type="checkbox" 
-                                checked={rememberMe} 
-                                onChange={(e) => setRememberMe(e.target.checked)} 
-                            />
-                            <span className="checkmark"></span>
+                <form className="form" onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="username" className="form-label">
+                            Tên tài khoản
                         </label>
-                        <span>Ghi nhớ đăng nhập</span>
-                    </div>
-
-                    <div className="forgot-link">
-                        <Link href="/forgotpassword">Quên mật khẩu?</Link>
-                    </div>
-
-                    <button type="submit" className="btn" disabled={loading}>
-                        {loading ? "Đang xử lý..." : "Đăng nhập"}
-                    </button>
-
-                    <p>hoặc đăng nhập với</p>
-                    <div className="social-icons">
-                        <a href="#" className="google-btn">
-                            <FaGoogle />
-                            <span>Google</span>
-                        </a>
-                        <a href="#" className="facebook-btn">
-                            <FaFacebook />
-                            <span>Facebook</span>
-                        </a>
-                    </div>
-                </form>
-            </div>
-
-            {/* Register Form */}
-            <div className="form-box register">
-                <form onSubmit={handleRegisterSubmit}>
-                    <h1>Đăng ký</h1>
-                    
-                    <div className="input-box">
-                        <input 
+                        <input
+                            id="username"
+                            name="emailOrUsername"
                             type="text"
-                            name="username"
-                            placeholder="Tên đăng nhập"
-                            value={registerData.username}
-                            onChange={handleRegisterChange}
-                            required 
+                            placeholder="Email hoặc số điện thoại"
+                            className="form-input"
+                            value={formData.emailOrUsername}
+                            onChange={handleInputChange}
                         />
-                        <i><BsPersonFill /></i>
                     </div>
 
-                    <div className="input-box">
-                        <input 
-                            type="email"
-                            name="email"
-                            placeholder="Email"
-                            value={registerData.email}
-                            onChange={handleRegisterChange}
-                            required 
-                        />
-                        <i><BsEnvelopeFill /></i>
+                    <div className="form-group">
+                        <label htmlFor="password" className="form-label">
+                            Mật khẩu
+                        </label>
+                        <div className="form-password">
+                            <input
+                                id="password"
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Nhập mật khẩu của bạn"
+                                className="form-input"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                            />
+                            <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={togglePasswordVisibility}
+                            >
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="input-box">
-                        <input 
-                            type={showRegisterPassword ? "text" : "password"}
-                            name="password"
-                            placeholder="Mật khẩu"
-                            value={registerData.password}
-                            onChange={handleRegisterChange}
-                            required 
-                        />
-                        <i className="password-icon" onClick={() => setShowRegisterPassword(!showRegisterPassword)}>
-                            {showRegisterPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
-                        </i>
+                    <div className="form-options">
+                        <label className="remember-me">
+                            <input
+                                type="checkbox"
+                                name="rememberMe"
+                                className="checkbox"
+                                checked={formData.rememberMe}
+                                onChange={handleInputChange}
+                            /> Ghi nhớ tôi
+                        </label>
+                        <Link href="/forgotpassword" className="forgot-password">
+                            Bạn quên mật khẩu?
+                        </Link>
                     </div>
 
-                    <button type="submit" className="btn">Đăng ký</button>
+                    <button type="submit" className="login-button">
+                        {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+                    </button>
 
-                    <p>hoặc đăng ký với</p>
-                    <div className="social-icons">
-                        <a href="#" className="google-btn">
-                            <FaGoogle />
-                            <span>Google</span>
-                        </a>
-                        <a href="#" className="facebook-btn">
-                            <FaFacebook />
-                            <span>Facebook</span>
-                        </a>
-                    </div>
+                    <button type="button" className="google-login">
+                        <FaGoogle className="google-icon" /> Hoặc đăng nhập với tài khoản
+                        Google
+                    </button>
                 </form>
-            </div>
 
-            {/* Toggle Box */}
-            <div className="toggle-box">
-                <div className="toggle-panel toggle-left">
-                    <h1>Xin chào!</h1>
-                    <p>Chưa có tài khoản?</p>
-                    <button 
-                        className="btn register-btn"
-                        onClick={() => setIsActive(true)}
-                    >
-                        Đăng ký
-                    </button>
-                </div>
-
-                <div className="toggle-panel toggle-right">
-                    <h1>Chào mừng trở lại!</h1>
-                    <p>Đã có tài khoản?</p>
-                    <button 
-                        className="btn login-btn"
-                        onClick={() => setIsActive(false)}
-                    >
-                        Đăng nhập
-                    </button>
-                </div>
+                <p className="signup-prompt">
+                    Bạn chưa có tài khoản?{" "}
+                    <Link href="/register" className="signup-link">
+                        Đăng ký ngay
+                    </Link>
+                </p>
             </div>
         </div>
     );

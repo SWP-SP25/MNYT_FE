@@ -19,6 +19,7 @@
 .footer-section {
     display: flex;
     flex-direction: column;
+    align-items: left;
     gap: 10px;
     text-align: left;
 }
@@ -96,4 +97,19 @@
     background-color: #279357;
     color: white;
     padding: 40px 0;
+}
+
+.footer-copyright {
+    margin-top: 30px;
+    /* Khoảng cách trên */
+    padding-top: 15px;
+    /* Khoảng cách trên */
+    text-align: center;
+    /* Căn giữa nội dung */
+    font-size: 14px;
+    /* Kích thước chữ */
+    font-weight: bold;
+    /* Đậm chữ */
+    color: rgba(255, 255, 255, 0.8);
+    /* Màu chữ */
 }

@@ -1,7 +1,7 @@
 'use client';
 import { useAuth } from "@/hooks/useAuth";
-import PublicHomePage from "./homepage/public/publicHomepage";
-import AuthenticatedHomePage from "./homepage/authentication/authHomepage";
+import PublicHomePage from "./homepage/public/public-homepage";
+import AuthenticatedHomePage from "./homepage/authentication/auth-homepage";
 import styles from "./page.module.css";
 
 export default function Home() {

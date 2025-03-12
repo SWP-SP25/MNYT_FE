@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Cookies from 'js-cookie';
 
 interface FetchOptions extends RequestInit {
     body?: any;
@@ -13,7 +14,7 @@ export function useFetch() {
             setLoading(true);
             setError(null);
 
-            const token = localStorage.getItem('token');
+            const token = Cookies.get('token');
             const headers = {
                 'Content-Type': 'application/json',
                 ...(token && { Authorization: `Bearer ${token}` }),

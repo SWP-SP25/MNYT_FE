@@ -1,34 +1,29 @@
 'use client';
-import { useAuth } from "@/hooks/useAuth";
-import styles from "./authHomepage.module.css";
-import AppSlider from "../../components/slider/app.slider";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+import styles from "./public-homepage.module.css";
 import { FaCalendarAlt, FaBabyCarriage, FaBookMedical, FaUserMd } from 'react-icons/fa';
+import AppSlider from "@/app/components/slider/app-slider";
 
-const AuthenticatedHomePage = () => {
-    const { user } = useAuth();
+interface HomePageProps {
+    // Có thể thêm props nếu cần
+}
 
-    if (!user) {
-        return <div>Loading...</div>;
-    }
-
+const HomePage: React.FC<HomePageProps> = () => {
     return (
         <div className={styles.page}>
             <main className={styles.main}>
-                <AppSlider />
-                
                 {/* Hero Section */}
                 <section className={styles.hero}>
                     <div className={styles.heroContent}>
-                        <h1>Chào Mừng Bạn Đã Quay Trở Lại!</h1>
+                        <h1>Chào Mừng Đến Với Mầm Non Yêu Thương</h1>
                         <p>Đồng hành cùng mẹ trong hành trình thai kỳ và chăm sóc em bé</p>
                         <div className={styles.heroButtons}>
-                            <Link href="/reminder" className={styles.primaryButton}>
-                                Xem Lịch Nhắc
+                            <Link href="/register" className={styles.primaryButton}>
+                                Đăng Ký Ngay
                             </Link>
                             <Link href="/blog" className={styles.secondaryButton}>
-                                Đọc Blog
+                                Tìm Hiểu Thêm
                             </Link>
                         </div>
                     </div>
@@ -74,6 +69,7 @@ const AuthenticatedHomePage = () => {
                 <section className={styles.blogPreview}>
                     <h2>Bài Viết Mới Nhất</h2>
                     <div className={styles.blogGrid}>
+                        {/* Có thể thêm BlogCard components ở đây */}
                         <div className={styles.blogCard}>
                             <Image
                                 src="/images/blog/nutrition.jpg"
@@ -89,22 +85,23 @@ const AuthenticatedHomePage = () => {
                                 </Link>
                             </div>
                         </div>
+                        {/* Thêm các blog card khác */}
                     </div>
                 </section>
 
                 {/* CTA Section */}
                 <section className={styles.cta}>
                     <div className={styles.ctaContent}>
-                        <h2>Khám Phá Các Tính Năng</h2>
-                        <p>Sử dụng đầy đủ các tính năng để theo dõi thai kỳ hiệu quả</p>
-                        <Link href="/dashboard" className={styles.ctaButton}>
-                            Đi Đến Dashboard
+                        <h2>Bắt Đầu Hành Trình Của Bạn</h2>
+                        <p>Đăng ký ngay để nhận được những thông tin hữu ích và theo dõi thai kỳ</p>
+                        <Link href="/register" className={styles.ctaButton}>
+                            Tham Gia Ngay
                         </Link>
                     </div>
                 </section>
             </main>
         </div>
     );
-};
+}
 
-export default AuthenticatedHomePage;
+export default HomePage;

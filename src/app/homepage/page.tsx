@@ -1,6 +1,6 @@
 'use client';
 
-import Dashboard from '@/app/components/dashboard';
+import Dashboard from '@/app/dashboard/components/dashboard';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function DashboardPage() {

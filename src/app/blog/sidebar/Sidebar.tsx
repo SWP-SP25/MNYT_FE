@@ -1,13 +1,4 @@
-import styles from './sidebar.module.css';
-import Image from 'next/image';
-import Link from 'next/link';
-
-// Định nghĩa type cho member
-type Member = {
-    name: string;
-    posts: number;
-    avatar: string;
-};
+import styles from '@/app/blog/styles/blog.module.css';
 
 const Sidebar = () => {
     // Tách data ra để dễ quản lý
@@ -49,16 +40,14 @@ const Sidebar = () => {
             <div className={styles.topMembers}>
                 <h3>Thành viên tích cực</h3>
                 <div className={styles.memberList}>
-                    {topMembers.map((member, index) => (
+                    {[
+                        { name: "Mai Anh", posts: 150, avatar: "/avatars/default.png" },
+                        { name: "Ngọc Linh", posts: 120, avatar: "/avatars/default.png" },
+                        { name: "Hương Giang", posts: 98, avatar: "/avatars/default.png" },
+                    ].map((member, index) => (
                         <div key={index} className={styles.memberItem}>
-                            <Image 
-                                src={member.avatar} 
-                                alt={member.name}
-                                width={48}
-                                height={48}
-                                className={styles.memberAvatar}
-                            />
-                            <div className={styles.memberInfo}>
+                            <img src={member.avatar} alt={member.name} />
+                            <div>
                                 <strong>{member.name}</strong>
                                 <span>{member.posts} bài viết</span>
                             </div>

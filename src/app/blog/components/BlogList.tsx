@@ -4,6 +4,8 @@ import { blogService, BlogPost, PaginatedResponse } from '@/app/services/api';
 import styles from './components.module.css';
 import Image from 'next/image';
 import Link from 'next/link';
+import useAxios from '@/hooks/useFetchAxios';
+import { BlogPostListResponse } from '@/types/blogPostList';
 
 interface BlogListProps {
     category: string;
@@ -12,182 +14,14 @@ interface BlogListProps {
 }
 
 export default function BlogList({ category, currentPage, onPageChange }: BlogListProps) {
-    const [posts, setPosts] = useState<BlogPost[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [totalPages, setTotalPages] = useState(1);
-
-    useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                setLoading(true);
-                // const response = await blogService.getAllPosts(currentPage, 10, category);
-                const response = {
-                    "success": true,
-                    "data": {
-                      "pageIndex": 0,
-                      "totalPages": 0,
-                      "totalCount": 0,
-                      "items": [
-                        {
-                          "id": 0,
-                          "title": "string",
-                          "description": "string",
-                          "authorId": 0,
-                          "authorName": "string",
-                          "period": 0,
-                          "status": "string",
-                          "publishedDay": "2025-03-08",
-                          "likeCount": 0,
-                          "commentCount": 0,
-                          "bookmarkCount": 0
-                        },
-                        {
-                            "id": 0,
-                            "title": "string",
-                            "description": "string",
-                            "authorId": 0,
-                            "authorName": "string",
-                            "period": 0,
-                            "status": "string",
-                            "publishedDay": "2025-03-08",
-                            "likeCount": 0,
-                            "commentCount": 0,
-                            "bookmarkCount": 0
-                          },
-                          {
-                            "id": 0,
-                            "title": "string",
-                            "description": "string",
-                            "authorId": 0,
-                            "authorName": "string",
-                            "period": 0,
-                            "status": "string",
-                            "publishedDay": "2025-03-08",
-                            "likeCount": 0,
-                            "commentCount": 0,
-                            "bookmarkCount": 0
-                          },
-                          {
-                            "id": 0,
-                            "title": "string",
-                            "description": "string",
-                            "authorId": 0,
-                            "authorName": "string",
-                            "period": 0,
-                            "status": "string",
-                            "publishedDay": "2025-03-08",
-                            "likeCount": 0,
-                            "commentCount": 0,
-                            "bookmarkCount": 0
-                          },
-                          {
-                            "id": 0,
-                            "title": "string",
-                            "description": "string",
-                            "authorId": 0,
-                            "authorName": "string",
-                            "period": 0,
-                            "status": "string",
-                            "publishedDay": "2025-03-08",
-                            "likeCount": 0,
-                            "commentCount": 0,
-                            "bookmarkCount": 0
-                          },
-                          {
-                            "id": 0,
-                            "title": "string",
-                            "description": "string",
-                            "authorId": 0,
-                            "authorName": "string",
-                            "period": 0,
-                            "status": "string",
-                            "publishedDay": "2025-03-08",
-                            "likeCount": 0,
-                            "commentCount": 0,
-                            "bookmarkCount": 0
-                          },
-                          {
-                            "id": 0,
-                            "title": "string",
-                            "description": "string",
-                            "authorId": 0,
-                            "authorName": "string",
-                            "period": 0,
-                            "status": "string",
-                            "publishedDay": "2025-03-08",
-                            "likeCount": 0,
-                            "commentCount": 0,
-                            "bookmarkCount": 0
-                          },
-                          {
-                            "id": 0,
-                            "title": "string",
-                            "description": "string",
-                            "authorId": 0,
-                            "authorName": "string",
-                            "period": 0,
-                            "status": "string",
-                            "publishedDay": "2025-03-08",
-                            "likeCount": 0,
-                            "commentCount": 0,
-                            "bookmarkCount": 0
-                          },
-                          {
-                            "id": 0,
-                            "title": "string",
-                            "description": "string",
-                            "authorId": 0,
-                            "authorName": "string",
-                            "period": 0,
-                            "status": "string",
-                            "publishedDay": "2025-03-08",
-                            "likeCount": 0,
-                            "commentCount": 0,
-                            "bookmarkCount": 0
-                          },
-                          {
-                            "id": 0,
-                            "title": "string",
-                            "description": "string",
-                            "authorId": 0,
-                            "authorName": "string",
-                            "period": 0,
-                            "status": "string",
-                            "publishedDay": "2025-03-08",
-                            "likeCount": 0,
-                            "commentCount": 0,
-                            "bookmarkCount": 0
-                          },
-                      ],
-                      "hasPreviousPage": true,
-                      "hasNextPage": true
-                    },
-                    "message": "string",
-                    "errors": [
-                      "string"
-                    ]
-                  }
-                if (response.success && response.data) {
-                    setPosts(response.data.items);
-                    setTotalPages(response.data.totalPages);
-                } else {
-                    setError(response.message || 'Không thể tải bài viết');
-                }
-            } catch (err) {
-                console.error('Error:', err);
-                setError('Đã xảy ra lỗi khi tải bài viết');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPosts();
-    }, [category, currentPage]);
-
+    const { response: blogPostListResponse, error, loading } = useAxios<BlogPostListResponse>({
+        url: `https://api-mnyt.purintech.id.vn/api/BlogPosts/all-paginated?PageNumber=${currentPage}&PageSize=10`,
+        method: "get"
+    });
+    
     // Debug render
-    console.log('Current posts state:', posts);
-
+    console.log('Current posts state:', blogPostListResponse);
     if (loading) {
         return (
             <div className={styles.loadingContainer}>
@@ -208,7 +42,7 @@ export default function BlogList({ category, currentPage, onPageChange }: BlogLi
         </div>;
     }
 
-    if (!posts || posts.length === 0) {
+    if (!blogPostListResponse?.data.items || blogPostListResponse?.data.items.length === 0) {
         return <div className={styles.empty}>
             <p>Chưa có bài viết nào trong mục này</p>
         </div>;
@@ -216,7 +50,7 @@ export default function BlogList({ category, currentPage, onPageChange }: BlogLi
 
     return (
         <div className={styles.blogList}>
-            {posts.map((post) => (
+            {blogPostListResponse?.data.items.map((post) => (
                 <div key={post.id} className={styles.blogCard}>
                     {/* Thumbnail */}
                     <div className={styles.thumbnailContainer}>
@@ -244,7 +78,7 @@ export default function BlogList({ category, currentPage, onPageChange }: BlogLi
                                 backgroundColor: getCategoryColor(post.category)
                             }}
                         >
-                            {post.category}
+                            {post.category ? post.category : 'Dành cho mẹ bầu'}
                         </div>
 
                         {/* Title */}
@@ -269,9 +103,9 @@ export default function BlogList({ category, currentPage, onPageChange }: BlogLi
                         </div>
 
                         {/* Post stats */}
-                        <div className={styles.postStats}>
+                        {/* <div className={styles.postStats}>
                             <span>
-                                <i className="far fa-eye"></i> {post.views}
+                                <i className="far fa-eye"></i> {post.views ? post.views : 0}
                             </span>
                             <span>
                                 <i className="far fa-comment"></i> {post.comments?.length || 0}
@@ -279,7 +113,7 @@ export default function BlogList({ category, currentPage, onPageChange }: BlogLi
                             <span>
                                 <i className="far fa-heart"></i> {post.likes}
                             </span>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             ))}

@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { FaGoogle, FaFacebook } from "react-icons/fa";
-import { BsPersonFill, BsEnvelopeFill, BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
+import React, { useState } from "react";
+import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import "./page.css";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Cookies from "js-cookie";
 
 const LoginPage = () => {
-    const [isActive, setIsActive] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     const { login, loading } = useAuth();
 
@@ -32,13 +31,13 @@ const LoginPage = () => {
         }));
     };
 
-    const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         try {
             await login({
-                emailOrUsername: loginData.username,
-                password: loginData.password
+                emailOrUsername: formData.emailOrUsername,
+                password: formData.password
             });
 
             // Lấy thông tin user từ cookie sau khi đăng nhập

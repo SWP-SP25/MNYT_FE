@@ -1,4 +1,5 @@
 import styles from '@/app/blog/styles/blog.module.css';
+import Link from 'next/link';
 
 const Sidebar = () => {
     // Tách data ra để dễ quản lý

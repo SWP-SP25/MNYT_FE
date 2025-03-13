@@ -41,6 +41,7 @@ const ForgotPasswordPage = () => {
       return;
     }
     // Xử lý đổi mật khẩu
+    console.log("Mật khẩu đã được đổi thành công!");
   };
 
   return (
@@ -60,9 +61,7 @@ const ForgotPasswordPage = () => {
           {step === 1 && (
             <form onSubmit={handleEmailSubmit}>
               <div className="form-group">
-                <label htmlFor="email">
-                  Email của bạn
-                </label>
+                <label htmlFor="email">Email của bạn</label>
                 <input
                   id="email"
                   type="email"
@@ -87,9 +86,7 @@ const ForgotPasswordPage = () => {
           {step === 2 && (
             <form onSubmit={handleOtpSubmit}>
               <div className="form-group">
-                <label htmlFor="otp">
-                  Mã xác nhận
-                </label>
+                <label htmlFor="otp">Mã xác nhận</label>
                 <input
                   id="otp"
                   type="text"
@@ -112,9 +109,7 @@ const ForgotPasswordPage = () => {
           {step === 3 && (
             <form onSubmit={handlePasswordSubmit}>
               <div className="form-group password-group">
-                <label htmlFor="newPassword">
-                  Mật khẩu mới
-                </label>
+                <label htmlFor="newPassword">Mật khẩu mới</label>
                 <div className="password-field">
                   <input
                     id="newPassword"
@@ -135,9 +130,7 @@ const ForgotPasswordPage = () => {
               </div>
 
               <div className="form-group password-group">
-                <label htmlFor="confirmPassword">
-                  Xác nhận mật khẩu
-                </label>
+                <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
                 <div className="password-field">
                   <input
                     id="confirmPassword"
@@ -165,9 +158,7 @@ const ForgotPasswordPage = () => {
 
           <div className="forgot-switch">
             {step === 1 ? (
-              <Link href="/login">
-                Quay lại đăng nhập
-              </Link>
+              <Link href="/login">Quay lại đăng nhập</Link>
             ) : (
               <button
                 type="button"
@@ -180,55 +171,7 @@ const ForgotPasswordPage = () => {
           </div>
         </div>
       </div>
-
-      <div className="form-group password-group">
-        <label htmlFor="confirmPassword">
-          Xác nhận mật khẩu
-        </label>
-        <div className="password-field">
-          <input
-            id="confirmPassword"
-            type={showConfirmPassword ? "text" : "password"}
-            placeholder="Nhập lại mật khẩu mới"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-          <button
-            type="button"
-            className="password-toggle"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-          >
-            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-          </button>
-        </div>
-      </div>
-
-      <button type="submit" className="forgot-button">
-        Đổi mật khẩu
-      </button>
-    </form>
-  )
-}
-
-<div className="forgot-switch">
-  {step === 1 ? (
-    <Link href="/login">
-      Quay lại đăng nhập
-    </Link>
-  ) : (
-    <button
-      type="button"
-      className="back-button"
-      onClick={() => setStep(step - 1)}
-    >
-      Quay lại bước trước
-    </button>
-  )}
-</div>
-        </div >
-      </div >
-    </div >
+    </div>
   );
 };
 

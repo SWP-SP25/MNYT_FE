@@ -33,26 +33,25 @@ export const MainContent: React.FC = () => {
     const { response: fetalLengthStandard, error: fetalLengthError, loading: fetalLengthLoading } = useAxios<FetusStandard[]>({
         url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/length/singleton',
         method: 'get'
-
+        //CLR ( Chiều dài đầu mông ) và FL ( Chiều dài xương đùi ) sẽ là chỉ số dùng để tính toán chiều dài thai nhi ở 2 giai đoạn khác nhau
+        //Cụ thể là trong tam cá nguyệt thứ nhất và tam cá nguyệt thứ 2
     });
     const { response: fetalHeadStandard, error: fetalHeadError, loading: fetalHeadLoading } = useAxios<FetusStandard[]>({
-        url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/head/singleton',
+        url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/BPD/singleton',
         method: 'get'
-
+        //Đây là HC - chu vi vòng đầu, không phải là BDP - đường kính lưỡng đỉnh
     });
     const { response: fetalWeightStandard, error: fetalWeightError, loading: fetalWeightLoading } = useAxios<FetusStandard[]>({
         url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/weight/singleton',
         method: 'get'
 
     });
-    console.log("list", fetalLengthStandard);
+
     // Data cho biểu đồ chiều dài
     const generateLengthData = () => {
         const FetusStandard: any[] = [];
         if (fetalLengthStandard) {
             fetalLengthStandard.forEach(standard => {
-                // console.log("sau for each", FetusStandard);
-                // console.log("kiểm tra từng đối tượng standard", standard);
                 FetusStandard.push({
                     week: standard.period,
                     length: standard.maximum,
@@ -73,7 +72,7 @@ export const MainContent: React.FC = () => {
                 if (standard.period >= 28) {
                     FetusStandard.push({
                         week: standard.period,
-                        value: (standard.maximum + standard.minimum) / 2,
+                        length: (standard.maximum + standard.minimum) / 2,
                         category: 'Chiều dài ước tính'
                     });
                 }
@@ -83,36 +82,39 @@ export const MainContent: React.FC = () => {
         return FetusStandard;
     };
 
-    // Data cho biểu đồ đường kính đầu
+    // Data cho biểu đồ chu vi vòng đầu (HC)
     const generateHeadData = () => {
-        const data = [];
-        for (let week = 20; week <= 40; week += 0.5) {
-            data.push({
-                week: week,
-                value: 85 + (week - 20) * 2.5,
-                category: 'Giới hạn trên (WHO)'
-            });
-            data.push({
-                week: week,
-                value: 75 + (week - 20) * 2,
-                category: 'Giới hạn dưới (WHO)'
-            });
-            if (week <= 28 && week >= 20) {
-                data.push({
-                    week: week,
-                    value: 80 + (week - 20) * 2.2,
-                    category: 'Đường kính thực tế'
+        const FetusStandard: any[] = [];
+        if (fetalHeadStandard) {
+            fetalHeadStandard.forEach(standard => {
+                FetusStandard.push({
+                    week: standard.period,
+                    head: standard.maximum,
+                    category: 'Giới hạn trên (WHO)'
                 });
-            }
-            if (week >= 28) {
-                data.push({
-                    week: week,
-                    value: 95 + (week - 28) * 0.5,
-                    category: 'Đường kính ước tính'
+                FetusStandard.push({
+                    week: standard.period,
+                    head: standard.minimum,
+                    category: 'Giới hạn dưới (WHO)'
                 });
-            }
+                if (standard.period <= 28 && standard.period >= 20) {
+                    FetusStandard.push({
+                        week: standard.period,
+                        head: (standard.maximum + standard.minimum) / 2,
+                        category: 'Chu vi vòng đầu thực tế'
+                    });
+                }
+                if (standard.period >= 28) {
+                    FetusStandard.push({
+                        week: standard.period,
+                        head: (standard.maximum + standard.minimum) / 2,
+                        category: 'Chu vi vòng đầu ước tính'
+                    });
+                }
+
+            });
         }
-        return data;
+        return FetusStandard;
     };
 
     // Data cho biểu đồ cân nặng
@@ -162,17 +164,17 @@ export const MainContent: React.FC = () => {
                 return generateLengthData();
         }
     };
-    // console.log("activeChart", activeChart);
-    console.log("Dữ liệu chart trả về", getChartData());
+    console.log("activeChart", activeChart); //-> check xem state của activeChart có thay đổi không
+    console.log("Dữ liệu chart trả về", getChartData()); //-> check xem chart trả về những dữ liệu gì
 
     const getChartOptions = () => {
         const data = getChartData();
 
         // Tách data theo category
-        const upperLimit = data.filter(d => d.category.includes('Giới hạn trên')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.value : d.weight]);
-        const lowerLimit = data.filter(d => d.category.includes('Giới hạn dưới')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.value : d.weight]);
-        const actual = data.filter(d => d.category.includes('thực tế')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.value : d.weight]);
-        const predicted = data.filter(d => d.category.includes('ước tính')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.value : d.weight]);
+        const upperLimit = data.filter(d => d.category.includes('Giới hạn trên')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.head : d.weight]);
+        const lowerLimit = data.filter(d => d.category.includes('Giới hạn dưới')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.head : d.weight]);
+        const actual = data.filter(d => d.category.includes('thực tế')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.head : d.weight]);
+        const predicted = data.filter(d => d.category.includes('ước tính')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.head : d.weight]);
         console.log("upperLimit", upperLimit);
         console.log("lowerLimit", lowerLimit);
         console.log("actual", actual);
@@ -187,24 +189,29 @@ export const MainContent: React.FC = () => {
             },
             xAxis: {
                 title: {
-                    text: 'Tuần Thai'
+                    text: 'Tuổi thai (tuần)'
                 },
-                min: 20,
+                min: 12,
                 max: 40,
                 tickInterval: 2
+                //min là 12 vì từ tuần 12~13 đổ đi các chỉ số cần thiết
+                //để tính toán, render được biểu đồ đã có thể được đo đầy đủ thông qua siêu âm
             },
             yAxis: {
                 title: {
                     text: activeChart === 'length' ? 'Chiều Dài (mm)' :
-                        activeChart === 'head' ? 'Đường Kính Đầu (mm)' :
+                        activeChart === 'head' ? 'Đường Kính Vòng Đầu (mm)' :
                             'Cân Nặng (g)'
                 },
-                min: activeChart === 'length' ? 0 :
-                    activeChart === 'head' ? 70 :
-                        200,
-                max: activeChart === 'length' ? 500 :
-                    activeChart === 'head' ? 120 :
-                        4000
+                min: activeChart === 'length' ? 40 ://chiều dài thai nhi ở tuần 12 trung bình là 50~60mm
+                    activeChart === 'head' ? 0 : //chu vi vòng đầu thai nhi ở tuần 13 trung bình là 40~50mm
+                        10, //  cân nặng thai nhi ở tuần 12~13 trung bình là 15~20 Gram
+                max: activeChart === 'length' ? 600 : //chiều dài thai nhi trung bình ở tuần 40 rơi vào khoảng 500~550mm
+                    activeChart === 'head' ? 500 : //chu vi vòng đầu thai nhi trung bình ở tuần 40 rơi vào khoảng 380~400mm
+                        4000, // cân nặng thai nhi trung bình khi mới sinh ra là 3.5kg
+                tickInterval: activeChart === 'length' ? 50 :
+                    activeChart === 'head' ? 50 :
+                        500
             },
             plotOptions: {
                 spline: {
@@ -229,7 +236,7 @@ export const MainContent: React.FC = () => {
                 }
             }, {
                 name: activeChart === 'length' ? 'Chiều dài thực tế' :
-                    activeChart === 'head' ? 'Đường kính thực tế' :
+                    activeChart === 'head' ? 'Chu vi vòng đầu thực tế' :
                         'Cân nặng thực tế',
                 data: actual,
                 color: '#52c41a',
@@ -239,7 +246,7 @@ export const MainContent: React.FC = () => {
                 }
             }, {
                 name: activeChart === 'length' ? 'Chiều dài ước tính' :
-                    activeChart === 'head' ? 'Đường kính ước tính' :
+                    activeChart === 'head' ? 'Chu vi vòng đầu ước tính' :
                         'Cân nặng ước tính',
                 data: predicted,
                 dashStyle: 'Dash',
@@ -251,42 +258,62 @@ export const MainContent: React.FC = () => {
         };
     };
 
+    // Định nghĩa interface cho cấu trúc dữ liệu đo lường
+    interface MeasurementConfig {
+        standard: FetusStandard[] | undefined;
+        currentValue: number;
+        unit: string;
+        measurementName: string;
+    }
+
     const getStatusColor = () => {
-        // Chỉ xử lý khi đang ở biểu đồ cân nặng
-        if (activeChart === 'weight' && fetalWeightStandard) {
-            // Lấy tuần thai hiện tại (ví dụ tuần 28)
-            const currentWeek = 28; // Bạn có thể thay đổi giá trị này hoặc lấy từ dữ liệu người dùng
-            //chỗ này lấy từ api người dùng
-            // Tìm dữ liệu của tuần thai hiện tại
-            const currentWeekData = fetalWeightStandard.find(
+        // Cấu hình cho từng loại đo
+        const measurementConfigs: Record<string, MeasurementConfig> = {
+            'weight': {
+                standard: fetalWeightStandard,
+                currentValue: 1499, // Lấy từ API
+                unit: 'g',
+                measurementName: 'Cân nặng'
+            },
+            'length': {
+                standard: fetalLengthStandard,
+                currentValue: 250, // Lấy từ API
+                unit: 'mm',
+                measurementName: 'Chiều dài'
+            },
+            'head': {
+                standard: fetalHeadStandard,
+                currentValue: 180, // Lấy từ API
+                unit: 'mm',
+                measurementName: 'Chu vi vòng đầu'
+            }
+        };
+
+        const currentConfig = measurementConfigs[activeChart];
+
+        if (currentConfig && currentConfig.standard) {
+            const currentWeek = 28; // Lấy từ API người dùng
+            const currentWeekData = currentConfig.standard.find(
                 standard => standard.period === currentWeek
             );
 
-            // Giả sử có một giá trị cân nặng hiện tại (có thể lấy từ form cập nhật)
-            const currentWeight = 1499; // Đơn vị: gram
-            //chỗ này lấy từ api người dùng
             if (currentWeekData) {
                 const { minimum, maximum } = currentWeekData;
+                const { currentValue, unit, measurementName } = currentConfig;
 
-                // Kiểm tra trạng thái
-                if (currentWeight < minimum) {
-                    return {
-                        color: '#ff4d4f', // Màu đỏ - cảnh báo
-                        status: 'Em bé có cân nặng thấp hơn bình thường',
-                        detail: `Cân nặng hiện tại (${currentWeight}g) thấp hơn mức tối thiểu (${minimum}g) cho tuần ${currentWeek}`
-                    };
-                } else if (currentWeight > maximum) {
-                    return {
-                        color: '#faad14', // Màu vàng - cảnh báo nhẹ
-                        status: 'Em bé có cân nặng cao hơn bình thường',
-                        detail: `Cân nặng hiện tại (${currentWeight}g) cao hơn mức tối đa (${maximum}g) cho tuần ${currentWeek}`
-                    };
+                // Hàm helper để tạo thông báo
+                const createMessage = (status: string, color: string) => ({
+                    color,
+                    status: `Em bé có ${measurementName.toLowerCase()} ${status}`,
+                    detail: `${measurementName} hiện tại (${currentValue}${unit}) ${status} (${minimum}${unit} - ${maximum}${unit}) cho tuần ${currentWeek}`
+                });
+
+                if (currentValue < minimum) {
+                    return createMessage('thấp hơn bình thường', '#ff4d4f');
+                } else if (currentValue > maximum) {
+                    return createMessage('cao hơn bình thường', '#faad14');
                 } else {
-                    return {
-                        color: '#52c41a', // Màu xanh - bình thường
-                        status: 'Em bé đang phát triển bình thường',
-                        detail: `Cân nặng hiện tại (${currentWeight}g) nằm trong khoảng cho phép (${minimum}g - ${maximum}g)`
-                    };
+                    return createMessage('nằm trong khoảng bình thường', '#52c41a');
                 }
             }
         }

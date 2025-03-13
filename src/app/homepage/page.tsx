@@ -1,15 +1,35 @@
 'use client';
 
-import Dashboard from '@/app/dashboard/components/dashboard';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import PublicHomePage from "./public/public-homepage";
+import AuthenticatedHomePage from "./authentication/auth-homepage";
 
-export default function DashboardPage() {
+export default function HomePage() {
     const { user } = useAuth();
+    const router = useRouter();
+    const [isLoading, setIsLoading] = useState(true);
 
-    if (!user) {
-        return <div>Loading...</div>;
+    useEffect(() => {
+        // Đợi một chút để đảm bảo trạng thái đăng nhập đã được kiểm tra
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (isLoading) {
+        return <div>Đang tải...</div>;
     }
 
-    return <Dashboard />;
+    // Nếu đã đăng nhập, hiển thị trang authenticated
+    if (user) {
+        return <AuthenticatedHomePage />;
+    }
+
+    // Nếu chưa đăng nhập, hiển thị trang public
+    return <PublicHomePage />;
 }
 

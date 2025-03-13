@@ -11,7 +11,7 @@ import Cookies from "js-cookie";
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
-    const { login, loading } = useAuth();
+    const { login, loading, error } = useAuth();
 
     const togglePasswordVisibility = () => {
         setShowPassword((prev) => !prev);
@@ -35,20 +35,25 @@ const LoginPage = () => {
         e.preventDefault();
 
         try {
-            await login({
+            const userData = await login({
                 emailOrUsername: formData.emailOrUsername,
                 password: formData.password
             });
 
-            // Lấy thông tin user từ cookie sau khi đăng nhập
-            const userData = Cookies.get('user');
             if (userData) {
-                const user = JSON.parse(userData);
                 // Nếu là Admin thì chuyển đến trang admin
-                if (user.role === 'Admin') {
+                if (userData.role === 'Admin') {
                     router.push('/admin');
                 } else {
-                    router.push('/');
+                    // Kiểm tra xem đã có pregnancy chưa
+                    const pregnancyData = Cookies.get('pregnancy');
+                    if (pregnancyData) {
+                        // Đã có pregnancy, chuyển đến dashboard
+                        router.push('/dashboard');
+                    } else {
+                        // Chưa có pregnancy, chuyển đến trang homepage
+                        router.push('/homepage');
+                    }
                 }
             }
 
@@ -68,6 +73,8 @@ const LoginPage = () => {
                 <h1 className="login-title">CHÚC BẠN CÓ MỘT NGÀY TỐT LÀNH</h1>
 
                 <form className="form" onSubmit={handleSubmit}>
+                    {error && <div className="error-message">{error}</div>}
+
                     <div className="form-group">
                         <label htmlFor="username" className="form-label">
                             Tên tài khoản
@@ -122,7 +129,7 @@ const LoginPage = () => {
                         </Link>
                     </div>
 
-                    <button type="submit" className="login-button">
+                    <button type="submit" className="login-button" disabled={loading}>
                         {loading ? "Đang đăng nhập..." : "Đăng nhập"}
                     </button>
 

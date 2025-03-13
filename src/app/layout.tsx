@@ -34,8 +34,8 @@ export default function RootLayout({
         <title>Mầm Non Yêu Thương</title>
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <Providers>
-          <AuthProvider>
+        <AuthProvider>
+          <Providers>
             {!excludedPaths.includes(pathname) && <AppNavBar />}
             <main style={{
               // Kiểm tra xem đường dẫn hiện tại có nằm trong excludedPaths không
@@ -46,8 +46,8 @@ export default function RootLayout({
               {children}
             </main>
             {!excludedPaths.includes(pathname) && <AppFooter />}
-          </AuthProvider>
-        </Providers>
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
   );

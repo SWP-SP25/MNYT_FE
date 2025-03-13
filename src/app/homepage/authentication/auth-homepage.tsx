@@ -5,10 +5,34 @@ import AppSlider from "../../components/slider/app-slider";
 import Link from "next/link";
 import Image from "next/image";
 import { FaCalendarAlt, FaBabyCarriage, FaBookMedical, FaUserMd } from 'react-icons/fa';
-
+import { useState, useEffect } from 'react';
+import PregnancySetupForm from '@/app/components/pregnancy-form/pregnancy-setup-form';
+import { Pregnancy } from '@/types/pregnancy';
+import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
 
 const AuthenticatedHomePage = () => {
     const { user } = useAuth();
+    const router = useRouter();
+    const [hasPregnancy, setHasPregnancy] = useState<boolean>(false);
+    const [showPregnancyForm, setShowPregnancyForm] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (user) {
+            // Kiểm tra xem người dùng đã có pregnancy chưa
+            const pregnancyData = Cookies.get('pregnancy');
+            if (pregnancyData) {
+                setHasPregnancy(true);
+            }
+        }
+    }, [user]);
+
+    // Xử lý sau khi tạo pregnancy thành công
+    const handlePregnancyComplete = (pregnancy: Pregnancy) => {
+        setHasPregnancy(true);
+        setShowPregnancyForm(false);
+        // Có thể thêm thông báo thành công ở đây
+    };
 
     if (!user) {
         return <div>Loading...</div>;
@@ -22,15 +46,31 @@ const AuthenticatedHomePage = () => {
                 {/* Hero Section */}
                 <section className={styles.hero}>
                     <div className={styles.heroContent}>
-                        <h1>Chào Mừng Bạn Đã Quay Trở Lại!Auth Home</h1>
+                        <h1>Chào Mừng Bạn Đã Quay Trở Lại!</h1>
                         <p>Đồng hành cùng mẹ trong hành trình thai kỳ và chăm sóc em bé</p>
                         <div className={styles.heroButtons}>
-                            <Link href="/reminder" className={styles.primaryButton}>
-                                Xem Lịch Nhắc
-                            </Link>
-                            <Link href="/blog" className={styles.secondaryButton}>
-                                Đọc Blog
-                            </Link>
+                            {hasPregnancy ? (
+                                <>
+                                    <Link href="/dashboard" className={styles.primaryButton}>
+                                        Xem Thai Kỳ
+                                    </Link>
+                                    <Link href="/reminder" className={styles.secondaryButton}>
+                                        Xem Lịch Nhắc
+                                    </Link>
+                                </>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => setShowPregnancyForm(true)}
+                                        className={styles.primaryButton}
+                                    >
+                                        Tạo Thai Kỳ
+                                    </button>
+                                    <Link href="/blog" className={styles.secondaryButton}>
+                                        Đọc Blog
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </div>
                     <div className={styles.heroImage}>
@@ -43,6 +83,24 @@ const AuthenticatedHomePage = () => {
                         />
                     </div>
                 </section>
+
+                {/* Pregnancy Setup Form Modal */}
+                {showPregnancyForm && (
+                    <div className={styles.modalOverlay}>
+                        <div className={styles.modalContent}>
+                            <button
+                                className={styles.closeButton}
+                                onClick={() => setShowPregnancyForm(false)}
+                            >
+                                &times;
+                            </button>
+                            <PregnancySetupForm
+                                user={user}
+                                onComplete={handlePregnancyComplete}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* Features Section */}
                 <section className={styles.features}>
@@ -98,9 +156,18 @@ const AuthenticatedHomePage = () => {
                     <div className={styles.ctaContent}>
                         <h2>Khám Phá Các Tính Năng</h2>
                         <p>Sử dụng đầy đủ các tính năng để theo dõi thai kỳ hiệu quả</p>
-                        <Link href="/dashboard" className={styles.ctaButton}>
-                            Đi Đến Dashboard
-                        </Link>
+                        {hasPregnancy ? (
+                            <Link href="/dashboard" className={styles.ctaButton}>
+                                Đi Đến Dashboard
+                            </Link>
+                        ) : (
+                            <button
+                                onClick={() => setShowPregnancyForm(true)}
+                                className={styles.ctaButton}
+                            >
+                                Tạo Thai Kỳ Ngay
+                            </button>
+                        )}
                     </div>
                 </section>
             </main>

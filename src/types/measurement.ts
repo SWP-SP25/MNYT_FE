@@ -1,7 +1,7 @@
 import { FetusStandard } from './fetusStandard';
 
 export interface MeasurementConfig {
-    standard: FetusStandard[] | undefined;
+    standard: FetusStandard[] | undefined | null;
     currentValue: number;
     unit: string;
     measurementName: string;

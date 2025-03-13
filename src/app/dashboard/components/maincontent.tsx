@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, Row, Col, Button, Space, Radio, Modal } from 'antd';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
@@ -8,6 +8,10 @@ import { UpdateForm } from './form-update';
 import { motion } from 'framer-motion';
 import useAxios from '@/hooks/useFetchAxios';
 import { FetusStandard } from '@/types/fetusStandard';
+import { MeasurementConfig } from '@/types/measurement';
+import domtoimage from 'dom-to-image';
+import { BlogResponse } from '@/types/blog';
+import styles from './maincontent.module.css';
 //Tùy chỉnh các hiệu ứng chuyển động cho các phần tử trong giao diện bằng cách sử dụng thư viện framer-motion
 //Định nghĩa hiệu ứng "Fade In Up" cho các phần tử
 const fadeInUp = {
@@ -30,6 +34,9 @@ export const MainContent: React.FC = () => {
     const router = useRouter();
     const [activeChart, setActiveChart] = useState('length');
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+    const chartRef = useRef<HTMLDivElement>(null);
     const { response: fetalLengthStandard, error: fetalLengthError, loading: fetalLengthLoading } = useAxios<FetusStandard[]>({
         url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/length/singleton',
         method: 'get'
@@ -46,6 +53,32 @@ export const MainContent: React.FC = () => {
         method: 'get'
 
     });
+
+    // Add blog data fetching
+    const { response: blogData, error: blogError, loading: blogLoading } = useAxios<BlogResponse>({
+        url: 'https://api-mnyt.purintech.id.vn/api/BlogPosts/all',
+        method: 'get'
+    });
+    console.log("Blog Data từ API:", blogData); // Kiểm tra toàn bộ dữ liệu
+    console.log("Blog Error:", blogError);      // Kiểm tra lỗi nếu có
+    //api kéo toàn bộ dữ liệu blog từ dưới data về
+    const previewBlogPost = () => {
+        try {
+            if (!blogData?.data) return null;
+
+            const currentPeriod = 12;
+
+            // Lọc trực tiếp từ blogData.data vì đó là mảng chứa các bài viết
+            const filteredPosts = blogData.data
+                .filter(post => post.period === currentPeriod)
+                .slice(0, 1);
+
+            return filteredPosts[0] || null;
+        } catch (error) {
+            console.error("Error in previewBlogPost:", error);
+            return null;
+        }
+    };
 
     // Data cho biểu đồ chiều dài
     const generateLengthData = () => {
@@ -164,8 +197,8 @@ export const MainContent: React.FC = () => {
                 return generateLengthData();
         }
     };
-    console.log("activeChart", activeChart); //-> check xem state của activeChart có thay đổi không
-    console.log("Dữ liệu chart trả về", getChartData()); //-> check xem chart trả về những dữ liệu gì
+    // console.log("activeChart", activeChart); //-> check xem state của activeChart có thay đổi không
+    // console.log("Dữ liệu chart trả về", getChartData()); //-> check xem chart trả về những dữ liệu gì
 
     const getChartOptions = () => {
         const data = getChartData();
@@ -175,17 +208,19 @@ export const MainContent: React.FC = () => {
         const lowerLimit = data.filter(d => d.category.includes('Giới hạn dưới')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.head : d.weight]);
         const actual = data.filter(d => d.category.includes('thực tế')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.head : d.weight]);
         const predicted = data.filter(d => d.category.includes('ước tính')).map(d => [d.week, activeChart === 'length' ? d.length : activeChart === 'head' ? d.head : d.weight]);
-        console.log("upperLimit", upperLimit);
-        console.log("lowerLimit", lowerLimit);
-        console.log("actual", actual);
-        console.log("predicted", predicted);
+        // console.log("upperLimit", upperLimit);
+        // console.log("lowerLimit", lowerLimit);
+        // console.log("actual", actual);
+        // console.log("predicted", predicted);
         return {
             chart: {
                 type: 'spline',
                 backgroundColor: 'transparent'
             },
             title: {
-                text: ''
+                text: activeChart === 'length' ? 'Biểu đồ tăng trưởng chiều dài của thai nhi' :
+                    activeChart === 'head' ? 'Biểu đồ tăng trưởng chu vi vòng đầu của thai nhi' :
+                        'Biểu đồ tăng trưởng cân nặng của thai nhi'
             },
             xAxis: {
                 title: {
@@ -259,12 +294,7 @@ export const MainContent: React.FC = () => {
     };
 
     // Định nghĩa interface cho cấu trúc dữ liệu đo lường
-    interface MeasurementConfig {
-        standard: FetusStandard[] | undefined;
-        currentValue: number;
-        unit: string;
-        measurementName: string;
-    }
+
 
     const getStatusColor = () => {
         // Cấu hình cho từng loại đo
@@ -326,6 +356,27 @@ export const MainContent: React.FC = () => {
         };
     };
 
+    const exportChart = () => {
+        const options = { bgcolor: '#FFFFFF' };
+
+        if (chartRef.current) {
+            domtoimage.toPng(chartRef.current, options)
+                .then((dataUrl) => {
+                    setPreviewUrl(dataUrl);
+                    setIsPreviewVisible(true); // Hiển thị popup
+                })
+                .catch((error) => {
+                    console.error('Lỗi khi xuất biểu đồ:', error);
+                });
+        }
+    };
+
+    const downloadImage = (url: string) => {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `bieu-do-${activeChart}-thai-nhi.png`;
+        link.click();
+    };
     return (
         <motion.div
             initial="initial"
@@ -338,9 +389,14 @@ export const MainContent: React.FC = () => {
                         <Space direction="vertical" style={{ width: '100%' }}>
                             <Space style={{ width: '100%', justifyContent: 'space-between' }}>
                                 <span>Biểu đồ theo dõi thai nhi</span>
-                                <Button type="primary" onClick={() => setIsModalVisible(true)}>
-                                    Cập nhật chỉ số
-                                </Button>
+                                <Space>
+                                    <Button type="primary" onClick={() => setIsModalVisible(true)}>
+                                        Cập nhật chỉ số
+                                    </Button>
+                                    <Button onClick={exportChart}>
+                                        Xuất biểu đồ
+                                    </Button>
+                                </Space>
                             </Space>
                             <Radio.Group
                                 value={activeChart}
@@ -356,33 +412,65 @@ export const MainContent: React.FC = () => {
                     }
                     style={{ marginBottom: '20px' }}
                 >
-                    <HighchartsReact
-                        highcharts={Highcharts}
-                        options={getChartOptions()}
-                    />
+                    <div ref={chartRef}>
+                        <HighchartsReact
+                            highcharts={Highcharts}
+                            options={getChartOptions()}
+                        />
+                    </div>
                 </Card>
             </motion.div>
 
-            <Row gutter={16}>
-                <Col span={12}>
-                    <motion.div variants={fadeInUp}>
-                        <Card
-                            hoverable
-                            onClick={() => router.push('/blog')}
-                            cover={<img alt="nutrition" src="/path-to-your-image.jpg" />}
-                        >
-                            <Card.Meta
-                                title="Những Thực Phẩm Mẹ Nên Ăn Và Nên Tránh Trong Thai Kì"
-                                description="Mẹ nên tránh gì giúp bé phát triển khoẻ mạnh"
-                            />
-                            <div style={{ marginTop: '10px', fontSize: '12px', color: '#888' }}>
-                                B.S Lương.. | 02 December 2022 | 3 Min. To Read
-                            </div>
-                        </Card>
+            <Row gutter={16} className={styles.row}>
+                <Col span={12} className={styles.col}>
+                    <motion.div variants={fadeInUp} className={styles.motionContainer}>
+                        {blogLoading ? (
+                            <Card loading={true} className={styles.blogCard} />
+                        ) : (
+                            (() => {
+                                const post = previewBlogPost();
+                                return post ? (
+                                    <Card
+                                        hoverable
+                                        onClick={() => router.push('/blog')}
+                                        className={styles.blogCard}
+                                        bodyStyle={{ padding: 0 }}
+                                        cover={
+                                            <div className={styles.imageContainer}>
+                                                <img
+                                                    alt="blog cover"
+                                                    src="https://res.cloudinary.com/duhhxflsl/image/upload/v1741087885/k8pj8etunyklwrtojami.png"
+                                                    className={styles.coverImage}
+                                                />
+                                                <div className={styles.contentOverlay}>
+                                                    <div className={styles.metaInfo}>
+                                                        {post.authorName} | {new Date(post.publishedDay).toLocaleDateString('vi-VN')} |
+                                                        Tuần thai {post.period}
+                                                    </div>
+                                                    <h3 className={styles.blogTitle}>
+                                                        {post.title}
+                                                    </h3>
+                                                    <p className={styles.blogDescription}>
+                                                        {post.description}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        }
+                                    />
+                                ) : (
+                                    <Card className={styles.blogCard}>
+                                        <Card.Meta
+                                            title="Không có bài viết cho tuần này"
+                                            description="Hiện tại chưa có bài viết phù hợp với tuần thai của bạn"
+                                        />
+                                    </Card>
+                                );
+                            })()
+                        )}
                     </motion.div>
                 </Col>
-                <Col span={12}>
-                    <motion.div variants={fadeInUp}>
+                <Col span={12} className={styles.col}>
+                    <motion.div variants={fadeInUp} className={styles.motionContainer}>
                         <Card
                             style={{
                                 backgroundColor: getStatusColor().color,
@@ -408,6 +496,22 @@ export const MainContent: React.FC = () => {
                 destroyOnClose
             >
                 <UpdateForm onClose={() => setIsModalVisible(false)} />
+            </Modal>
+
+            <Modal
+                title="Bản Xem Nhanh"
+                visible={isPreviewVisible}
+                onCancel={() => setIsPreviewVisible(false)}
+                footer={null}
+            >
+                {previewUrl && (
+                    <div>
+                        <img src={previewUrl} alt="Preview" style={{ maxWidth: '100%' }} />
+                        <div style={{ marginTop: '10px', textAlign: 'right' }}>
+                            <Button onClick={() => downloadImage(previewUrl)}>Tải về máy</Button>
+                        </div>
+                    </div>
+                )}
             </Modal>
         </motion.div>
     );

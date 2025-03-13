@@ -195,7 +195,7 @@ const BlogDetail = () => {
 
         try {
             const response = await commentService.addComment({
-                postId: id as string,
+                blogPostId: id as string,
                 content: newComment
             });
 

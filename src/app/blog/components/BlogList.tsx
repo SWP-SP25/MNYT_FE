@@ -103,17 +103,14 @@ export default function BlogList({ category, currentPage, onPageChange }: BlogLi
                         </div>
 
                         {/* Post stats */}
-                        {/* <div className={styles.postStats}>
+                        <div className={styles.postStats}>
                             <span>
-                                <i className="far fa-eye"></i> {post.views ? post.views : 0}
+                                <i className="far fa-comment"></i> {post.commentCount}
                             </span>
                             <span>
-                                <i className="far fa-comment"></i> {post.comments?.length || 0}
+                                <i className="far fa-heart"></i> {post.likeCount}
                             </span>
-                            <span>
-                                <i className="far fa-heart"></i> {post.likes}
-                            </span>
-                        </div> */}
+                        </div>
                     </div>
                 </div>
             ))}

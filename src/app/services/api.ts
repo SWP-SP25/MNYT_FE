@@ -141,7 +141,7 @@ export const commentService = {
     },
 
     // Thêm comment mới
-    addComment: async (commentData: { postId: string; content: string }) => {
+    addComment: async (commentData: { blogPostId: string; content: string }) => {
         try {
             const response = await fetch(`${BASE_URL}/Comments`, {
                 method: 'POST',

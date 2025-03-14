@@ -97,7 +97,7 @@ const BlogDetail = () => {
             {
                 id: 2,
                 title: "Chế độ dinh dưỡng cho bé 6-12 tháng tuổi",
-                coverImage: "/images/blog/baby-nutrition.jpg",
+                coverImage: "/images/tdd.jpg",
                 category: {
                     name: "Dinh dưỡng",
                     color: "#279357"
@@ -106,7 +106,7 @@ const BlogDetail = () => {
             {
                 id: 3,
                 title: "10 món ăn vặt lành mạnh cho mẹ bầu",
-                coverImage: "/images/blog/healthy-snacks.jpg",
+                coverImage: "/images/10.jpg",
                 category: {
                     name: "Dinh dưỡng",
                     color: "#279357"
@@ -183,20 +183,20 @@ const BlogDetail = () => {
                     content: newComment
                 });
 
-                // Thêm bình luận mới vào state
+                // Thêm bình luận mới vào đầu state
                 const newCommentData = {
                     id: response.data.id, // Giả sử API trả về ID của bình luận mới
                     user: {
                         id: user.id,
                         name: user.name,
-                        avatar: user.avatar || '/public/image/mai-anh.jpg' // Thay thế bằng avatar của người dùng nếu có
+                        avatar: user.avatar || '/public/images/ava1.jpg' // Thay thế bằng avatar của người dùng nếu có
                     },
                     content: newComment,
                     createdAt: new Date(), // Thời gian hiện tại
                     likes: 0 // Hoặc giá trị mặc định khác
                 };
 
-                setComments((prevComments) => [...prevComments, newCommentData]); // Cập nhật state comments
+                setComments((prevComments) => [newCommentData, ...prevComments]); // Thêm bình luận mới vào đầu danh sách
                 setNewComment(''); // Đặt lại trường nhập bình luận
             } catch (err) {
                 console.log("Error when commenting", err);

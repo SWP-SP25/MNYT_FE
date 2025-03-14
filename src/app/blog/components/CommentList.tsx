@@ -15,13 +15,12 @@ const safeCreateDate = (dateString: string) => {
 };
 
 const CommentList = ({ comments }: CommentListProps) => {
-    console.log(comments); // Kiểm tra dữ liệu bình luận
     return (
         <div className={styles.commentsList}>
             {comments.map((comment) => (
                 <div key={comment.id} className={styles.commentItem}>
                     <Image
-                        src="/public/images/ava1.jpg" // Thay thế bằng avatar của người dùng nếu có
+                        src="/images/ava1.jpg" // Thay thế bằng avatar của người dùng nếu có
                         alt={comment.accountUserName}
                         width={40}
                         height={40}

@@ -1,88 +1,132 @@
+'use client'
+import { useEffect, useState } from 'react';
+import { blogService, BlogPost, PaginatedResponse } from '@/app/services/api';
 import styles from './components.module.css';
-import BlogCard from './BlogCard';
+import Image from 'next/image';
+import Link from 'next/link';
+import useAxios from '@/hooks/useFetchAxios';
+import { BlogPostListResponse } from '@/types/blogPostList';
 
-const dummyPosts = [
-    {
-        id: 1,
-        title: "Kinh nghiệm ăn uống khi mang thai",
-        author: {
-            id: 1,
-            name: "Mai Anh",
-            avatar: "/src/app/blog/public/ava1.jpg",
-            role: "member" as const,
-            postCount: 15
-        },
-        category: {
-            id: 1,
-            name: "Dinh dưỡng",
-            color: "#279357"
-        },
-        createdAt: new Date("2024-02-17"),
-        lastActivity: new Date("2024-02-17"),
-        preview: "Chia sẻ những kinh nghiệm về chế độ ăn uống lành mạnh trong thai kỳ...",
-        likes: 120,
-        comments: 45,
-        views: 500,
-        isHot: true,
-        tags: ["dinh dưỡng", "thai kỳ", "sức khỏe"]
-    },
-    {
-        id: 2,
-        title: "Những điều cần chuẩn bị trước khi sinh",
-        author: {
-            id: 2,
-            name: "Ngọc Linh",
-            avatar: "/avatars/default.png",
-            role: "member" as const,
-            postCount: 8
-        },
-        category: {
-            id: 2,
-            name: "Chuẩn bị sinh",
-            color: "#2563eb"
-        },
-        createdAt: new Date("2024-02-15"),
-        lastActivity: new Date("2024-02-16"),
-        preview: "Danh sách những vật dụng cần thiết và cách chuẩn bị tinh thần...",
-        likes: 98,
-        comments: 30,
-        views: 350,
-        isSticky: true,
-        tags: ["chuẩn bị sinh", "đồ sơ sinh", "kinh nghiệm"]
-    },
-    {
-        id: 3,
-        title: "Làm sao để giảm stress khi mang bầu?",
-        author: {
-            id: 3,
-            name: "Hương Giang",
-            avatar: "/avatars/default.png",
-            role: "member" as const,
-            postCount: 5
-        },
-        category: {
-            id: 3,
-            name: "Tâm lý",
-            color: "#e11d48"
-        },
-        createdAt: new Date("2024-02-14"),
-        lastActivity: new Date("2024-02-14"),
-        preview: "Chia sẻ các phương pháp giảm stress hiệu quả trong thai kỳ...",
-        likes: 80,
-        comments: 20,
-        views: 200,
-        tags: ["tâm lý", "stress", "thai kỳ"]
+interface BlogListProps {
+    category: string;
+    currentPage: number;
+    onPageChange: (page: number) => void;
+}
+
+export default function BlogList({ category, currentPage, onPageChange }: BlogListProps) {
+    const [totalPages, setTotalPages] = useState(1);
+    const { response: blogPostListResponse, error, loading } = useAxios<BlogPostListResponse>({
+        url: `https://api-mnyt.purintech.id.vn/api/BlogPosts/all-paginated?PageNumber=${currentPage}&PageSize=10`,
+        method: "get"
+    });
+    
+    // Debug render
+    console.log('Current posts state:', blogPostListResponse);
+    if (loading) {
+        return (
+            <div className={styles.loadingContainer}>
+                <div className={styles.loadingContent}>
+                    <div className={styles.loadingSpinner}></div>
+                    <span className={styles.loadingText}>Đang tải bài viết...</span>
+                </div>
+            </div>
+        );
     }
-];
 
-const BlogList = () => {
+    if (error) {
+        return <div className={styles.error}>
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()}>
+                Thử lại
+            </button>
+        </div>;
+    }
+
+    if (!blogPostListResponse?.data.items || blogPostListResponse?.data.items.length === 0) {
+        return <div className={styles.empty}>
+            <p>Chưa có bài viết nào trong mục này</p>
+        </div>;
+    }
+
     return (
         <div className={styles.blogList}>
-            {dummyPosts.map((post) => (
-                <BlogCard key={post.id} post={post} />
+            {blogPostListResponse?.data.items.map((post) => (
+                <div key={post.id} className={styles.blogCard}>
+                    {/* Thumbnail */}
+                    <div className={styles.thumbnailContainer}>
+                        {post.thumbnail ? (
+                            <Image
+                                src={post.thumbnail}
+                                alt={post.title}
+                                width={300}
+                                height={200}
+                                className={styles.thumbnail}
+                            />
+                        ) : (
+                            <div className={styles.placeholderThumbnail}>
+                                No image
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Content */}
+                    <div className={styles.cardContent}>
+                        {/* Category tag */}
+                        <div 
+                            className={styles.categoryTag}
+                            style={{
+                                backgroundColor: getCategoryColor(post.category)
+                            }}
+                        >
+                            {post.category ? post.category : 'Dành cho mẹ bầu'}
+                        </div>
+
+                        {/* Title */}
+                        <Link href={`/blog/${post.id}`}>
+                            <h2 className={styles.title}>{post.title}</h2>
+                        </Link>
+
+                        {/* Author info */}
+                        <div className={styles.authorInfo}>
+                            {/* {post.author.avatar && (
+                                <Image
+                                    src={post.author.avatar}
+                                    alt={post.author.name}
+                                    width={24}
+                                    height={24}
+                                    className={styles.authorAvatar}
+                                />
+                            )} */}
+                            <span className={styles.authorName}>
+                                {post.authorName}
+                            </span>
+                        </div>
+
+                        {/* Post stats */}
+                        <div className={styles.postStats}>
+                            <span>
+                                <i className="far fa-comment"></i> {post.commentCount}
+                            </span>
+                            <span>
+                                <i className="far fa-heart"></i> {post.likeCount}
+                            </span>
+                        </div>
+                    </div>
+                </div>
             ))}
         </div>
     );
-};
+}
 
-export default BlogList;
+// Helper function to get category color
+function getCategoryColor(category: string): string {
+    const categoryColors: { [key: string]: string } = {
+        'Tất cả': '#6B7280',
+        'Kinh nghiệm': '#3B82F6',
+        'Tâm sự': '#EC4899',
+        'Sức khỏe mẹ & bé': '#10B981',
+        'Thời trang': '#F59E0B',
+        'Dinh dưỡng': '#8B5CF6'
+    };
+    return categoryColors[category] || '#6B7280';
+}

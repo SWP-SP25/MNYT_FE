@@ -1,5 +1,5 @@
 import styles from './components.module.css';
-import { FaRegHeart, FaRegComment, FaTag, FaClock } from 'react-icons/fa';
+import { FaRegHeart, FaRegComment, FaTag, FaClock, FaEye } from 'react-icons/fa';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
@@ -80,17 +80,20 @@ const BlogCard = ({ post }: PostProps) => {
 
                     <div className={styles.postStats}>
                         <span className={styles.timeAgo}>
-                            <FaClock size={12} />
+                            <FaClock />
                             {formatDistanceToNow(post.createdAt, { locale: vi, addSuffix: true })}
                         </span>
-                        <span className={styles.views}>{post.views} lượt xem</span>
+                        <span className={styles.views}>
+                            <FaEye />
+                            {post.views} lượt xem
+                        </span>
                         <span className={styles.likes}>
                             <FaRegHeart />
-                            {post.likes}
+                            {post.likes} thích
                         </span>
                         <span className={styles.comments}>
                             <FaRegComment />
-                            {post.comments}
+                            {post.comments} bình luận
                         </span>
                     </div>
                 </div>

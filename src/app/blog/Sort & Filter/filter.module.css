@@ -1,29 +1,37 @@
-.filterSortContainer {
+.pageContainer {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
     margin-bottom: 32px;
+}
+
+/* Category Section */
+.categorySection {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .categoryMenu {
     display: flex;
     gap: 12px;
-    margin-bottom: 28px;
     flex-wrap: wrap;
 }
 
-.categoryMenu button {
+.categoryButton {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     padding: 10px 20px;
     border-radius: 30px;
     font-weight: 500;
+    color: #4b5563;
     transition: all 0.3s ease;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.categoryMenu button:hover {
+.categoryButton:hover {
     background: linear-gradient(135deg, #279357, #1a6b3c);
     color: white;
     border-color: transparent;
@@ -31,27 +39,71 @@
     box-shadow: 0 4px 12px rgba(39, 147, 87, 0.2);
 }
 
+.categoryButton.active {
+    background: linear-gradient(135deg, #279357, #1a6b3c);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(39, 147, 87, 0.2);
+}
+
+/* Sort Section - Đã tách riêng và style mới */
 .sortContainer {
     display: flex;
     justify-content: flex-end;
 }
 
+.sortWrapper {
+    position: relative;
+    width: 200px;
+}
+
 .sortSelect {
-    padding: 8px 16px;
+    width: 100%;
+    padding: 12px 16px;
+    appearance: none;
+    border: 2px solid #e5e7eb;
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
     background: white;
-    color: #4b5563;
+    color: #1f2937;
     font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-    min-width: 140px;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    
+    /* Custom dropdown arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234b5563'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
 }
 
 .sortSelect:hover {
     border-color: #279357;
+    box-shadow: 0 2px 8px rgba(39, 147, 87, 0.1);
+    transform: translateY(-1px);
 }
 
+.sortSelect:focus {
+    outline: none;
+    border-color: #279357;
+    box-shadow: 0 0 0 3px rgba(39, 147, 87, 0.1);
+}
+
+/* Style for options */
+.sortSelect option {
+    padding: 12px;
+    font-size: 14px;
+    background: white;
+    color: #1f2937;
+}
+
+/* Hover effect for options */
+.sortSelect option:hover {
+    background-color: #f3f4f6;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
     .categoryMenu {
         overflow-x: auto;
@@ -59,11 +111,31 @@
         -webkit-overflow-scrolling: touch;
     }
     
-    .categoryMenu button {
+    .categoryButton {
         white-space: nowrap;
     }
     
     .sortContainer {
-        justify-content: flex-start;
+        width: 100%;
     }
+    
+    .sortWrapper {
+        width: 100%;
+    }
+}
+
+/* Animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pageContainer {
+    animation: slideIn 0.3s ease-out;
 }

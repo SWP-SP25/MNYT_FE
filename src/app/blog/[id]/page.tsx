@@ -7,6 +7,11 @@ import { FaRegHeart, FaHeart, FaRegComment, FaShare, FaBookmark, FaClock } from 
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale/vi';
 import { blogService, commentService, BlogPost, Comment } from '@/app/services/api';
+import useAxios from '@/hooks/useFetchAxios';
+import { BlogDetail, BlogPostDetailResponse } from '@/types/blogDetail';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import CommentList from '@/app/blog/components/CommentList';
 
 // Thêm interface để type checking
 interface Comment {
@@ -65,60 +70,26 @@ interface TableOfContentsItem {
 const BlogDetail = () => {
     const { id } = useParams();
     const router = useRouter();
-    const [post, setPost] = useState<BlogPost | null>(null);
+    const [post, setPost] = useState<BlogDetail | null>(null);
     const [isLiked, setIsLiked] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [commentText, setCommentText] = useState('');
     const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
     const [tableOfContents, setTableOfContents] = useState<TableOfContentsItem[]>([]);
     const [comments, setComments] = useState<Comment[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [newComment, setNewComment] = useState('');
+    const { response: blogPostDetailResponse, error, loading } = useAxios<BlogPostDetailResponse>({
+        url: `https://api-mnyt.purintech.id.vn/api/BlogPosts/${id}`,
+        method: "get"
+    });
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                // Fetch post details
-                // const postData = await blogService.getPostById(id as string);
-                const postData = {
-                    "success": true,
-                    "data": {
-                      "id": 0,
-                      "title": "string",
-                      "description": "string",
-                      "authorId": 0,
-                      "authorName": "string",
-                      "period": 0,
-                      "status": "string",
-                      "publishedDay": "2025-03-08",
-                      "likeCount": 0,
-                      "commentCount": 0,
-                      "bookmarkCount": 0
-                    },
-                    "message": "string",
-                    "errors": [
-                      "string"
-                    ]
-                  }
-                setPost(postData.data);
-
-                // Fetch comments
-                const commentsData = await commentService.getPostComments(id as string);
-                setComments(commentsData);
-            } catch (err) {
-                setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (id) {
-            fetchData();
+        if (blogPostDetailResponse) {
+            setPost(blogPostDetailResponse.data);
         }
-    }, [id]);
-
+    }, [blogPostDetailResponse]);
+    console.log(blogPostDetailResponse)
+    
     // Thêm vào useEffect
     useEffect(() => {
         // Giả lập dữ liệu related posts
@@ -158,13 +129,20 @@ const BlogDetail = () => {
         }));
     };
 
-    // Trong useEffect, thêm:
+
+    // Thêm useEffect để lấy bình luận
     useEffect(() => {
-        if (post?.content) {
-            const toc = generateTableOfContents(post.content);
-            setTableOfContents(toc);
-        }
-    }, [post?.content]);
+        const fetchComments = async () => {
+            try {
+                const commentsResponse = await commentService.getPostComments(id as string);
+                setComments(commentsResponse.data.items); // Cập nhật state comments
+            } catch (error) {
+                console.error('Error fetching comments:', error);
+            }
+        };
+
+        fetchComments();
+    }, [id]);
 
     if (loading) return <div>Đang tải...</div>;
     if (error) return <div>{error}</div>;
@@ -189,23 +167,42 @@ const BlogDetail = () => {
         });
     };
 
+    // Bình luận xuất hiện real-time
+    
     const handleSubmitComment = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newComment.trim()) return;
 
-        try {
-            const response = await commentService.addComment({
-                blogPostId: id as string,
-                content: newComment
-            });
+        const userData = Cookies.get('user');
+        if (userData) {
+            const user = JSON.parse(userData);
+            console.log(user);
+            try {
+                const response = await axios.post(`https://api-mnyt.purintech.id.vn/api/Comments?accountId=${user.id}`, {
+                    blogPostId: id as string,
+                    content: newComment
+                });
 
-            // Refresh comments after adding new one
-            const updatedComments = await commentService.getPostComments(id as string);
-            setComments(updatedComments);
-            setNewComment('');
-        } catch (err) {
-            console.error('Error adding comment:', err);
+                // Thêm bình luận mới vào state
+                const newCommentData = {
+                    id: response.data.id, // Giả sử API trả về ID của bình luận mới
+                    user: {
+                        id: user.id,
+                        name: user.name,
+                        avatar: user.avatar || '/public/image/mai-anh.jpg' // Thay thế bằng avatar của người dùng nếu có
+                    },
+                    content: newComment,
+                    createdAt: new Date(), // Thời gian hiện tại
+                    likes: 0 // Hoặc giá trị mặc định khác
+                };
+
+                setComments((prevComments) => [...prevComments, newCommentData]); // Cập nhật state comments
+                setNewComment(''); // Đặt lại trường nhập bình luận
+            } catch (err) {
+                console.log("Error when commenting", err);
+            }
         }
+        console.log(userData);
     };
 
     return (
@@ -213,7 +210,7 @@ const BlogDetail = () => {
             {/* Header */}
             <div className={styles.blogHeader}>
                 <div className={styles.category} style={{ backgroundColor: /*post.category.color*/ "green"}}>
-                    {/* {post.category.name} */"abc"}
+                    {post.category}
                 </div>
                 <h1 className={styles.title}>{post.title}</h1>
                 
@@ -226,7 +223,7 @@ const BlogDetail = () => {
                         className={styles.authorAvatar}
                     /> */}
                     <div className={styles.authorMeta}>
-                        <span className={styles.authorName}>{/*post.author.name*/"abc"}</span>
+                        <span className={styles.authorName}>{/*post.author.name*/post.authorName}</span>
                         <span className={styles.postDate}>
                             <FaClock />
                             {/* {formatDistanceToNow(post.createdAt, { locale: vi, addSuffix: true })} */}
@@ -238,7 +235,7 @@ const BlogDetail = () => {
             {/* Cover Image */}
             <div className={styles.coverImageContainer}>
                 <Image
-                    src={/*post.coverImage*/'https://res.cloudinary.com/duhhxflsl/image/upload/v1741328121/z6383025962394_93f109e1a70471dd09258840233c4071_ggo74l.jpg'}
+                    src={/*post.imageUrl? post.imageUrl:*/'https://res.cloudinary.com/duhhxflsl/image/upload/v1741328121/z6383025962394_93f109e1a70471dd09258840233c4071_ggo74l.jpg'}
                     alt={post.title}
                     width={1200}
                     height={600}
@@ -262,7 +259,7 @@ const BlogDetail = () => {
             </div>
 
             {/* Content */}
-            <div className={styles.content} dangerouslySetInnerHTML={{ __html: post.content }} />
+            <div className={styles.content} dangerouslySetInnerHTML={{ __html: post.description }} />
 
             {/* Author Bio Box */}
             <div className={styles.authorBioBox}>
@@ -275,7 +272,7 @@ const BlogDetail = () => {
                         className={styles.authorBioAvatar}
                     /> */}
                     <div className={styles.authorBioInfo}>
-                        <h3>{/*post.author.name*/"abc"}</h3>
+                        <h3>{post.authorName}</h3>
                         {/* <p className={styles.authorBioText}>{post.author.bio}</p> */}
                     </div>
                 </div>
@@ -289,7 +286,7 @@ const BlogDetail = () => {
                         <span className={styles.statLabel}>Người theo dõi</span>
                     </div>
                 </div>
-                <button className={styles.followButton}>Theo dõi tác giả</button>
+                {/* <button className={styles.followButton}>Theo dõi tác giả</button> */}
             </div>
 
             {/* Tags */}
@@ -306,11 +303,11 @@ const BlogDetail = () => {
                     onClick={handleLike}
                 >
                     {isLiked ? <FaHeart /> : <FaRegHeart />}
-                    <span>{post.likes}</span>
+                    <span>{post.likeCount}</span>
                 </button>
                 <button className={styles.interactionButton}>
                     <FaRegComment />
-                    <span>{/*post.comments.length*/"abc"}</span>
+                    <span>{post.commentCount}</span>
                 </button>
                 <button className={styles.interactionButton} onClick={handleShare}>
                     <FaShare />
@@ -343,37 +340,7 @@ const BlogDetail = () => {
                 </form>
 
                 {/* Comments List */}
-                <div className={styles.commentsList}>
-                    {/* {comments.map((comment) => (
-                        <div key={comment.id} className={styles.commentItem}>
-                            <Image
-                                src={comment.user.avatar}
-                                alt={comment.user.name}
-                                width={40}
-                                height={40}
-                                className={styles.commentAvatar}
-                            />
-                            <div className={styles.commentContent}>
-                                <div className={styles.commentHeader}>
-                                    <span className={styles.commentAuthor}>{comment.user.name}</span>
-                                    <span className={styles.commentDate}>
-                                        {formatDistanceToNow(comment.createdAt, { locale: vi, addSuffix: true })}
-                                    </span>
-                                </div>
-                                <p className={styles.commentText}>{comment.content}</p>
-                                <div className={styles.commentActions}>
-                                    <button className={styles.likeButton}>
-                                        <FaRegHeart />
-                                        <span>{comment.likes}</span>
-                                    </button>
-                                    <button className={styles.replyButton}>
-                                        Trả lời
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ))} */}
-                </div>
+                <CommentList comments={comments} />
             </div>
 
             {/* Related Posts */}

@@ -41,6 +41,7 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
             console.log('Form data before submission:', formData);
             console.log('Birth type:', birthType);
             console.log('User ID:', user?.id);
+            console.log('Auth token exists:', !!localStorage.getItem('token'));
 
             // 1. Tạo pregnancy trước
             const pregnancyData = {
@@ -65,23 +66,27 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
                 }
             );
 
-            console.log('Pregnancy API response:', pregnancyResponse);
-            console.log('Pregnancy created successfully:', pregnancyResponse.data);
+            console.log('Pregnancy API response status:', pregnancyResponse.status);
+            console.log('Full pregnancy response:', pregnancyResponse.data);
 
             // Lấy ID của pregnancy vừa tạo
-            const pregnancyId = pregnancyResponse.data.id;
-            console.log('Pregnancy ID:', pregnancyId);
+            let pregnancyId;
+            if (pregnancyResponse.data.data && pregnancyResponse.data.data.id) {
+                pregnancyId = pregnancyResponse.data.data.id;
+            } else if (pregnancyResponse.data.id) {
+                pregnancyId = pregnancyResponse.data.id;
+            } else {
+                console.error('Cannot find pregnancy ID in response:', pregnancyResponse.data);
+                throw new Error('Pregnancy ID not found in response');
+            }
 
-            // 2. Tạo fetus cho bé thứ nhất
+            console.log('Extracted Pregnancy ID:', pregnancyId);
+
+            // 2. Tạo fetus cho bé thứ nhất (chỉ với thông tin cơ bản)
             const fetusData = {
                 name: "none",
                 gender: "none",
-                pregnancyId: pregnancyId,
-                bpd: formData.bpd,
-                hc: formData.hc,
-                length: formData.length,
-                efw: formData.efw,
-                period: formData.period
+                pregnancyId: pregnancyId
             };
 
             console.log('Fetus data to be sent:', fetusData);
@@ -99,22 +104,73 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
                 }
             );
 
-            console.log('Fetus API response:', fetusResponse);
-            console.log('First fetus created successfully:', fetusResponse.data);
+            console.log('Fetus API response status:', fetusResponse.status);
+            console.log('Full fetus response:', fetusResponse.data);
 
-            // 3. Nếu là sinh đôi, tạo thêm fetus cho bé thứ hai
+            // Lấy ID của fetus vừa tạo
+            let fetusId;
+            if (fetusResponse.data.data && fetusResponse.data.data.id) {
+                fetusId = fetusResponse.data.data.id;
+            } else if (fetusResponse.data.id) {
+                fetusId = fetusResponse.data.id;
+            } else {
+                console.error('Cannot find fetus ID in response:', fetusResponse.data);
+                throw new Error('Fetus ID not found in response');
+            }
+
+            console.log('Extracted Fetus ID:', fetusId);
+
+            // 3. Tạo FetusRecord với các thông số đo lường
+            const fetusRecordData = {
+                inputPeriod: formData.period,
+                weight: formData.efw, // EFW là ước tính cân nặng
+                bpd: formData.bpd,
+                length: formData.length,
+                hc: formData.hc,
+                date: new Date().toISOString().split('T')[0], // Ngày hiện tại
+                fetusId: fetusId
+            };
+
+            console.log('FetusRecord data to be sent (string values):', fetusRecordData);
+
+            // Gọi API tạo FetusRecord
+            console.log('Calling FetusRecord API for first baby...');
+            const fetusRecordResponse = await axios.post(
+                'https://api-mnyt.purintech.id.vn/api/FetusRecord',
+                fetusRecordData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                }
+            );
+
+            console.log('FetusRecord API response status:', fetusRecordResponse.status);
+            console.log('Full fetus record response:', fetusRecordResponse.data);
+
+            // Lấy ID của fetusRecord vừa tạo
+            let fetusRecordId;
+            if (fetusRecordResponse.data.data && fetusRecordResponse.data.data.id) {
+                fetusRecordId = fetusRecordResponse.data.data.id;
+            } else if (fetusRecordResponse.data.id) {
+                fetusRecordId = fetusRecordResponse.data.id;
+            } else {
+                console.error('Cannot find fetus record ID in response:', fetusRecordResponse.data);
+                fetusRecordId = 'unknown';
+            }
+
+            console.log('Extracted Fetus Record ID:', fetusRecordId);
+
+            // 4. Nếu là sinh đôi, tạo thêm fetus và fetusRecord cho bé thứ hai
+            let fetusId2, fetusRecordId2;
             if (birthType === 'twins' && formData.bpd2 && formData.hc2 && formData.length2 && formData.efw2) {
                 console.log('Creating second fetus for twins...');
 
                 const fetusData2 = {
                     name: "none",
                     gender: "none",
-                    pregnancyId: pregnancyId,
-                    bpd: formData.bpd2,
-                    hc: formData.hc2,
-                    length: formData.length2,
-                    efw: formData.efw2,
-                    period: formData.period
+                    pregnancyId: pregnancyId
                 };
 
                 console.log('Second fetus data to be sent:', fetusData2);
@@ -131,11 +187,109 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
                     }
                 );
 
-                console.log('Second fetus API response:', fetusResponse2);
-                console.log('Second fetus created successfully:', fetusResponse2.data);
+                console.log('Second fetus API response status:', fetusResponse2.status);
+                console.log('Full second fetus response:', fetusResponse2.data);
+
+                // Lấy ID của fetus thứ hai
+                if (fetusResponse2.data.data && fetusResponse2.data.data.id) {
+                    fetusId2 = fetusResponse2.data.data.id;
+                } else if (fetusResponse2.data.id) {
+                    fetusId2 = fetusResponse2.data.id;
+                } else {
+                    console.error('Cannot find second fetus ID in response:', fetusResponse2.data);
+                    throw new Error('Second fetus ID not found in response');
+                }
+
+                console.log('Extracted Second Fetus ID:', fetusId2);
+
+                // Tạo FetusRecord cho bé thứ hai
+                const fetusRecordData2 = {
+                    inputPeriod: formData.period,
+                    weight: formData.efw2,
+                    bpd: formData.bpd2,
+                    length: formData.length2,
+                    hc: formData.hc2,
+                    date: new Date().toISOString().split('T')[0],
+                    fetusId: fetusId2
+                };
+
+                console.log('Second FetusRecord data to be sent (string values):', fetusRecordData2);
+
+                console.log('Calling FetusRecord API for second baby...');
+                const fetusRecordResponse2 = await axios.post(
+                    'https://api-mnyt.purintech.id.vn/api/FetusRecord',
+                    fetusRecordData2,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    }
+                );
+
+                console.log('Second FetusRecord API response status:', fetusRecordResponse2.status);
+                console.log('Full second fetus record response:', fetusRecordResponse2.data);
+
+                // Lấy ID của fetusRecord thứ hai
+                if (fetusRecordResponse2.data.data && fetusRecordResponse2.data.data.id) {
+                    fetusRecordId2 = fetusRecordResponse2.data.data.id;
+                } else if (fetusRecordResponse2.data.id) {
+                    fetusRecordId2 = fetusRecordResponse2.data.id;
+                } else {
+                    console.error('Cannot find second fetus record ID in response:', fetusRecordResponse2.data);
+                    fetusRecordId2 = 'unknown';
+                }
+
+                console.log('Extracted Second Fetus Record ID:', fetusRecordId2);
             }
 
+            // Tổng hợp dữ liệu đã tạo
+            const summaryData = {
+                pregnancy: {
+                    id: pregnancyId,
+                    type: birthType,
+                    accountId: user?.id,
+                    startDate: formData.lastMenstrualPeriod
+                },
+                firstFetus: {
+                    id: fetusId,
+                    pregnancyId: pregnancyId
+                },
+                firstFetusRecord: {
+                    id: fetusRecordId,
+                    fetusId: fetusId,
+                    measurements: {
+                        bpd: formData.bpd,
+                        hc: formData.hc,
+                        length: formData.length,
+                        weight: formData.efw,
+                        inputPeriod: formData.period
+                    }
+                },
+                ...(birthType === 'twins' && fetusId2 ? {
+                    secondFetus: {
+                        id: fetusId2,
+                        pregnancyId: pregnancyId
+                    },
+                    secondFetusRecord: {
+                        id: fetusRecordId2,
+                        fetusId: fetusId2,
+                        measurements: {
+                            bpd: formData.bpd2,
+                            hc: formData.hc2,
+                            length: formData.length2,
+                            weight: formData.efw2,
+                            inputPeriod: formData.period
+                        }
+                    }
+                } : {})
+            };
+
             console.log('All API calls completed successfully!');
+            console.log('Summary of created data:', summaryData);
+
+            // Lưu dữ liệu đã submit để hiển thị nếu cần
+            setSubmittedData(summaryData);
 
             // Hiển thị thông báo thành công
             alert('Đã khởi tạo thai kỳ thành công!');
@@ -167,6 +321,7 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
                 console.error('API error response:', error.response?.data);
                 console.error('API error status:', error.response?.status);
                 console.error('API error headers:', error.response?.headers);
+                console.error('API error config:', error.config);
             }
 
             console.error('Error creating pregnancy or fetus:', error);
@@ -291,15 +446,71 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
                             </div>
 
                             {birthType === 'twins' && (
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="additionalInfo">Thông tin thêm về sinh đôi:</label>
-                                    <textarea
-                                        id="additionalInfo"
-                                        name="additionalInfo"
-                                        value={formData.additionalInfo}
-                                        onChange={handleInputChange}
-                                        rows={3}
-                                    />
+                                <div className={styles.formSection}>
+                                    <p className={styles.sectionTitle}>Mẹ nhập giúp các chỉ số của bé thứ hai dưới này nhé</p>
+
+                                    <div className={styles.formRow}>
+                                        <div className={styles.formGroupHalf}>
+                                            <label htmlFor="bpd2">BPD (mm):</label>
+                                            <input
+                                                type="string"
+                                                id="bpd2"
+                                                name="bpd2"
+                                                value={formData.bpd2 || ''}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className={styles.formGroupHalf}>
+                                            <label htmlFor="hc2">HC (mm):</label>
+                                            <input
+                                                type="string"
+                                                id="hc2"
+                                                name="hc2"
+                                                value={formData.hc2 || ''}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.formRow}>
+                                        <div className={styles.formGroupHalf}>
+                                            <label htmlFor="length2">Chiều dài (mm):</label>
+                                            <input
+                                                type="string"
+                                                id="length2"
+                                                name="length2"
+                                                value={formData.length2 || ''}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className={styles.formGroupHalf}>
+                                            <label htmlFor="efw2">EFW (g):</label>
+                                            <input
+                                                type="string"
+                                                id="efw2"
+                                                name="efw2"
+                                                value={formData.efw2 || ''}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.formGroup}>
+                                        <label htmlFor="additionalInfo">Thông tin thêm về sinh đôi:</label>
+                                        <textarea
+                                            id="additionalInfo"
+                                            name="additionalInfo"
+                                            value={formData.additionalInfo || ''}
+                                            onChange={handleInputChange}
+                                            rows={3}
+                                        />
+                                    </div>
                                 </div>
                             )}
 

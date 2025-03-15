@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { UpdateForm } from './form-update';
 import { motion } from 'framer-motion';
 import useAxios from '@/hooks/useFetchAxios';
+import { useFetusData } from '@/hooks/useFetusData'; // Import hook mới
 import { FetusStandard } from '@/types/fetusStandard';
 import { MeasurementConfig } from '@/types/measurement';
 import domtoimage from 'dom-to-image';
@@ -37,6 +38,15 @@ export const MainContent: React.FC = () => {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isPreviewVisible, setIsPreviewVisible] = useState(false);
     const chartRef = useRef<HTMLDivElement>(null);
+
+    // Sử dụng hook mới để lấy dữ liệu thai nhi
+    const {
+        loading: fetusDataLoading,
+        error: fetusDataError,
+        processedData,
+        currentPeriod
+    } = useFetusData();
+
     const { response: fetalLengthStandard, error: fetalLengthError, loading: fetalLengthLoading } = useAxios<FetusStandard[]>({
         url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/length/singleton',
         method: 'get'
@@ -64,9 +74,7 @@ export const MainContent: React.FC = () => {
     //api kéo toàn bộ dữ liệu blog từ dưới data về
     const previewBlogPost = () => {
         try {
-            if (!blogData?.data) return null;
-
-            const currentPeriod = 12;
+            if (!blogData?.data || !currentPeriod) return null;
 
             // Lọc trực tiếp từ blogData.data vì đó là mảng chứa các bài viết
             const filteredPosts = blogData.data
@@ -82,9 +90,13 @@ export const MainContent: React.FC = () => {
 
     // Data cho biểu đồ chiều dài
     const generateLengthData = () => {
+        console.log('Length standard data:', fetalLengthStandard);
+        console.log('Processed data for length chart:', processedData);
+
         const FetusStandard: any[] = [];
         if (fetalLengthStandard) {
             fetalLengthStandard.forEach(standard => {
+                // Thêm giới hạn trên/dưới từ dữ liệu chuẩn
                 FetusStandard.push({
                     week: standard.period,
                     length: standard.maximum,
@@ -95,31 +107,40 @@ export const MainContent: React.FC = () => {
                     length: standard.minimum,
                     category: 'Giới hạn dưới (WHO)'
                 });
-                if (standard.period <= 28 && standard.period >= 20) {
-                    FetusStandard.push({
-                        week: standard.period,
-                        length: (standard.maximum + standard.minimum) / 2,
-                        category: 'Chiều dài thực tế'
-                    });
-                }
-                if (standard.period >= 28) {
-                    FetusStandard.push({
-                        week: standard.period,
-                        length: (standard.maximum + standard.minimum) / 2,
-                        category: 'Chiều dài ước tính'
-                    });
-                }
-
             });
         }
+
+        // Thêm dữ liệu thực tế từ các lần đo
+        if (processedData.actualData.length > 0) {
+            const lengthData = processedData.actualData.filter(
+                data => data.category === 'Chiều dài thực tế' && data.length !== undefined
+            );
+            console.log('Actual length data:', lengthData);
+            FetusStandard.push(...lengthData);
+        }
+
+        // Thêm dữ liệu ước tính
+        if (processedData.estimatedData.length > 0) {
+            const estimatedData = processedData.estimatedData.filter(
+                data => data.category === 'Chiều dài ước tính' && data.length !== undefined
+            );
+            console.log('Estimated length data:', estimatedData);
+            FetusStandard.push(...estimatedData);
+        }
+
+        console.log('Generated length data:', FetusStandard);
         return FetusStandard;
     };
 
     // Data cho biểu đồ chu vi vòng đầu (HC)
     const generateHeadData = () => {
+        console.log('Head standard data:', fetalHeadStandard);
+        console.log('Processed data for head chart:', processedData);
+
         const FetusStandard: any[] = [];
         if (fetalHeadStandard) {
             fetalHeadStandard.forEach(standard => {
+                // Thêm giới hạn trên/dưới từ dữ liệu chuẩn
                 FetusStandard.push({
                     week: standard.period,
                     head: standard.maximum,
@@ -130,31 +151,40 @@ export const MainContent: React.FC = () => {
                     head: standard.minimum,
                     category: 'Giới hạn dưới (WHO)'
                 });
-                if (standard.period <= 28 && standard.period >= 20) {
-                    FetusStandard.push({
-                        week: standard.period,
-                        head: (standard.maximum + standard.minimum) / 2,
-                        category: 'Chu vi vòng đầu thực tế'
-                    });
-                }
-                if (standard.period >= 28) {
-                    FetusStandard.push({
-                        week: standard.period,
-                        head: (standard.maximum + standard.minimum) / 2,
-                        category: 'Chu vi vòng đầu ước tính'
-                    });
-                }
-
             });
         }
+
+        // Thêm dữ liệu thực tế từ các lần đo
+        if (processedData.actualData.length > 0) {
+            const headData = processedData.actualData.filter(
+                data => data.category === 'Chu vi vòng đầu thực tế' && data.head !== undefined
+            );
+            console.log('Actual head data:', headData);
+            FetusStandard.push(...headData);
+        }
+
+        // Thêm dữ liệu ước tính
+        if (processedData.estimatedData.length > 0) {
+            const estimatedData = processedData.estimatedData.filter(
+                data => data.category === 'Chu vi vòng đầu ước tính' && data.head !== undefined
+            );
+            console.log('Estimated head data:', estimatedData);
+            FetusStandard.push(...estimatedData);
+        }
+
+        console.log('Generated head data:', FetusStandard);
         return FetusStandard;
     };
 
     // Data cho biểu đồ cân nặng
     const generateWeightData = () => {
+        console.log('Weight standard data:', fetalWeightStandard);
+        console.log('Processed data for weight chart:', processedData);
+
         const FetusStandard: any[] = [];
         if (fetalWeightStandard) {
             fetalWeightStandard.forEach(standard => {
+                // Thêm giới hạn trên/dưới từ dữ liệu chuẩn
                 FetusStandard.push({
                     week: standard.period,
                     weight: standard.maximum,
@@ -165,23 +195,28 @@ export const MainContent: React.FC = () => {
                     weight: standard.minimum,
                     category: 'Giới hạn dưới (WHO)'
                 });
-                if (standard.period <= 28 && standard.period >= 20) {
-                    FetusStandard.push({
-                        week: standard.period,
-                        weight: (standard.maximum + standard.minimum) / 2,
-                        category: 'Cân nặng thực tế'
-                    });
-                }
-                if (standard.period >= 28) {
-                    FetusStandard.push({
-                        week: standard.period,
-                        weight: (standard.maximum + standard.minimum) / 2,
-                        category: 'Cân nặng ước tính'
-                    });
-                }
-
             });
         }
+
+        // Thêm dữ liệu thực tế từ các lần đo
+        if (processedData.actualData.length > 0) {
+            const weightData = processedData.actualData.filter(
+                data => data.category === 'Cân nặng thực tế' && data.weight !== undefined
+            );
+            console.log('Actual weight data:', weightData);
+            FetusStandard.push(...weightData);
+        }
+
+        // Thêm dữ liệu ước tính
+        if (processedData.estimatedData.length > 0) {
+            const estimatedData = processedData.estimatedData.filter(
+                data => data.category === 'Cân nặng ước tính' && data.weight !== undefined
+            );
+            console.log('Estimated weight data:', estimatedData);
+            FetusStandard.push(...estimatedData);
+        }
+
+        console.log('Generated weight data:', FetusStandard);
         return FetusStandard;
     };
 
@@ -277,7 +312,8 @@ export const MainContent: React.FC = () => {
                 color: '#52c41a',
                 lineWidth: 2,
                 marker: {
-                    enabled: false
+                    enabled: false,
+                    radius: 5
                 }
             }, {
                 name: activeChart === 'length' ? 'Chiều dài ước tính' :
@@ -295,36 +331,67 @@ export const MainContent: React.FC = () => {
 
     // Định nghĩa interface cho cấu trúc dữ liệu đo lường
 
-
     const getStatusColor = () => {
+        if (!currentPeriod || fetusDataLoading || processedData.actualData.length === 0) {
+            return {
+                color: '#6c757d',
+                status: 'Đang tải dữ liệu...',
+                detail: 'Vui lòng đợi trong khi chúng tôi tải dữ liệu thai nhi của bạn'
+            };
+        }
+
+        // Lấy dữ liệu mới nhất của thai nhi
+        const latestData = {
+            weight: processedData.actualData.find(d => d.category === 'Cân nặng thực tế' && d.week === currentPeriod)?.weight,
+            length: processedData.actualData.find(d => d.category === 'Chiều dài thực tế' && d.week === currentPeriod)?.length,
+            head: processedData.actualData.find(d => d.category === 'Chu vi vòng đầu thực tế' && d.week === currentPeriod)?.head
+        };
+
+        console.log('Latest data for status calculation:', latestData);
+
+        // Nếu không có dữ liệu cho chỉ số đang xem
+        if (
+            (activeChart === 'weight' && latestData.weight === undefined) ||
+            (activeChart === 'length' && latestData.length === undefined) ||
+            (activeChart === 'head' && latestData.head === undefined)
+        ) {
+            return {
+                color: '#6c757d',
+                status: 'Chưa có dữ liệu',
+                detail: `Chưa có dữ liệu ${activeChart === 'weight' ? 'cân nặng' :
+                    activeChart === 'length' ? 'chiều dài' : 'chu vi vòng đầu'
+                    } cho tuần thai ${currentPeriod}`
+            };
+        }
+
         // Cấu hình cho từng loại đo
         const measurementConfigs: Record<string, MeasurementConfig> = {
             'weight': {
                 standard: fetalWeightStandard,
-                currentValue: 1499, // Lấy từ API
+                currentValue: latestData.weight,
                 unit: 'g',
                 measurementName: 'Cân nặng'
             },
             'length': {
                 standard: fetalLengthStandard,
-                currentValue: 250, // Lấy từ API
+                currentValue: latestData.length,
                 unit: 'mm',
                 measurementName: 'Chiều dài'
             },
             'head': {
                 standard: fetalHeadStandard,
-                currentValue: 180, // Lấy từ API
+                currentValue: latestData.head,
                 unit: 'mm',
                 measurementName: 'Chu vi vòng đầu'
             }
         };
 
         const currentConfig = measurementConfigs[activeChart];
+        console.log('Current measurement config:', currentConfig);
 
-        if (currentConfig && currentConfig.standard) {
-            const currentWeek = 28; // Lấy từ API người dùng
+        if (currentConfig && currentConfig.standard && currentConfig.currentValue !== undefined) {
             const currentWeekData = currentConfig.standard.find(
-                standard => standard.period === currentWeek
+                standard => standard.period === currentPeriod
             );
 
             if (currentWeekData) {
@@ -335,7 +402,7 @@ export const MainContent: React.FC = () => {
                 const createMessage = (status: string, color: string) => ({
                     color,
                     status: `Em bé có ${measurementName.toLowerCase()} ${status}`,
-                    detail: `${measurementName} hiện tại (${currentValue}${unit}) ${status} (${minimum}${unit} - ${maximum}${unit}) cho tuần ${currentWeek}`
+                    detail: `${measurementName} hiện tại (${currentValue}${unit}) ${status} (${minimum}${unit} - ${maximum}${unit}) cho tuần ${currentPeriod}`
                 });
 
                 if (currentValue < minimum) {
@@ -348,11 +415,11 @@ export const MainContent: React.FC = () => {
             }
         }
 
-        // Mặc định trả về trạng thái bình thường
+        // Trường hợp không có dữ liệu chuẩn cho tuần thai hiện tại
         return {
-            color: '#52c41a',
-            status: 'Em bé đang phát triển bình thường',
-            detail: 'Các chỉ số nằm trong khoảng bình thường'
+            color: '#6c757d',
+            status: 'Không có dữ liệu chuẩn',
+            detail: `Không có dữ liệu chuẩn cho tuần thai ${currentPeriod}`
         };
     };
 
@@ -508,7 +575,7 @@ export const MainContent: React.FC = () => {
                     <div>
                         <img src={previewUrl} alt="Preview" style={{ maxWidth: '100%' }} />
                         <div style={{ marginTop: '10px', textAlign: 'right' }}>
-                            <Button onClick={() => downloadImage(previewUrl)}>Tải về máy</Button>
+                            <Button onClick={() => downloadImage(previewUrl)}>Tải xuống</Button>
                         </div>
                     </div>
                 )}

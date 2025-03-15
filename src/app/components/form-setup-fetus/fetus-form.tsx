@@ -394,7 +394,7 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
 
                                 <div className={styles.formRow}>
                                     <div className={styles.formGroupHalf}>
-                                        <label htmlFor="bpd">BPD (mm):</label>
+                                        <label htmlFor="bpd">BPD (mm)</label>
                                         <input
                                             type="string"
                                             id="bpd"
@@ -406,7 +406,7 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
                                     </div>
 
                                     <div className={styles.formGroupHalf}>
-                                        <label htmlFor="hc">HC (mm):</label>
+                                        <label htmlFor="hc">HC (mm)</label>
                                         <input
                                             type="string"
                                             id="hc"
@@ -420,7 +420,7 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
 
                                 <div className={styles.formRow}>
                                     <div className={styles.formGroupHalf}>
-                                        <label htmlFor="length">Chiều dài (mm):</label>
+                                        <label htmlFor="length">CRL (mm)</label>
                                         <input
                                             type="string"
                                             id="length"
@@ -432,7 +432,7 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
                                     </div>
 
                                     <div className={styles.formGroupHalf}>
-                                        <label htmlFor="efw">EFW (g):</label>
+                                        <label htmlFor="efw">EFW (gram)</label>
                                         <input
                                             type="string"
                                             id="efw"
@@ -513,6 +513,16 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
                                     </div>
                                 </div>
                             )}
+
+                            <div className={styles.formNote}>
+                                <p><strong>Chú thích:</strong></p>
+                                <ul>
+                                    <li><strong>BPD</strong> - Đường kính lưỡng đỉnh (Biparietal Diameter)</li>
+                                    <li><strong>HC</strong> - Chu vi đầu (Head Circumference)</li>
+                                    <li><strong>CRL</strong> - Chiều dài đầu mông (Crown-Rump Length)</li>
+                                    <li><strong>EFW</strong> - Ước tính cân nặng thai nhi (Estimated Fetal Weight)</li>
+                                </ul>
+                            </div>
 
                             <div className={styles.formActions}>
                                 <button type="button" onClick={onClose}>Hủy</button>

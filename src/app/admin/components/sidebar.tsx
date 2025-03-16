@@ -15,45 +15,36 @@ export const Sidebar = () => {
                         <BsGrid />
                         <span>Main</span>
                     </Link>
-                    <Link href="/admin/insights" className={styles.menuItem}>
-                        <BsGrid />
-                        <span>User Insights</span>
-                    </Link>
                 </nav>
             </div>
 
             <div className={styles.menuGroup}>
                 <h3>Management</h3>
                 <nav>
-                    <Link href="/admin/content" className={styles.menuItem}>
+                    <Link href="/admin/blog" className={styles.menuItem}>
                         <BsFileText />
-                        <span>Home page content</span>
+                        <span>Blogs</span>
                     </Link>
-                    <Link href="/admin/tips" className={styles.menuItem}>
-                        <BsFileText />
-                        <span>Tips of the week</span>
-                    </Link>
-                    <Link href="/admin/users" className={styles.menuItem}>
+                    <Link href="/admin/account" className={styles.menuItem}>
                         <BsPersonFill />
-                        <span>Users</span>
+                        <span>Accounts</span>
                     </Link>
                 </nav>
             </div>
 
             <div className={styles.menuGroup}>
-                <h3>Default Schedule</h3>
+                <h3>Configure</h3>
                 <nav>
-                    <Link href="/admin/schedule/single" className={styles.menuItem}>
-                        <BsCalendarCheck />
-                        <span>Single birth</span>
+                    <Link href="/admin/schedule-template" className={styles.menuItem}>
+                        <span>Schedule Template</span>
                     </Link>
-                    <Link href="/admin/schedule/twin" className={styles.menuItem}>
+                    <Link href="/admin/membership-plan" className={styles.menuItem}>
                         <BsCalendarCheck />
-                        <span>Twin birth</span>
+                        <span>Membership Plan</span>
                     </Link>
-                    <Link href="/admin/schedule/reminder" className={styles.menuItem}>
+                    <Link href="/admin/preganacy-standard" className={styles.menuItem}>
                         <BsCalendarCheck />
-                        <span>Schedule's reminder</span>
+                        <span>Pregnancy Standard</span>
                     </Link>
                 </nav>
             </div>

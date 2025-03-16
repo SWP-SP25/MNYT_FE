@@ -44,7 +44,7 @@ export const MainContent: React.FC = () => {
         //Cụ thể là trong tam cá nguyệt thứ nhất và tam cá nguyệt thứ 2
     });
     const { response: fetalHeadStandard, error: fetalHeadError, loading: fetalHeadLoading } = useAxios<FetusStandard[]>({
-        url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/BPD/singleton',
+        url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/HC/singleton',
         method: 'get'
         //Đây là HC - chu vi vòng đầu, không phải là BDP - đường kính lưỡng đỉnh
     });

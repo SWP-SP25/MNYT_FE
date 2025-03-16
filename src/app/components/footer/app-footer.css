@@ -113,3 +113,8 @@
     color: rgba(255, 255, 255, 0.8);
     /* Màu chữ */
 }
+
+.custom-footer {
+    z-index: 100;
+    /* Đảm bảo z-index của footer thấp hơn popup */
+}

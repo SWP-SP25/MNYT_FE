@@ -5,29 +5,58 @@ import AppSlider from "../../components/slider/app-slider";
 import Link from "next/link";
 import Image from "next/image";
 import { FaCalendarAlt, FaBabyCarriage, FaBookMedical, FaUserMd } from 'react-icons/fa';
+import { useState } from 'react';
+import BirthTypeForm from '@/app/components/form-setup-fetus/fetus-form';
+import { BirthType, FormFetusData } from '@/types/form';
 
+interface FormSubmitData {
+    birthType: BirthType;
+    lastMenstrualPeriod: string;
+    period: string;
+    bpd: string;
+    hc: string;
+    length: string;
+    efw: string;
+}
 
 const AuthenticatedHomePage = () => {
     const { user } = useAuth();
+    const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
 
     if (!user) {
         return <div>Loading...</div>;
     }
 
+    const handleOpenForm = () => {
+        setIsFormOpen(true);
+    };
+
+    const handleCloseForm = () => {
+        setIsFormOpen(false);
+    };
+
+    const handleFormSubmit = (data: FormSubmitData) => {
+        console.log('Form submitted with data:', data);
+        // Xử lý dữ liệu form ở đây
+        // Ví dụ: gửi dữ liệu đến API
+    };
+
     return (
         <div className={styles.page}>
-            <main className={styles.main}>
+            <div className={styles.sliderWrapper}>
                 <AppSlider />
+            </div>
 
+            <main className={styles.main}>
                 {/* Hero Section */}
                 <section className={styles.hero}>
                     <div className={styles.heroContent}>
                         <h1>Chào Mừng Bạn Đã Quay Trở Lại!Auth Home</h1>
                         <p>Đồng hành cùng mẹ trong hành trình thai kỳ và chăm sóc em bé</p>
                         <div className={styles.heroButtons}>
-                            <Link href="/reminder" className={styles.primaryButton}>
-                                Xem Lịch Nhắc
-                            </Link>
+                            <button onClick={handleOpenForm} className={styles.primaryButton}>
+                                Thiết lập thai nhi
+                            </button>
                             <Link href="/blog" className={styles.secondaryButton}>
                                 Đọc Blog
                             </Link>
@@ -104,6 +133,12 @@ const AuthenticatedHomePage = () => {
                     </div>
                 </section>
             </main>
+
+            <BirthTypeForm
+                isOpen={isFormOpen}
+                onClose={handleCloseForm}
+                onSubmit={handleFormSubmit}
+            />
         </div>
     );
 };

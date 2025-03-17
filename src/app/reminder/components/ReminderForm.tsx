@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     TextField,
     Button,
@@ -7,7 +7,9 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
-    Chip
+    Chip,
+    CircularProgress,
+    Alert
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -25,13 +27,14 @@ const REMINDER_TAGS = [
 ];
 
 interface ReminderFormProps {
-    onSubmit: (reminder: Omit<Reminder, 'id'>) => void;
+    onSubmit: (reminder: Omit<Reminder, 'id'>, refreshAfterDelay?: boolean) => void;
     onCancel: () => void;
     initialDate?: string | null;
+    addUserReminder?: (title: string, description: string, date: string, status?: string, type?: string) => Promise<boolean>;
 }
 
-const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initialDate }) => {
-    const [formData, setFormData] = React.useState({
+const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initialDate, addUserReminder }) => {
+    const [formData, setFormData] = useState({
         title: '',
         date: initialDate ? moment(initialDate) : null,
         time: null,
@@ -39,17 +42,23 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
         tag: '', // Thêm trường tag
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // Thêm state error và submitting
+    const [error, setError] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
 
         if (!formData.date || !formData.time || !formData.tag) {
-            alert('Vui lòng điền đầy đủ thông tin');
+            setError('Vui lòng điền đầy đủ thông tin');
             return;
         }
 
         const dateStr = formData.date.format('YYYY-MM-DD');
         const timeStr = formData.time.format('HH:mm');
 
+        // Tạo đối tượng reminder cho UI
         const reminder = {
             title: formData.title,
             date: dateStr,
@@ -61,8 +70,40 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
             color: REMINDER_TAGS.find(t => t.value === formData.tag)?.color
         };
 
-        onSubmit(reminder);
-        setFormData({ title: '', date: null, time: null, description: '', tag: '' });
+        // Nếu có hàm addUserReminder (từ API), sử dụng nó
+        if (addUserReminder) {
+            try {
+                setSubmitting(true);
+                console.log('Calling API to create reminder:', reminder);
+
+                // Gọi API để tạo reminder mới với đúng các tham số
+                const success = await addUserReminder(
+                    reminder.title,
+                    reminder.description,
+                    dateStr,
+                    'pending',  // status
+                    'user'      // type
+                );
+
+                if (success) {
+                    console.log('Reminder created successfully via API');
+                    onSubmit(reminder, true); // Truyền tham số true để refresh sau 4s
+                    setFormData({ title: '', date: null, time: null, description: '', tag: '' });
+                } else {
+                    setError('Không thể tạo reminder. Vui lòng thử lại sau.');
+                }
+            } catch (err) {
+                console.error('Error creating reminder:', err);
+                setError('Lỗi khi tạo reminder: ' + (err.message || 'Unknown error'));
+            } finally {
+                setSubmitting(false);
+            }
+        } else {
+            // Nếu không có API, chỉ sử dụng hàm onSubmit
+            console.log('No API function provided, using local handler only');
+            onSubmit(reminder, true); // Truyền tham số true để refresh sau 4s
+            setFormData({ title: '', date: null, time: null, description: '', tag: '' });
+        }
     };
 
     return (
@@ -90,6 +131,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
                         InputProps={{
                             sx: { borderRadius: 1 }
                         }}
+                        disabled={submitting}
                     />
 
                     {/* Thêm Select cho tag */}
@@ -102,6 +144,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
                             onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
                             required
                             sx={{ borderRadius: 1 }}
+                            disabled={submitting}
                         >
                             {REMINDER_TAGS.map((tag) => (
                                 <MenuItem key={tag.value} value={tag.value}>
@@ -137,6 +180,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
                             slotProps={{
                                 textField: {
                                     size: 'medium',
+                                    disabled: submitting
                                 }
                             }}
                         />
@@ -155,6 +199,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
                             slotProps={{
                                 textField: {
                                     size: 'medium',
+                                    disabled: submitting
                                 }
                             }}
                         />
@@ -172,7 +217,17 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
                         InputProps={{
                             sx: { borderRadius: 1 }
                         }}
+                        disabled={submitting}
                     />
+
+                    {error && (
+                        <Alert
+                            severity="error"
+                            sx={{ mt: 2, mb: 2 }}
+                        >
+                            {error}
+                        </Alert>
+                    )}
 
                     <Box sx={{
                         display: 'flex',
@@ -188,6 +243,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
                                 textTransform: 'uppercase',
                                 py: 1
                             }}
+                            disabled={submitting}
                         >
                             Hủy
                         </Button>
@@ -197,10 +253,29 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
                             fullWidth
                             sx={{
                                 textTransform: 'uppercase',
-                                py: 1
+                                py: 1,
+                                position: 'relative'
                             }}
+                            disabled={submitting}
                         >
-                            Tạo Reminder
+                            {submitting ? (
+                                <>
+                                    <CircularProgress
+                                        size={24}
+                                        sx={{
+                                            color: 'white',
+                                            position: 'absolute',
+                                            top: '50%',
+                                            left: '50%',
+                                            marginTop: '-12px',
+                                            marginLeft: '-12px'
+                                        }}
+                                    />
+                                    <span style={{ visibility: 'hidden' }}>Tạo Reminder</span>
+                                </>
+                            ) : (
+                                'Tạo Reminder'
+                            )}
                         </Button>
                     </Box>
                 </form>

@@ -206,7 +206,7 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
                             date: reminderDate.format('YYYY-MM-DD'),
                             type: 'system',
                             period: template.period,
-                            status: 'pending' // Trạng thái mặc định
+                            status: template.status
                         });
                     }
                 });
@@ -284,29 +284,55 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
             const systemReminder = systemReminders.find(r => r.id.toString() === reminderId);
             const userReminder = userReminders.find(r => r.id.toString() === reminderId);
 
+            if (!systemReminder && !userReminder) {
+                console.error('Reminder not found:', reminderId);
+                setError('Không tìm thấy reminder');
+                setLoading(false);
+                return false;
+            }
+
             // Xác định loại reminder và endpoint tương ứng
             let endpoint = '';
             let payload = {};
 
             if (systemReminder) {
                 // Nếu là reminder từ template
+                console.log('Updating system reminder:', systemReminder);
+
                 endpoint = `https://api-mnyt.purintech.id.vn/api/ScheduleTemplate`;
+
+                // Giữ nguyên tất cả dữ liệu hiện tại, chỉ cập nhật status
                 payload = {
-                    id: reminderId,
-                    status: status
+                    id: systemReminder.id,
+                    title: systemReminder.title,
+                    description: systemReminder.description,
+                    period: systemReminder.period,
+                    type: systemReminder.type,
+                    status: status,
+                    // Thêm các trường khác nếu cần
                 };
             } else if (userReminder) {
                 // Nếu là reminder người dùng tự tạo
-                endpoint = `https://api-mnyt.purintech.id.vn/api/ScheduleUser/${reminderId}`;
+                console.log('Updating user reminder:', userReminder);
+
+                endpoint = `https://api-mnyt.purintech.id.vn/api/ScheduleUser`;
+
+                // Giữ nguyên tất cả dữ liệu hiện tại, chỉ cập nhật status
                 payload = {
-                    id: reminderId,
-                    status: status
+                    id: userReminder.id,
+                    title: userReminder.title,
+                    note: userReminder.description, // 'note' thay vì 'description' cho user reminder
+                    date: userReminder.date,
+                    type: userReminder.type,
+                    status: status,
+                    pregnancyId: pregnancyData.id,
+                    // Thêm các trường khác nếu cần
                 };
-            } else {
-                throw new Error('Reminder not found');
             }
 
             console.log('Update status payload:', payload);
+
+            // Gọi API để cập nhật trạng thái
             const response = await axios.put(endpoint, payload);
             console.log('Update status response:', response.data);
 
@@ -334,6 +360,58 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
         } catch (err) {
             console.error('Error updating reminder status:', err);
             setError('Lỗi khi cập nhật trạng thái');
+            setLoading(false);
+            return false;
+        }
+    };
+
+    // Hàm để thêm reminder người dùng tự tạo
+    const addUserReminder = async (title: string, description: string, date: string, status: string = 'pending', type: string = 'user') => {
+        if (!pregnancyData || !pregnancyData.id) {
+            console.error('Cannot add user reminder: missing pregnancy data');
+            setError('Không thể tạo lịch: thiếu dữ liệu thai kỳ');
+            return false;
+        }
+
+        try {
+            console.log('Adding user reminder:', { title, description, date });
+            setLoading(true);
+
+            // Tạo payload theo đúng cấu trúc API yêu cầu
+            const payload = {
+                title: title,
+                status: status,
+                type: type,
+                date: date,
+                note: description,  // 'note' thay vì 'description'
+                pregnancyId: pregnancyData.id
+            };
+
+            console.log('API request payload:', payload);
+            const response = await axios.post(`https://api-mnyt.purintech.id.vn/api/ScheduleUser`, payload);
+            console.log('Add user reminder response:', response.data);
+
+            // Thêm reminder mới vào state
+            if (response.data && response.data.id) {
+                const newUserReminder: CalculatedReminder = {
+                    id: response.data.id,
+                    title: title,
+                    description: description,  // Lưu vào state với tên 'description'
+                    date: date,
+                    type: 'user',
+                    period: 0,
+                    status: status as 'pending' | 'done' | 'skip'
+                };
+
+                setUserReminders(prev => [...prev, newUserReminder]);
+            }
+
+            setLoading(false);
+            return true;
+        } catch (err) {
+            console.error('Error adding user reminder:', err);
+            console.error('Error details:', err.response?.data || err.message);
+            setError('Lỗi khi tạo lịch mới');
             setLoading(false);
             return false;
         }
@@ -403,6 +481,7 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
         error,
         refreshReminders,
         updateReminderStatus,
+        addUserReminder,
         pregnancyData,
         fetusData,
         fetusRecordData

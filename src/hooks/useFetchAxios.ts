@@ -56,7 +56,8 @@ const useAxios = <T = any>({
             }
 
             console.log("fetch data", axiosResponse);
-            setResponse(axiosResponse.data);
+            console.log("fetch data", axiosResponse.data);
+            setResponse(axiosResponse.data) as T;
         } catch (err) {
             setError(err);
         } finally {

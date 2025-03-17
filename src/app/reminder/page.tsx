@@ -53,7 +53,13 @@ export default function ReminderPage() {
     console.log('User ID for API calls:', userId);
 
     // Sử dụng hook useReminders để test API
-    const { reminders: apiReminders, loading: apiLoading, error: apiError, refreshReminders } = useReminders({ userId });
+    const {
+        reminders: apiReminders,
+        loading: apiLoading,
+        error: apiError,
+        refreshReminders,
+        updateReminderStatus
+    } = useReminders({ userId });
 
     // Log kết quả từ hook
     useEffect(() => {
@@ -157,10 +163,37 @@ export default function ReminderPage() {
 
     const handleStatusChange = (reminderId: string, status: 'skip' | 'done' | 'pending') => {
         console.log('Changing status for reminder', reminderId, 'to', status);
+
+        // Cập nhật trạng thái local trước để UI phản hồi ngay lập tức
         setReminderStatuses(prev => ({
             ...prev,
             [reminderId]: status
         }));
+
+        // Gọi API để cập nhật trạng thái trong database
+        updateReminderStatus(reminderId, status)
+            .then(success => {
+                if (success) {
+                    setSnackbar({
+                        open: true,
+                        message: 'Cập nhật trạng thái thành công!',
+                        severity: 'success'
+                    });
+                } else {
+                    // Nếu cập nhật thất bại, khôi phục trạng thái cũ
+                    setReminderStatuses(prev => {
+                        const newState = { ...prev };
+                        delete newState[reminderId]; // Xóa trạng thái mới
+                        return newState;
+                    });
+
+                    setSnackbar({
+                        open: true,
+                        message: 'Cập nhật trạng thái thất bại!',
+                        severity: 'error'
+                    });
+                }
+            });
     };
 
     const statusColors = {

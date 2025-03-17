@@ -18,13 +18,11 @@ import moment from 'moment';
 
 // Định nghĩa các tag có sẵn
 const REMINDER_TAGS = [
-    { value: 'work', label: 'Công việc', color: '#f44336' },
-    { value: 'personal', label: 'Cá nhân', color: '#4caf50' },
-    { value: 'study', label: 'Học tập', color: '#2196f3' },
-    { value: 'health', label: 'Sức khỏe', color: '#ff9800' },
-    { value: 'family', label: 'Gia đình', color: '#9c27b0' },
-    { value: 'other', label: 'Khác', color: '#757575' },
-] as const;
+    { value: 'prenental_checkup', label: 'Khám thai', color: '#f44336' },
+    { value: 'ultrasound', label: 'Siêu âm', color: '#4caf50' },
+    { value: 'lab_tests', label: 'Xét nghiệm', color: '#2196f3' },
+    { value: 'vaccination', label: 'Tiêm chủng', color: '#ff9800' },
+];
 
 interface ReminderFormProps {
     onSubmit: (reminder: Omit<Reminder, 'id'>) => void;

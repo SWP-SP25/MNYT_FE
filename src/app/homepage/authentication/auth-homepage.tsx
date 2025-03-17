@@ -51,7 +51,7 @@ const AuthenticatedHomePage = () => {
                 {/* Hero Section */}
                 <section className={styles.hero}>
                     <div className={styles.heroContent}>
-                        <h1>Chào Mừng Bạn Đã Quay Trở Lại!Auth Home</h1>
+                        <h1>Chào Mừng Bạn Đã Quay Trở Lại {user.fullName}</h1>
                         <p>Đồng hành cùng mẹ trong hành trình thai kỳ và chăm sóc em bé</p>
                         <div className={styles.heroButtons}>
                             <button onClick={handleOpenForm} className={styles.primaryButton}>

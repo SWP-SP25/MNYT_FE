@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Container,
     Button,
@@ -28,23 +28,42 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import AddIcon from '@mui/icons-material/Add';
 import ReminderForm from './components/ReminderForm';
-import type { Reminder } from '@/types/reminder';
+import type { Reminder as UserReminder } from '@/types/schedule';
+import { useAuth } from '@/hooks/useAuth';
+import { useReminders } from '@/hooks/useReminder';
 import styles from './page.module.css';
 import moment from 'moment';
 import CloseIcon from '@mui/icons-material/Close';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 const REMINDER_TAGS = [
-    { value: 'work', label: 'Công việc', color: '#f44336' },
-    { value: 'personal', label: 'Cá nhân', color: '#4caf50' },
-    { value: 'study', label: 'Học tập', color: '#2196f3' },
-    { value: 'health', label: 'Sức khỏe', color: '#ff9800' },
-    { value: 'family', label: 'Gia đình', color: '#9c27b0' },
-    { value: 'other', label: 'Khác', color: '#757575' },
+    { value: 'prenental_checkup', label: 'Khám thai', color: '#f44336' },
+    { value: 'ultrasound', label: 'Siêu âm', color: '#4caf50' },
+    { value: 'lab_tests', label: 'Xét nghiệm', color: '#2196f3' },
+    { value: 'vaccination', label: 'Tiêm chủng', color: '#ff9800' },
 ];
 
 export default function ReminderPage() {
-    const [reminders, setReminders] = useState<Reminder[]>([]);
+    // Lấy thông tin người dùng
+    const { user } = useAuth();
+    console.log('User object in reminder page:', user);
+
+    // Lấy userId và test API
+    const userId = user?.id ? parseInt(user.id) : undefined;
+    console.log('User ID for API calls:', userId);
+
+    // Sử dụng hook useReminders để test API
+    const { reminders: apiReminders, loading: apiLoading, error: apiError, refreshReminders } = useReminders({ userId });
+
+    // Log kết quả từ hook
+    useEffect(() => {
+        console.log('API Reminders from hook:', apiReminders);
+        console.log('API Loading state:', apiLoading);
+        console.log('API Error state:', apiError);
+    }, [apiReminders, apiLoading, apiError]);
+
+    // State cho giao diện hiện tại
+    const [userReminders, setUserReminders] = useState<UserReminder[]>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [snackbar, setSnackbar] = useState({
@@ -54,16 +73,72 @@ export default function ReminderPage() {
     });
     const [reminderStatuses, setReminderStatuses] = useState<Record<string, 'skip' | 'done' | 'pending'>>({});
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const [selectedReminder, setSelectedReminder] = useState<Reminder | null>(null);
+    const [selectedReminder, setSelectedReminder] = useState<UserReminder | null>(null);
 
-    const handleAddReminder = (newReminder: Omit<Reminder, 'id'>) => {
-        const reminder: Reminder = {
+    // Chuyển đổi reminders từ API sang định dạng của giao diện
+    useEffect(() => {
+        if (apiReminders && apiReminders.length > 0) {
+            console.log('Converting API reminders to UI format');
+
+            const convertedReminders: UserReminder[] = apiReminders.map(apiReminder => {
+                // Đảm bảo date là string và có định dạng YYYY-MM-DD
+                const date = apiReminder.date || moment().format('YYYY-MM-DD');
+                // Mặc định time là 09:00 nếu không có
+                const time = "09:00";
+
+                // Xác định tag dựa trên period
+                let tag = 'prenental_checkup'; // Mặc định là khám thai
+                if (apiReminder.period) {
+                    // Phân loại tag dựa trên tuần thai
+                    if (apiReminder.period < 12) {
+                        tag = 'prenental_checkup'; // Khám thai định kỳ đầu
+                    } else if (apiReminder.period >= 12 && apiReminder.period < 24) {
+                        tag = 'ultrasound'; // Siêu âm giữa kỳ
+                    } else if (apiReminder.period >= 24 && apiReminder.period < 36) {
+                        tag = 'lab_tests'; // Xét nghiệm
+                    } else {
+                        tag = 'vaccination'; // Tiêm chủng cuối kỳ
+                    }
+                }
+
+                return {
+                    id: apiReminder.id.toString(),
+                    title: apiReminder.title || `Lịch khám thai tuần ${apiReminder.period}`,
+                    description: apiReminder.description || `Khám thai định kỳ tuần ${apiReminder.period}`,
+                    date: date,
+                    time: time,
+                    tag: tag,
+                    color: REMINDER_TAGS.find(t => t.value === tag)?.color || '#ff9800',
+                };
+            });
+
+            console.log('Converted reminders:', convertedReminders);
+            setUserReminders(convertedReminders);
+        }
+    }, [apiReminders]);
+
+    // Hiển thị thông báo lỗi nếu có
+    useEffect(() => {
+        if (apiError) {
+            console.error('API Error in page component:', apiError);
+            setSnackbar({
+                open: true,
+                message: `Lỗi: ${apiError}`,
+                severity: 'error'
+            });
+        }
+    }, [apiError]);
+
+    const handleAddReminder = (newReminder: Omit<UserReminder, 'id'>) => {
+        console.log('Adding new reminder:', newReminder);
+
+        const reminder: UserReminder = {
             ...newReminder,
             id: Date.now().toString(),
             color: '#1976d2',
         };
 
-        setReminders(prev => [...prev, reminder]);
+        setUserReminders(prev => [...prev, reminder]);
         setIsFormOpen(false);
 
         setSelectedDate(reminder.date);
@@ -76,10 +151,12 @@ export default function ReminderPage() {
     };
 
     const handleDateClick = (arg: any) => {
+        console.log('Date clicked:', arg.dateStr);
         setSelectedDate(arg.dateStr);
     };
 
     const handleStatusChange = (reminderId: string, status: 'skip' | 'done' | 'pending') => {
+        console.log('Changing status for reminder', reminderId, 'to', status);
         setReminderStatuses(prev => ({
             ...prev,
             [reminderId]: status
@@ -92,14 +169,18 @@ export default function ReminderPage() {
         pending: '#1976d2'
     };
 
+    // Kết hợp reminders từ API và reminders do người dùng tạo
+    const allReminders = [...userReminders];
+    console.log('All reminders for display:', allReminders);
+
     const selectedDateReminders = selectedDate
-        ? reminders
+        ? allReminders
             .filter(reminder => reminder.date === selectedDate)
             .sort((a, b) => a.time.localeCompare(b.time))
         : [];
 
     const handleEventMouseEnter = (info: any) => {
-        const reminder = reminders.find(r => r.id === info.event.id);
+        const reminder = allReminders.find(r => r.id === info.event.id);
         if (reminder) {
             setSelectedReminder(reminder);
             setAnchorEl(info.el);
@@ -111,7 +192,7 @@ export default function ReminderPage() {
         setSelectedReminder(null);
     };
 
-    const events = reminders.map(reminder => ({
+    const events = allReminders.map(reminder => ({
         id: reminder.id,
         title: reminder.title,
         start: `${reminder.date}T${reminder.time}:00`,
@@ -126,6 +207,8 @@ export default function ReminderPage() {
         }
     }));
 
+    console.log('Calendar events:', events);
+
     return (
         <Container
             maxWidth="xl"
@@ -137,23 +220,55 @@ export default function ReminderPage() {
         >
             <Box sx={{
                 display: 'flex',
-                justifyContent: 'flex-end',
+                justifyContent: 'space-between',
                 mb: 2
             }}>
-                <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => setIsFormOpen(true)}
-                    sx={{
-                        bgcolor: '#1976d2',
-                        '&:hover': {
-                            bgcolor: '#1565c0'
-                        }
-                    }}
-                >
-                    TẠO REMINDER
-                </Button>
+                <Typography variant="h4" component="h1">
+                    Lịch khám thai
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button
+                        variant="outlined"
+                        onClick={() => {
+                            console.log('Refresh button clicked');
+                            refreshReminders();
+                        }}
+                        disabled={apiLoading}
+                    >
+                        Làm mới
+                    </Button>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => setIsFormOpen(true)}
+                        sx={{
+                            bgcolor: '#1976d2',
+                            '&:hover': {
+                                bgcolor: '#1565c0'
+                            }
+                        }}
+                    >
+                        TẠO REMINDER
+                    </Button>
+                </Box>
             </Box>
+
+            {/* Hiển thị trạng thái API (chỉ để test) */}
+            <Paper sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="body2">
+                    <strong>API Status:</strong> {apiLoading ? 'Loading...' : apiError ? 'Error' : 'Success'}
+                    {apiError && ` - ${apiError}`}
+                </Typography>
+                <Typography variant="body2">
+                    <strong>API Reminders:</strong> {apiReminders?.length || 0}
+                </Typography>
+            </Paper>
+
+            {apiLoading && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                </Box>
+            )}
 
             <Grid container spacing={3}>
                 {selectedDate && (

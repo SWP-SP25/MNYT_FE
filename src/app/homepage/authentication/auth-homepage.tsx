@@ -207,13 +207,13 @@ const AuthenticatedHomePage = () => {
                         </div>
                     </div>
                     <div className={styles.heroImage}>
-                        <Image
-                            src="/images/hero-pregnancy.jpg"
-                            alt="Mẹ bầu hạnh phúc"
+                        {/* <Image
+                            src=""
+                            alt=""
                             width={600}
                             height={400}
                             priority
-                        />
+                        /> */}
                     </div>
                 </section>
 
@@ -249,12 +249,12 @@ const AuthenticatedHomePage = () => {
                     <h2>Bài Viết Mới Nhất</h2>
                     <div className={styles.blogGrid}>
                         <div className={styles.blogCard}>
-                            <Image
+                            {/* <Image
                                 src="/images/blog/nutrition.jpg"
                                 alt="Dinh dưỡng thai kỳ"
                                 width={300}
                                 height={200}
-                            />
+                            /> */}
                             <div className={styles.blogContent}>
                                 <h3>Dinh Dưỡng Trong Thai Kỳ</h3>
                                 <p>Những thực phẩm cần thiết cho mẹ bầu...</p>

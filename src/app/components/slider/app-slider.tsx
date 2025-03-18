@@ -14,15 +14,15 @@ interface SlideItem {
 const defaultSlides: SlideItem[] = [
     {
         id: 1,
-        title: 'TOP 9 SERUM & KEM TRỊ MỤN',
-        content: 'Cho bà bầu HIỆU QUẢ NHẤT',
+        title: ' ',
+        content: ' ',
         image: 'https://res.cloudinary.com/duhhxflsl/image/upload/v1741328121/z6383025874967_66b5f79ade62dbd96a5fbb746cec0286_floi7r.jpg',
     },
     {
         id: 2,
-        title: 'Slide 2',
-        content: 'Nội dung slide 2',
-        image: 'https://res.cloudinary.com/duhhxflsl/image/upload/v1741087885/k8pj8etunyklwrtojami.png',
+        title: ' ',
+        content: ' ',
+        image: 'https://res.cloudinary.com/duhhxflsl/image/upload/v1742277679/Review-kem-tri-ran-cho-ba-bau_jobzdn.webp',
     },
     // Thêm các slide khác nếu cần
 ];

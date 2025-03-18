@@ -285,7 +285,7 @@ export default function ReminderPage() {
                 mb: 2
             }}>
                 <Typography variant="h4" component="h1">
-                    Lịch khám thai
+                    Hệ thống nhắc nhở
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     <Button
@@ -316,7 +316,7 @@ export default function ReminderPage() {
             </Box>
 
             {/* Hiển thị trạng thái API (chỉ để test) */}
-            <Paper sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {/* <Paper sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="body2">
                     <strong>API Status:</strong> {apiLoading ? 'Loading...' : apiError ? 'Error' : 'Success'}
                     {apiError && ` - ${apiError}`}
@@ -324,14 +324,14 @@ export default function ReminderPage() {
                 <Typography variant="body2">
                     <strong>API Reminders:</strong> {apiReminders?.length || 0}
                 </Typography>
-            </Paper>
+            </Paper> */}
 
             <Grid container spacing={3} sx={{
                 opacity: fadeIn ? 1 : 0.6,
                 transition: 'opacity 0.3s ease-in-out'
             }}>
                 {selectedDate && (
-                    <Grid item xs={12} md={3}>
+                    <Grid item xs={12} md={4}>
                         <Paper className={styles.reminderList}>
                             <div className={styles.reminderListHeader}>
                                 <Typography variant="h6">
@@ -354,31 +354,12 @@ export default function ReminderPage() {
                                             disablePadding
                                             sx={{
                                                 position: 'relative',
-                                                zIndex: 2
+                                                zIndex: 2,
+                                                flexDirection: 'column',
+                                                alignItems: 'stretch',
+                                                gap: 1
                                             }}
                                         >
-                                            <ListItemIcon>
-                                                <Select
-                                                    value={reminder.status || 'pending'}
-                                                    onChange={(e) => handleStatusChange(reminder.id, e.target.value as 'skip' | 'done' | 'pending')}
-                                                    size="small"
-                                                    MenuProps={{
-                                                        sx: {
-                                                            zIndex: 9999
-                                                        }
-                                                    }}
-                                                    sx={{
-                                                        minWidth: 120,
-                                                        '& .MuiSelect-select': {
-                                                            py: 1
-                                                        }
-                                                    }}
-                                                >
-                                                    <MenuItem value="pending">Chưa làm</MenuItem>
-                                                    <MenuItem value="done">Đã làm</MenuItem>
-                                                    <MenuItem value="skip">Bỏ qua</MenuItem>
-                                                </Select>
-                                            </ListItemIcon>
                                             <ListItemText
                                                 primary={
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -411,6 +392,28 @@ export default function ReminderPage() {
                                                     </>
                                                 }
                                             />
+                                            <Select
+                                                value={reminder.status || 'pending'}
+                                                onChange={(e) => handleStatusChange(reminder.id, e.target.value as 'skip' | 'done' | 'pending')}
+                                                size="small"
+                                                MenuProps={{
+                                                    sx: {
+                                                        zIndex: 9999
+                                                    }
+                                                }}
+                                                sx={{
+                                                    width: '100%',
+                                                    maxWidth: '200px',
+                                                    alignSelf: 'flex-end',
+                                                    '& .MuiSelect-select': {
+                                                        py: 0.5
+                                                    }
+                                                }}
+                                            >
+                                                <MenuItem value="pending">Chưa làm</MenuItem>
+                                                <MenuItem value="done">Đã làm</MenuItem>
+                                                <MenuItem value="skip">Bỏ qua</MenuItem>
+                                            </Select>
                                         </ListItem>
                                     ))}
                                 </List>
@@ -423,7 +426,7 @@ export default function ReminderPage() {
                     </Grid>
                 )}
 
-                <Grid item xs={12} md={selectedDate ? 9 : 12}>
+                <Grid item xs={12} md={selectedDate ? 8 : 12}>
                     <div className={styles.calendar}>
                         <FullCalendar
                             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}

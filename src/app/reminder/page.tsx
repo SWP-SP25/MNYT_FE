@@ -427,7 +427,7 @@ export default function ReminderPage() {
                     <div className={styles.calendar}>
                         <FullCalendar
                             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                            initialView="timeGridWeek"
+                            initialView="dayGridMonth"
                             headerToolbar={{
                                 left: 'prev,next today',
                                 center: 'title',

@@ -122,22 +122,26 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
 
             // 3. Tạo FetusRecord với các thông số đo lường
             const fetusRecordData = {
-                inputPeriod: formData.period,
-                weight: formData.efw, // EFW là ước tính cân nặng
-                bpd: formData.bpd,
-                length: formData.length,
-                hc: formData.hc,
-                date: new Date().toISOString().split('T')[0], // Ngày hiện tại
+                inputPeriod: parseInt(formData.period),
+                weight: parseInt(formData.efw), // EFW là ước tính cân nặng
+                bpd: parseInt(formData.bpd),
+                length: parseInt(formData.length),
+                hc: parseInt(formData.hc),
+                date: formData.lastMenstrualPeriod,
                 fetusId: fetusId
             };
 
-            console.log('FetusRecord data to be sent (string values):', fetusRecordData);
+            console.log('FetusRecord data (converted to numbers):', fetusRecordData);
+
+            // Gói dữ liệu thành mảng như API yêu cầu
+            const fetusRecordPayload = [fetusRecordData];
+            console.log('FetusRecord payload (as array):', fetusRecordPayload);
 
             // Gọi API tạo FetusRecord
             console.log('Calling FetusRecord API for first baby...');
             const fetusRecordResponse = await axios.post(
                 'https://api-mnyt.purintech.id.vn/api/FetusRecord',
-                fetusRecordData,
+                fetusRecordPayload, // Gửi dưới dạng mảng
                 {
                     headers: {
                         'Content-Type': 'application/json',
@@ -204,16 +208,16 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
 
                 // Tạo FetusRecord cho bé thứ hai
                 const fetusRecordData2 = {
-                    inputPeriod: formData.period,
-                    weight: formData.efw2,
-                    bpd: formData.bpd2,
-                    length: formData.length2,
-                    hc: formData.hc2,
+                    inputPeriod: parseInt(formData.period) || 0,
+                    weight: parseInt(formData.efw2) || 0,
+                    bpd: parseInt(formData.bpd2) || 0,
+                    length: parseInt(formData.length2) || 0,
+                    hc: parseInt(formData.hc2) || 0,
                     date: new Date().toISOString().split('T')[0],
                     fetusId: fetusId2
                 };
 
-                console.log('Second FetusRecord data to be sent (string values):', fetusRecordData2);
+                console.log('Second FetusRecord data to be sent (converted to numbers):', fetusRecordData2);
 
                 console.log('Calling FetusRecord API for second baby...');
                 const fetusRecordResponse2 = await axios.post(

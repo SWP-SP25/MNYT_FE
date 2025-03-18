@@ -3,6 +3,15 @@ import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import styles from "./createBlogPost.module.css";
 
+// Định nghĩa kiểu dữ liệu BlogPost
+interface BlogPost {
+  id: number;
+  title: string;
+  content: string;
+  image: string;
+  category: string;
+}
+
 const categories = [
   { id: "all", name: "Tất cả" },
   { id: "experience", name: "Kinh nghiệm" },
@@ -21,8 +30,6 @@ const CreateBlogPost = ({
 }) => {
   const [title, setTitle] = useState(editPost ? editPost.title : "");
   const [content, setContent] = useState(editPost ? editPost.content : "");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>(
@@ -34,24 +41,8 @@ const CreateBlogPost = ({
       setTitle(editPost.title);
       setContent(editPost.content);
       setSelectedCategory(editPost.category);
-      setPreviewImage(editPost.image); // Nếu có ảnh, hiển thị ảnh
     }
   }, [editPost]);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (!file.type.startsWith("image/")) {
-        setErrorMessage("Vui lòng chọn file ảnh hợp lệ.");
-        return;
-      }
-      setErrorMessage("");
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setPreviewImage(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -64,50 +55,32 @@ const CreateBlogPost = ({
       setErrorMessage("");
 
       try {
-        let imageUrl = "";
-        if (imageFile) {
-          const formData = new FormData();
-          formData.append("file", imageFile);
-          const uploadResponse = await axios.post(
-            "https://api-mnyt.purintech.id.vn/api/Images",
-            formData,
-            {
-              headers: { "Content-Type": "multipart/form-data" },
-            }
-          );
-          imageUrl = uploadResponse.data.url;
-        }
-
         if (editPost) {
-          // Chỉnh sửa bài viết
           await axios.put(
             `https://api-mnyt.purintech.id.vn/api/BlogPosts/${editPost.id}`,
             {
               title,
               content,
-              image: imageUrl,
               category: selectedCategory,
             }
           );
         } else {
-          // Tạo bài viết mới
           await axios.post(
             "https://api-mnyt.purintech.id.vn/api/BlogPosts?authorId=1",
             {
               title,
               content,
-              image: imageUrl,
               category: selectedCategory,
             }
           );
         }
 
         onPostCreated();
-        setTitle("");
-        setContent("");
-        setImageFile(null);
-        setPreviewImage("");
-        setSelectedCategory("all");
+        if (!editPost) {
+          setTitle("");
+          setContent("");
+          setSelectedCategory("all");
+        }
       } catch (error) {
         console.error("Lỗi khi tạo hoặc chỉnh sửa bài viết:", error);
         setErrorMessage("Đã có lỗi xảy ra, vui lòng thử lại.");
@@ -115,25 +88,35 @@ const CreateBlogPost = ({
         setLoading(false);
       }
     },
-    [title, content, imageFile, selectedCategory, onPostCreated, editPost]
+    [title, content, selectedCategory, onPostCreated, editPost]
   );
 
   return (
     <form onSubmit={handleSubmit} className={styles.createPostForm}>
+      <div className={styles.formHeader}>
+        <h2>
+          {editPost ? "Chỉnh Sửa Bài Viết" : "Chia Sẻ Câu Chuyện Của Bạn"}
+        </h2>
+      </div>
+
       {errorMessage && <div className={styles.error}>{errorMessage}</div>}
+
       <input
         type="text"
-        placeholder="Tiêu đề"
+        placeholder="Tiêu đề bài viết của bạn"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         required
       />
+
       <textarea
-        placeholder="Nội dung"
+        placeholder="Chia sẻ câu chuyện, kinh nghiệm hoặc lời khuyên của bạn..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
         required
       />
+
+      <div className={styles.categoryLabel}>Chọn chủ đề:</div>
       <select
         value={selectedCategory}
         onChange={(e) => setSelectedCategory(e.target.value)}
@@ -145,20 +128,13 @@ const CreateBlogPost = ({
           </option>
         ))}
       </select>
-      <input type="file" accept="image/*" onChange={handleImageChange} />
-      {/* {previewImage && (
-        <img
-          src={previewImage}
-          alt="Xem trước ảnh"
-          className={styles.previewImage}
-        />
-      )} */}
+
       <button type="submit" disabled={loading}>
         {loading
           ? "Đang xử lý..."
           : editPost
           ? "Cập nhật Bài Viết"
-          : "Tạo Bài Viết"}
+          : "Đăng Bài Viết"}
       </button>
     </form>
   );

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { blogService, BlogPost, PaginatedResponse } from "@/app/services/api";
 import styles from "./components.module.css";
 import Image from "next/image";
@@ -22,16 +22,37 @@ export default function BlogList({
   onPostDeleted,
 }: BlogListProps) {
   const [totalPages, setTotalPages] = useState(1);
-  const {
-    response: blogPostListResponse,
-    error,
-    loading,
-  } = useAxios<BlogPostListResponse>({
-    url: `https://api-mnyt.purintech.id.vn/api/BlogPosts/all-paginated?PageNumber=${currentPage}&PageSize=6${
-      category !== "all" ? `&category=${category}` : ""
-    }`,
-    method: "get",
-  });
+  const [blogPostListResponse, setBlogPostListResponse] =
+    useState<BlogPostListResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  // Sử dụng useMemo để tạo config phụ thuộc vào currentPage và category
+  useEffect(() => {
+    const response = axios.get(
+      `https://api-mnyt.purintech.id.vn/api/BlogPosts/all-paginated?PageNumber=${currentPage}&PageSize=6${
+        category !== "all" ? `&category=${category}` : ""
+      }`
+    );
+
+    response
+      .then((data) => {
+        console.log("fetch blog ", data.data);
+        setBlogPostListResponse(data.data);
+        setError(false);
+      })
+      .catch((e) => {
+        setError(true);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [category, currentPage]);
+
+  // const {
+  //   response: blogPostListResponse,
+  //   error,
+  //   loading,
+  // } = useAxios<BlogPostListResponse>(config);
 
   useEffect(() => {
     if (blogPostListResponse) {
@@ -39,10 +60,15 @@ export default function BlogList({
     }
   }, [blogPostListResponse]);
 
+  // Gọi onPageChange khi currentPage thay đổi
+  useEffect(() => {
+    onPageChange(currentPage);
+  }, [currentPage, onPageChange]);
+
   const handleDeletePost = async (postId: number) => {
     try {
       await axios.delete(
-        `https://api-mnyt.purintech.id.vn/api/BlogPosts/3?accountId=1`
+        `https://api-mnyt.purintech.id.vn/api/BlogPosts/${postId}`
       );
       onPostDeleted();
     } catch (error) {
@@ -50,8 +76,8 @@ export default function BlogList({
     }
   };
 
-  // Debug render
   console.log("Current posts state:", blogPostListResponse);
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -85,7 +111,7 @@ export default function BlogList({
 
   return (
     <div className={styles.blogList}>
-      {blogPostListResponse?.data.items.map((post) => (
+      {blogPostListResponse.data.items.map((post) => (
         <div key={post.id} className={styles.blogCard}>
           {/* Thumbnail */}
           <div className={styles.thumbnailContainer}>
@@ -121,15 +147,6 @@ export default function BlogList({
 
             {/* Author info */}
             <div className={styles.authorInfo}>
-              {/* {post.author.avatar && (
-                                <Image
-                                    src={post.author.avatar}
-                                    alt={post.author.name}
-                                    width={24}
-                                    height={24}
-                                    className={styles.authorAvatar}
-                                />
-                            )} */}
               <span className={styles.authorName}>{post.authorName}</span>
             </div>
 
@@ -153,6 +170,19 @@ export default function BlogList({
           </div>
         </div>
       ))}
+
+      {/* Pagination Controls */}
+      <div className={styles.pagination}>
+        {Array.from({ length: totalPages }, (_, index) => (
+          <button
+            key={index}
+            onClick={() => onPageChange(index + 1)}
+            className={currentPage === index + 1 ? styles.active : ""}
+          >
+            {index + 1}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

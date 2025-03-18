@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Container,
     Button,
@@ -20,7 +20,8 @@ import {
     Popover,
     Chip,
     Select,
-    MenuItem
+    MenuItem,
+    CircularProgress
 } from '@mui/material';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -28,23 +29,50 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import AddIcon from '@mui/icons-material/Add';
 import ReminderForm from './components/ReminderForm';
-import type { Reminder } from '@/types/reminder';
+import type { Reminder as UserReminder } from '@/types/schedule';
+import { useAuth } from '@/hooks/useAuth';
+import { useReminders } from '@/hooks/useReminder';
 import styles from './page.module.css';
 import moment from 'moment';
 import CloseIcon from '@mui/icons-material/Close';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 const REMINDER_TAGS = [
-    { value: 'work', label: 'Công việc', color: '#f44336' },
-    { value: 'personal', label: 'Cá nhân', color: '#4caf50' },
-    { value: 'study', label: 'Học tập', color: '#2196f3' },
-    { value: 'health', label: 'Sức khỏe', color: '#ff9800' },
-    { value: 'family', label: 'Gia đình', color: '#9c27b0' },
-    { value: 'other', label: 'Khác', color: '#757575' },
+    { value: 'prenental_checkup', label: 'Khám thai', color: '#f44336' },
+    { value: 'ultrasound', label: 'Siêu âm', color: '#4caf50' },
+    { value: 'lab_tests', label: 'Xét nghiệm', color: '#2196f3' },
+    { value: 'vaccination', label: 'Tiêm chủng', color: '#ff9800' },
+    { value: 'user', label: 'Tự tạo', color: '#9c27b0' },
 ];
 
 export default function ReminderPage() {
-    const [reminders, setReminders] = useState<Reminder[]>([]);
+    // Lấy thông tin người dùng
+    const { user } = useAuth();
+    console.log('User object in reminder page:', user);
+
+    // Lấy userId và test API
+    const userId = user?.id ? parseInt(user.id) : undefined;
+    console.log('User ID for API calls:', userId);
+
+    // Sử dụng hook useReminders để test API
+    const {
+        reminders: apiReminders,
+        loading: apiLoading,
+        error: apiError,
+        refreshReminders,
+        updateReminderStatus,
+        addUserReminder
+    } = useReminders({ userId });
+
+    // Log kết quả từ hook
+    useEffect(() => {
+        console.log('API Reminders from hook:', apiReminders);
+        console.log('API Loading state:', apiLoading);
+        console.log('API Error state:', apiError);
+    }, [apiReminders, apiLoading, apiError]);
+
+    // State cho giao diện hiện tại
+    const [userReminders, setUserReminders] = useState<UserReminder[]>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [snackbar, setSnackbar] = useState({
@@ -52,38 +80,137 @@ export default function ReminderPage() {
         message: '',
         severity: 'success' as 'success' | 'error'
     });
-    const [reminderStatuses, setReminderStatuses] = useState<Record<string, 'skip' | 'done' | 'pending'>>({});
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const [selectedReminder, setSelectedReminder] = useState<Reminder | null>(null);
+    const [selectedReminder, setSelectedReminder] = useState<UserReminder | null>(null);
+    const [refreshing, setRefreshing] = useState(false);
+    const [fadeIn, setFadeIn] = useState(true);
 
-    const handleAddReminder = (newReminder: Omit<Reminder, 'id'>) => {
-        const reminder: Reminder = {
-            ...newReminder,
-            id: Date.now().toString(),
-            color: '#1976d2',
-        };
+    // Chuyển đổi reminders từ API sang định dạng của giao diện
+    useEffect(() => {
+        if (apiReminders && apiReminders.length > 0) {
+            console.log('Converting API reminders to UI format');
 
-        setReminders(prev => [...prev, reminder]);
+            const convertedReminders: UserReminder[] = apiReminders.map(apiReminder => {
+                // Đảm bảo date là string và có định dạng YYYY-MM-DD
+                const date = apiReminder.date || moment().format('YYYY-MM-DD');
+                // Mặc định time là 09:00 nếu không có
+                const time = "09:00";
+
+                // Xác định tag dựa trên loại reminder và period
+                let tag: string;
+
+                if (apiReminder.type === 'user') {
+                    tag = 'user'; // Tag cho reminder người dùng tự tạo
+                } else if (apiReminder.period) {
+                    // Phân loại tag dựa trên tuần thai cho reminder hệ thống
+                    if (apiReminder.period < 12) {
+                        tag = 'prenental_checkup'; // Khám thai định kỳ đầu
+                    } else if (apiReminder.period >= 12 && apiReminder.period < 24) {
+                        tag = 'ultrasound'; // Siêu âm giữa kỳ
+                    } else if (apiReminder.period >= 24 && apiReminder.period < 36) {
+                        tag = 'lab_tests'; // Xét nghiệm
+                    } else {
+                        tag = 'vaccination'; // Tiêm chủng cuối kỳ
+                    }
+                } else {
+                    tag = 'prenental_checkup'; // Mặc định là khám thai
+                }
+
+                // Xác định màu sắc dựa trên tag
+                const color = REMINDER_TAGS.find(t => t.value === tag)?.color || '#ff9800';
+
+                return {
+                    id: apiReminder.id.toString(),
+                    title: apiReminder.title || `Lịch khám thai tuần ${apiReminder.period}`,
+                    description: apiReminder.description || `Khám thai định kỳ tuần ${apiReminder.period}`,
+                    date: date,
+                    time: time,
+                    tag: tag,
+                    color: color,
+                    status: apiReminder.status || 'pending'
+                };
+            });
+
+            console.log('Converted reminders:', convertedReminders);
+            setUserReminders(convertedReminders);
+        }
+    }, [apiReminders]);
+
+    // Hiển thị thông báo lỗi nếu có
+    useEffect(() => {
+        if (apiError) {
+            console.error('API Error in page component:', apiError);
+            setSnackbar({
+                open: true,
+                message: `Lỗi: ${apiError}`,
+                severity: 'error'
+            });
+        }
+    }, [apiError]);
+
+    // Khi refreshing, fade out
+    useEffect(() => {
+        if (refreshing) {
+            setFadeIn(false);
+        } else {
+            // Fade in sau một chút delay để dữ liệu mới được load
+            const timer = setTimeout(() => {
+                setFadeIn(true);
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [refreshing]);
+
+    const handleAddReminder = (newReminder: Omit<UserReminder, 'id'>, refreshAfterDelay: boolean = false) => {
+        console.log('New reminder created with UI data:', newReminder);
+
+        // Đóng form
         setIsFormOpen(false);
+        // Chọn ngày của reminder mới
+        setSelectedDate(newReminder.date);
 
-        setSelectedDate(reminder.date);
-
+        // Hiển thị thông báo thành công
         setSnackbar({
             open: true,
             message: 'Tạo reminder thành công!',
             severity: 'success'
         });
+
+        // Nếu refreshAfterDelay = true, tự động refresh trang sau 4 giây
+        if (refreshAfterDelay) {
+            console.log('Will refresh after 4 seconds');
+            setTimeout(() => {
+                console.log('Refreshing reminders...');
+                refreshReminders();
+            }, 4000); // 4 giây
+        }
     };
 
     const handleDateClick = (arg: any) => {
+        console.log('Date clicked:', arg.dateStr);
         setSelectedDate(arg.dateStr);
     };
 
     const handleStatusChange = (reminderId: string, status: 'skip' | 'done' | 'pending') => {
-        setReminderStatuses(prev => ({
-            ...prev,
-            [reminderId]: status
-        }));
+        console.log('Changing status for reminder', reminderId, 'to', status);
+
+        // Gọi API để cập nhật trạng thái
+        updateReminderStatus(reminderId, status)
+            .then(success => {
+                if (success) {
+                    setSnackbar({
+                        open: true,
+                        message: 'Cập nhật trạng thái thành công!',
+                        severity: 'success'
+                    });
+                } else {
+                    setSnackbar({
+                        open: true,
+                        message: 'Cập nhật trạng thái thất bại!',
+                        severity: 'error'
+                    });
+                }
+            });
     };
 
     const statusColors = {
@@ -92,14 +219,18 @@ export default function ReminderPage() {
         pending: '#1976d2'
     };
 
+    // Kết hợp reminders từ API và reminders do người dùng tạo
+    const allReminders = [...userReminders];
+    console.log('All reminders for display:', allReminders);
+
     const selectedDateReminders = selectedDate
-        ? reminders
+        ? allReminders
             .filter(reminder => reminder.date === selectedDate)
             .sort((a, b) => a.time.localeCompare(b.time))
         : [];
 
     const handleEventMouseEnter = (info: any) => {
-        const reminder = reminders.find(r => r.id === info.event.id);
+        const reminder = allReminders.find(r => r.id === info.event.id);
         if (reminder) {
             setSelectedReminder(reminder);
             setAnchorEl(info.el);
@@ -111,20 +242,33 @@ export default function ReminderPage() {
         setSelectedReminder(null);
     };
 
-    const events = reminders.map(reminder => ({
+    const events = allReminders.map(reminder => ({
         id: reminder.id,
         title: reminder.title,
         start: `${reminder.date}T${reminder.time}:00`,
         end: moment(`${reminder.date}T${reminder.time}:00`).add(30, 'minutes').format('YYYY-MM-DDTHH:mm:ss'),
         description: reminder.description,
         allDay: false,
-        color: statusColors[reminderStatuses[reminder.id] || 'pending'],
+        color: statusColors[reminder.status as 'skip' | 'done' | 'pending' || 'pending'],
         textColor: '#ffffff',
         display: 'block',
         extendedProps: {
-            status: reminderStatuses[reminder.id] || 'pending'
+            status: reminder.status || 'pending',
+            tag: reminder.tag
         }
     }));
+
+    console.log('Calendar events:', events);
+
+    const refreshRemindersWithIndicator = () => {
+        setRefreshing(true);
+        refreshReminders();
+
+        // Sau 2 giây, tắt indicator (giả định API call không quá 2 giây)
+        setTimeout(() => {
+            setRefreshing(false);
+        }, 2000);
+    };
 
     return (
         <Container
@@ -137,25 +281,55 @@ export default function ReminderPage() {
         >
             <Box sx={{
                 display: 'flex',
-                justifyContent: 'flex-end',
+                justifyContent: 'space-between',
                 mb: 2
             }}>
-                <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => setIsFormOpen(true)}
-                    sx={{
-                        bgcolor: '#1976d2',
-                        '&:hover': {
-                            bgcolor: '#1565c0'
-                        }
-                    }}
-                >
-                    TẠO REMINDER
-                </Button>
+                <Typography variant="h4" component="h1">
+                    Lịch khám thai
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button
+                        variant="outlined"
+                        onClick={() => {
+                            console.log('Refresh button clicked');
+                            refreshRemindersWithIndicator();
+                        }}
+                        disabled={apiLoading || refreshing}
+                        startIcon={refreshing ? <CircularProgress size={20} /> : null}
+                    >
+                        Làm mới
+                    </Button>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => setIsFormOpen(true)}
+                        sx={{
+                            bgcolor: '#1976d2',
+                            '&:hover': {
+                                bgcolor: '#1565c0'
+                            }
+                        }}
+                    >
+                        TẠO REMINDER
+                    </Button>
+                </Box>
             </Box>
 
-            <Grid container spacing={3}>
+            {/* Hiển thị trạng thái API (chỉ để test) */}
+            <Paper sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="body2">
+                    <strong>API Status:</strong> {apiLoading ? 'Loading...' : apiError ? 'Error' : 'Success'}
+                    {apiError && ` - ${apiError}`}
+                </Typography>
+                <Typography variant="body2">
+                    <strong>API Reminders:</strong> {apiReminders?.length || 0}
+                </Typography>
+            </Paper>
+
+            <Grid container spacing={3} sx={{
+                opacity: fadeIn ? 1 : 0.6,
+                transition: 'opacity 0.3s ease-in-out'
+            }}>
                 {selectedDate && (
                     <Grid item xs={12} md={3}>
                         <Paper className={styles.reminderList}>
@@ -185,7 +359,7 @@ export default function ReminderPage() {
                                         >
                                             <ListItemIcon>
                                                 <Select
-                                                    value={reminderStatuses[reminder.id] || 'pending'}
+                                                    value={reminder.status || 'pending'}
                                                     onChange={(e) => handleStatusChange(reminder.id, e.target.value as 'skip' | 'done' | 'pending')}
                                                     size="small"
                                                     MenuProps={{
@@ -320,18 +494,21 @@ export default function ReminderPage() {
                     onSubmit={handleAddReminder}
                     onCancel={() => setIsFormOpen(false)}
                     initialDate={selectedDate}
+                    addUserReminder={addUserReminder}
                 />
             </Dialog>
 
             <Snackbar
                 open={snackbar.open}
-                autoHideDuration={3000}
+                autoHideDuration={4000}
                 onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
                 anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
                 <Alert
                     severity={snackbar.severity}
                     onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+                    elevation={6}
+                    variant="filled"
                 >
                     {snackbar.message}
                 </Alert>
@@ -376,9 +553,9 @@ export default function ReminderPage() {
                             />
                             <Chip
                                 size="small"
-                                label={reminderStatuses[selectedReminder.id] || 'Chưa làm'}
+                                label={selectedReminder.status || 'Chưa làm'}
                                 sx={{
-                                    bgcolor: statusColors[reminderStatuses[selectedReminder.id] || 'pending'],
+                                    bgcolor: statusColors[selectedReminder.status as 'skip' | 'done' | 'pending' || 'pending'],
                                     color: 'white'
                                 }}
                             />

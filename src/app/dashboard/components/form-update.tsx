@@ -208,6 +208,7 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
 
             // Đóng form
             onClose?.();
+            window.location.reload();
 
         } catch (error) {
             console.error('Error saving fetus record:', error);

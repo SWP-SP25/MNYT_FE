@@ -835,7 +835,7 @@ export const MainContent: React.FC = () => {
                                             <div className={styles.imageContainer}>
                                                 <img
                                                     alt="blog cover"
-                                                    src="https://res.cloudinary.com/duhhxflsl/image/upload/v1741087885/k8pj8etunyklwrtojami.png"
+                                                    src="https://res.cloudinary.com/drvn1tizc/image/upload/v1742278926/dinhduong-16903446267511906346206_eahhse.jpg"
                                                     className={styles.coverImage}
                                                 />
                                                 <div className={styles.contentOverlay}>

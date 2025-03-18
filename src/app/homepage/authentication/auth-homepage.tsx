@@ -69,7 +69,7 @@ const AuthenticatedHomePage = () => {
             // Hiển thị thông báo nếu người dùng đã có thai kỳ active
             setSnackbar({
                 open: true,
-                message: "Mẹ ơi, 1 người chỉ có thể có 1 thai kì 1 lần thôi",
+                message: "Mẹ ơi, cùng một thời điểm một người chỉ có thể có một thai kỳ thôi ạ",
                 severity: 'warning'
             });
         } else {

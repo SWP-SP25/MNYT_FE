@@ -96,7 +96,7 @@ export const blogService = {
     getPostsByCategory: async (category: string, page: number = 1, limit: number = 10) => {
         try {
             const response = await fetch(
-                `${BASE_URL}/BlogPosts/category/${encodeURIComponent(category)}?page=${page}&limit=${limit}`,
+                `${BASE_URL}/BlogPosts/by-category/${encodeURIComponent(category)}?page=${page}&limit=${limit}`,
                 {
                     method: 'GET',
                     headers: {

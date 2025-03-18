@@ -6,7 +6,6 @@ import Sidebar from "./sidebar/Sidebar";
 import Pagination from "./Pagination/Pagination";
 import CreateBlogPost from "./CRUD/CreateBlogPost";
 import { useState, useCallback, useEffect } from "react";
-import axios from "axios";
 
 // Định nghĩa các types
 type SortOption = "newest" | "oldest" | "most-viewed" | "most-commented";
@@ -18,7 +17,6 @@ const BlogPage = () => {
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const totalPages = 10; // Sau này sẽ lấy từ API
   const blogsPerPage = 10; // Số lượng blog hiển thị trên mỗi trang
-  const [posts, setPosts] = useState([]); // State để lưu trữ bài viết
 
   // Giả lập dữ liệu blog (thay thế bằng dữ liệu thực từ API)
   const allBlogs = Array.from(
@@ -57,20 +55,9 @@ const BlogPage = () => {
     setCurrentPage(page);
   };
 
-  const refreshPosts = async () => {
-    try {
-      const response = await axios.get(
-        `https://api-mnyt.purintech.id.vn/api/BlogPosts/all-paginated?PageNumber=${currentPage}&PageSize=6`
-      );
-      setPosts(response.data.items); // Cập nhật danh sách bài viết
-    } catch (error) {
-      console.error("Lỗi khi lấy bài viết:", error);
-    }
+  const refreshPosts = () => {
+    // Logic để làm mới danh sách bài viết
   };
-
-  useEffect(() => {
-    refreshPosts(); // Gọi hàm để lấy bài viết khi component mount
-  }, [currentPage]);
 
   return (
     <div className={styles.blogContainer}>

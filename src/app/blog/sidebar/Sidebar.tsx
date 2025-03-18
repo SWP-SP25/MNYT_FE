@@ -1,5 +1,3 @@
-"use client";
-
 import styles from "./sidebar.module.css";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,13 +28,11 @@ const Sidebar = () => {
   ];
 
   useEffect(() => {
-    // Lấy top thành viên
     const fetchTopMembers = async () => {
       try {
         const response = await axios.get(
           "https://api-mnyt.purintech.id.vn/api/BlogPosts/top-authors"
         );
-        console.log("top-authors =>", response.data);
         const members = response.data.map((author: any) => ({
           name: author.authorName,
           postCount: author.postCount,
@@ -44,7 +40,6 @@ const Sidebar = () => {
         }));
         setTopMembers(members);
       } catch (error) {
-        console.error("Lỗi fetch top authors:", error);
         setError("Chưa có thành viên nào.");
       } finally {
         setLoading(false);
@@ -54,70 +49,36 @@ const Sidebar = () => {
     const fetchStats = async () => {
       try {
         // Lấy tổng số bài viết
-        axios
-          .get("https://api-mnyt.purintech.id.vn/api/BlogPosts/all")
-          .then((response) => {
-            console.log("postsRes =>", response.data);
-            if (
-              response.data &&
-              response.data.data &&
-              Array.isArray(response.data.data)
-            ) {
-              console.log("Số bài viết:", response.data.data.length);
-              setTotalPosts(response.data.data.length);
-            } else {
-              console.warn(
-                "Cấu trúc API của BlogPosts/all không như mong đợi",
-                response.data
-              );
-              setTotalPosts(0);
-            }
-          })
-          .catch((err) => console.error("Lỗi BlogPosts/all:", err));
+        const postsResponse = await axios.get(
+          "https://api-mnyt.purintech.id.vn/api/BlogPosts/all"
+        );
+        setTotalPosts(postsResponse.data.length);
 
         // Lấy tổng số thành viên
-        axios
-          .get("https://api-mnyt.purintech.id.vn/api/Accounts")
-          .then((accountResponse) => {
-            console.log("accountsRes =>", accountResponse.data);
-            // Kiểm tra cấu trúc dữ liệu: nếu data có key 'data' và trong đó có 'totalMembers'
-            if (
-              accountResponse.data &&
-              accountResponse.data.data &&
-              typeof accountResponse.data.data.length === "number"
-            ) {
-              console.log("Tổng thành viên:", accountResponse.data.data);
-              setTotalMembers(accountResponse.data.data.length);
-            } else {
-              console.warn(
-                "Cấu trúc API của Accounts không như mong đợi",
-                accountResponse.data.data
-              );
-              setTotalMembers(0);
-            }
-          })
-          .catch((err) => console.error("Lỗi Accounts:", err));
+        const accountResponse = await axios.get(
+          "https://api-mnyt.purintech.id.vn/api/Accounts"
+        );
+        setTotalMembers(accountResponse.data.totalMembers);
       } catch (error) {
         console.error("Lỗi khi lấy thống kê:", error);
       }
     };
 
     fetchTopMembers();
-    fetchStats();
+    fetchStats(); // Gọi hàm lấy thống kê
   }, []);
 
   return (
     <div className={styles.sidebar}>
-      {/* Thống kê diễn đàn */}
       <div className={styles.statsCard}>
         <h3>Thống kê diễn đàn</h3>
         <div className={styles.statItem}>
           <span>Tổng bài viết:</span>
-          <strong>{totalPosts ? totalPosts : 0}</strong>
+          <strong>{totalPosts}</strong>
         </div>
         <div className={styles.statItem}>
           <span>Thành viên:</span>
-          <strong>{totalMembers ? totalMembers : 0}</strong>
+          <strong>{totalMembers}</strong>
         </div>
       </div>
 

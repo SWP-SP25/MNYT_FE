@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
-import { blogService, BlogPost, PaginatedResponse } from "@/app/services/api";
 import styles from "./components.module.css";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,22 +21,21 @@ export default function BlogList({
   onPostDeleted,
 }: BlogListProps) {
   const [totalPages, setTotalPages] = useState(1);
-  const [blogPostListResponse, setBlogPostListResponse] =
-    useState<BlogPostListResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [blogPostListResponse, setBlogPostListResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  // Sử dụng useMemo để tạo config phụ thuộc vào currentPage và category
-  useEffect(() => {
-    const response = axios.get(
-      `https://api-mnyt.purintech.id.vn/api/BlogPosts/all-paginated?PageNumber=${currentPage}&PageSize=6${
-        category !== "all" ? `&category=${category}` : ""
-      }`
-    );
 
-    response
-      .then((data) => {
-        console.log("fetch blog ", data.data);
-        setBlogPostListResponse(data.data);
+  useEffect(() => {
+    axios
+      .get(
+        `https://api-mnyt.purintech.id.vn/api/BlogPosts/all-paginated?PageNumber=${currentPage}&PageSize=6${
+          category !== "all" ? `&category=${category}` : ""
+        }`
+      )
+      .then((res) => {
+        console.log(res);
+
+        setBlogPostListResponse(res.data);
         setError(false);
       })
       .catch((e) => {
@@ -46,13 +44,7 @@ export default function BlogList({
       .finally(() => {
         setLoading(false);
       });
-  }, [category, currentPage]);
-
-  // const {
-  //   response: blogPostListResponse,
-  //   error,
-  //   loading,
-  // } = useAxios<BlogPostListResponse>(config);
+  }, [currentPage, category]);
 
   useEffect(() => {
     if (blogPostListResponse) {
@@ -68,15 +60,13 @@ export default function BlogList({
   const handleDeletePost = async (postId: number) => {
     try {
       await axios.delete(
-        `https://api-mnyt.purintech.id.vn/api/BlogPosts/${postId}`
+        `https://api-mnyt.purintech.id.vn/api/BlogPosts/${postId}?accountId=1`
       );
       onPostDeleted();
     } catch (error) {
       console.error("Lỗi khi xóa bài viết:", error);
     }
   };
-
-  console.log("Current posts state:", blogPostListResponse);
 
   if (loading) {
     return (

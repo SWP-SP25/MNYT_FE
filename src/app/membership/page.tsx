@@ -1,125 +1,66 @@
 'use client';
 import styles from './page.module.css';
-import { FaBabyCarriage, FaHeart, FaCrown, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaBabyCarriage, FaHeart, FaCrown } from 'react-icons/fa';
+import PlanCard from './components/PlanCard';
+
+const basicFeatures = [
+    { isIncluded: true, text: 'Theo dõi lịch thai kỳ cơ bản' },
+    { isIncluded: true, text: 'Nhắc nhở lịch khám định kỳ' },
+    { isIncluded: true, text: 'Tham gia cộng đồng mẹ bầu' },
+    { isIncluded: true, text: 'Tra cứu thông tin cơ bản' },
+    { isIncluded: false, text: 'Tư vấn dinh dưỡng chi tiết' },
+    { isIncluded: false, text: 'Gói tập luyện cho mẹ bầu' }
+];
+
+const standardFeatures = [
+    { isIncluded: true, text: 'Tất cả quyền lợi gói Cơ Bản' },
+    { isIncluded: true, text: 'Lịch dinh dưỡng theo tuần' },
+    { isIncluded: true, text: 'Gói bài tập cho mẹ bầu' },
+    { isIncluded: true, text: 'Tư vấn trực tuyến' },
+    { isIncluded: true, text: 'Theo dõi cân nặng & dinh dưỡng' },
+    { isIncluded: true, text: 'Nhận thông báo quan trọng' }
+];
+
+const premiumFeatures = [
+    { isIncluded: true, text: 'Tất cả quyền lợi gói Tiện Ích' },
+    { isIncluded: true, text: 'Tư vấn bác sĩ 24/7' },
+    { isIncluded: true, text: 'Gói khám thai định kỳ' },
+    { isIncluded: true, text: 'Hỗ trợ đặt lịch ưu tiên' },
+    { isIncluded: true, text: 'Quà tặng cho mẹ và bé' },
+    { isIncluded: true, text: 'Chế độ chăm sóc đặc biệt' }
+];
 
 const Membership = () => {
     return (
         <div className={styles.membershipContainer}>
             <h1 className={styles.title}>Chọn Gói Đồng Hành</h1>
-            <p className={`${styles.subtitle} fancy-font`}>Hãy để chúng tôi đồng hành cùng bạn trong hành trình làm mẹ tuyệt vời</p>
+            <p className={`${styles.subtitle} fancy-font`}>
+                Hãy để chúng tôi đồng hành cùng bạn trong hành trình làm mẹ tuyệt vời
+            </p>
 
             <div className={styles.membershipPlans}>
-                {/* Gói Cơ Bản */}
-                <div className={styles.plan}>
-                    <div className={styles.planTitle}>
-                        <FaBabyCarriage size={24} />
-                        <h2>Cơ Bản</h2>
-                    </div>
-                    <div className={styles.features}>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Theo dõi lịch thai kỳ cơ bản</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Nhắc nhở lịch khám định kỳ</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Tham gia cộng đồng mẹ bầu</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Tra cứu thông tin cơ bản</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaTimes color="#E53E3E" />
-                            <p>Tư vấn dinh dưỡng chi tiết</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaTimes color="#E53E3E" />
-                            <p>Gói tập luyện cho mẹ bầu</p>
-                        </div>
-                    </div>
-                    <button className={styles.defaultButton}>
-                        Gói Hiện Tại
-                    </button>
-                </div>
+                <PlanCard
+                    icon={FaBabyCarriage}
+                    title="Cơ Bản"
+                    features={basicFeatures}
+                    buttonText="Gói Hiện Tại"
+                    isDefault={true}
+                />
 
-                {/* Gói Tiện Ích */}
-                <div className={styles.plan}>
-                    <div className={styles.planTitle}>
-                        <FaHeart size={24} />
-                        <h2>Tiện Ích</h2>
-                    </div>
-                    <div className={styles.features}>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Tất cả quyền lợi gói Cơ Bản</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Lịch dinh dưỡng theo tuần</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Gói bài tập cho mẹ bầu</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Tư vấn trực tuyến</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Theo dõi cân nặng & dinh dưỡng</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Nhận thông báo quan trọng</p>
-                        </div>
-                    </div>
-                    <button className={styles.button}>
-                        Nâng cấp ngay
-                    </button>
-                </div>
+                <PlanCard
+                    icon={FaHeart}
+                    title="Tiện Ích"
+                    features={standardFeatures}
+                    buttonText="Nâng cấp ngay"
+                />
 
-                {/* Gói Cao Cấp */}
-                <div className={styles.plan}>
-                    <div className={styles.bestValue}>Phổ biến nhất</div>
-                    <div className={styles.planTitle}>
-                        <FaCrown size={24} />
-                        <h2>Cao Cấp</h2>
-                    </div>
-                    <div className={styles.features}>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Tất cả quyền lợi gói Tiện Ích</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Tư vấn bác sĩ 24/7</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Gói khám thai định kỳ</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Hỗ trợ đặt lịch ưu tiên</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Quà tặng cho mẹ và bé</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <FaCheck color="#279357" />
-                            <p>Chế độ chăm sóc đặc biệt</p>
-                        </div>
-                    </div>
-                    <button className={styles.button}>
-                        Trải nghiệm ngay
-                    </button>
-                </div>
+                <PlanCard
+                    icon={FaCrown}
+                    title="Cao Cấp"
+                    features={premiumFeatures}
+                    buttonText="Trải nghiệm ngay"
+                    isBestValue={true}
+                />
             </div>
         </div>
     );

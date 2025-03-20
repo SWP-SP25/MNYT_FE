@@ -1,0 +1,51 @@
+.formContainer {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.formContent {
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.formSection {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+}
+
+.sectionTitle {
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1rem;
+}
+
+.formNote {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f0f9ff;
+    border-radius: 5px;
+    border-left: 4px solid #1890ff;
+}
+
+.formNote ul {
+    padding-left: 20px;
+    margin-top: 5px;
+}
+
+.formNote li {
+    margin-bottom: 5px;
+}
+
+.formRow {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.formGroupHalf {
+    flex: 1;
+}

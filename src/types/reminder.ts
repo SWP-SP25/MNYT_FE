@@ -3,6 +3,7 @@ export interface Reminder {
     title: string;
     date: string;
     time: string;
+    type: string;
     description: string;
     start: string;
     status: 'skip' | 'done' | 'pending';

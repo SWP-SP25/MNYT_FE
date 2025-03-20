@@ -7,6 +7,7 @@ export interface AuthUser {
     user: {
         id: string;
         userName: string;
+        fullName: string;
         email: string;
         role: string;
     };
@@ -17,11 +18,10 @@ interface LoginCredentials {
     password: string;
 }
 
-interface RegisterCredentials
-{
+interface RegisterCredentials {
     username: string;
     enail: string;
-    password: string;   
+    password: string;
 }
 
 interface AuthContextType {
@@ -70,18 +70,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         Cookies.remove('token');
         Cookies.remove('user');
     };
-
-    // const register = async (credentials: RegisterCredentials) => 
-    // {
-    //     try
-    //     {
-    //         const reponse = await fetchData <{success : boolean; data: }>
-    //     }
-    //     catch (error)
-    //     {
-    //         throw error;
-    //     }
-    // }
 
     return (
         <AuthContext.Provider value={{ user, loading, error, login, logout }}>

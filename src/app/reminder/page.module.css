@@ -134,6 +134,7 @@
 .reminderList {
     padding: 16px;
     height: 100%;
+    min-width: 350px;
 }
 
 .reminderListTitle {
@@ -144,9 +145,10 @@
 
 .reminderItem {
     display: flex;
-    align-items: center;
-    padding: 8px;
+    padding: 12px;
     transition: background-color 0.2s;
+    border-bottom: 1px solid #eee;
+    min-height: 120px;
 }
 
 .reminderItem:hover {
@@ -179,4 +181,13 @@
 
 .statusSelect {
     min-width: 120px;
+}
+
+.reminderItem :global(.MuiListItemText-secondary) {
+    margin-top: 8px;
+    white-space: pre-line;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }

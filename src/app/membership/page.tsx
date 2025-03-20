@@ -2,6 +2,9 @@
 import styles from './page.module.css';
 import { FaBabyCarriage, FaHeart, FaCrown } from 'react-icons/fa';
 import PlanCard from './components/PlanCard';
+import useAxios from '@/hooks/useFetchAxios';
+import { MembersipOnwers } from '@/types/membershipOwner';
+import { useAuth } from '@/hooks/useAuth';
 
 const basicFeatures = [
     { isIncluded: true, text: 'Theo dõi lịch thai kỳ cơ bản' },
@@ -31,6 +34,17 @@ const premiumFeatures = [
 ];
 
 const Membership = () => {
+    // get membership của user đã login
+    const { user } = useAuth();
+    const { response: membershipData, loading, error } = useAxios<MembersipOnwers>(
+        {
+            url: user?.id ? `https://api-mnyt.purintech.id.vn/api/AccountMembership/GetActive/${user.id}` : '',
+            method: 'get'
+        }
+    );
+
+    console.log("Account membership:", membershipData?.data);
+
     return (
         <div className={styles.membershipContainer}>
             <h1 className={styles.title}>Chọn Gói Đồng Hành</h1>

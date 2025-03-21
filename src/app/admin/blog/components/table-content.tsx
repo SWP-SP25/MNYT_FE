@@ -1,12 +1,12 @@
 'use client'
 
 import useAxios from "@/hooks/useFetchAxios"
-import { BlogPost, BlogResponse } from "@/types/blog";
 import { Dropdown, Table, TableProps, MenuProps, Button } from "antd";
 import { EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button as MuiButton, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import axios from 'axios';
+import { BlogManage, Blog } from "@/types/blogAdmin";
 
 interface FormData {
     category: string;
@@ -32,7 +32,7 @@ export const TableContent = () => {
         publishedDay: new Date().toISOString().split('T')[0]
     });
 
-    const {response: blogView, error: blogError, loading: blogLoading} = useAxios<BlogResponse>(
+    const {response: blogView, error: blogError, loading: blogLoading} = useAxios<BlogManage>(
     {
         url: 'https://api-mnyt.purintech.id.vn/api/BlogPosts/all',
         method: 'get'
@@ -46,11 +46,11 @@ export const TableContent = () => {
         return <div>Loading...</div>;
     }
 
-    const showUpdateModal = (record: BlogPost) => {
+    const showUpdateModal = (record: Blog) => {
         console.log('Update:', record);
     };
 
-    const handleDelete = (record: BlogPost) => {
+    const handleDelete = (record: Blog) => {
         console.log('Delete:', record);
     };
 
@@ -107,7 +107,7 @@ export const TableContent = () => {
         }));
     };
 
-    const columns: TableProps<BlogPost>['columns'] = [
+    const columns: TableProps<Blog>['columns'] = [
         {
             title: 'Title',
             dataIndex: 'title',
@@ -176,8 +176,7 @@ export const TableContent = () => {
                     Add Blog
                 </Button>
             </div>
-            <Table<BlogPost> columns={columns} dataSource={blogView?.data}/>
-            {/* ignore line 179*/}
+            <Table<Blog> columns={columns} dataSource={blogView?.data}/>
             
             <Dialog open={isModalOpen} onClose={handleCancel} maxWidth="sm" fullWidth>
                 <DialogTitle>Create New Blog</DialogTitle>

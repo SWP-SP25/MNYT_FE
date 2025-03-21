@@ -1,16 +1,11 @@
 // ... existing imports ...
 import styles from "./components.module.css";
-import {
-  FaRegHeart,
-  FaRegComment,
-  FaTag,
-  FaClock,
-  FaEye,
-} from "react-icons/fa";
+import { FaRegHeart, FaRegComment, FaTag, FaClock } from "react-icons/fa";
 import Link from "next/link";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale/vi";
+import { useEffect, useState } from "react";
 
 type PostProps = {
   post: {
@@ -33,7 +28,6 @@ type PostProps = {
     preview: string;
     likes: number;
     comments: number;
-    views: number;
     isSticky?: boolean;
     isHot?: boolean;
     tags: string[];
@@ -41,6 +35,17 @@ type PostProps = {
 };
 
 const BlogCard = ({ post }: PostProps) => {
+  const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [id, setId] = useState(post.id);
+
+  useEffect(() => {
+    const liked = localStorage.getItem(`liked-${id}`);
+    const saved = localStorage.getItem(`saved-${id}`);
+    if (liked) setIsLiked(JSON.parse(liked));
+    if (saved) setIsSaved(JSON.parse(saved));
+  }, [id]);
+
   return (
     <div className={styles.forumPost}>
       {/* Author Info */}
@@ -97,17 +102,6 @@ const BlogCard = ({ post }: PostProps) => {
           </div>
 
           <div className={styles.postStats}>
-            <span className={styles.timeAgo}>
-              <FaClock />
-              {formatDistanceToNow(post.createdAt, {
-                locale: vi,
-                addSuffix: true,
-              })}
-            </span>
-            <span className={styles.views}>
-              <FaEye />
-              {post.views} lượt xem
-            </span>
             <span className={styles.likes}>
               <FaRegHeart />
               {post.likes} thích
@@ -126,8 +120,7 @@ const BlogCard = ({ post }: PostProps) => {
           locale: vi,
           addSuffix: true,
         })}
-      </div>{" "}
-      {/* Đảm bảo đóng thẻ div này */}
+      </div>
     </div>
   );
 };

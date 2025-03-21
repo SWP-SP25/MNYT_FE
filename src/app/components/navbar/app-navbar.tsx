@@ -91,6 +91,11 @@ const AppNavBar = () => {
               </Link>
             </AuthRequired>
             <AuthRequired>
+              <Link href="/forum" passHref legacyBehavior>
+                <Nav.Link>Forum</Nav.Link>
+              </Link>
+            </AuthRequired>
+            <AuthRequired>
               <Link href="/membership" passHref legacyBehavior>
                 <Nav.Link>Membership</Nav.Link>
               </Link>

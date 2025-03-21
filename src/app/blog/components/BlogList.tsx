@@ -1,11 +1,11 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import styles from "./components.module.css";
 import Image from "next/image";
 import Link from "next/link";
-import useAxios from "@/hooks/useFetchAxios";
-import { BlogPostListResponse } from "@/types/blogPostList";
 import axios from "axios";
+import Cookies from "js-cookie";
+import { FaRegHeart, FaRegComment } from "react-icons/fa";
 
 interface BlogListProps {
   category: string;
@@ -14,48 +14,45 @@ interface BlogListProps {
   onPostDeleted: () => void;
 }
 
-export default function BlogList({
+const BlogList = ({
   category,
   currentPage,
   onPageChange,
   onPostDeleted,
-}: BlogListProps) {
-  const [totalPages, setTotalPages] = useState(1);
-  const [blogPostListResponse, setBlogPostListResponse] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+}: BlogListProps) => {
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    axios
-      .get(
-        `https://api-mnyt.purintech.id.vn/api/BlogPosts/all-paginated?PageNumber=${currentPage}&PageSize=6${
-          category !== "all" ? `&category=${category}` : ""
-        }`
-      )
-      .then((res) => {
-        console.log(res);
-
-        setBlogPostListResponse(res.data);
-        setError(false);
-      })
-      .catch((e) => {
-        setError(true);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [currentPage, category]);
-
-  useEffect(() => {
-    if (blogPostListResponse) {
-      setTotalPages(Math.ceil(blogPostListResponse.data.totalItems / 6));
+    const userData = Cookies.get("user");
+    if (userData) {
+      const user = JSON.parse(userData);
+      setIsAdmin(user.role === "Admin");
     }
-  }, [blogPostListResponse]);
+  }, []);
 
-  // Gọi onPageChange khi currentPage thay đổi
   useEffect(() => {
-    onPageChange(currentPage);
-  }, [currentPage, onPageChange]);
+    const fetchBlogs = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `https://api-mnyt.purintech.id.vn/api/BlogPosts/admin-posts?category=${category}&page=${currentPage}`
+        );
+        console.log(response.data.data);
+        setBlogs(response.data.data);
+        setTotalPages(Math.ceil(response.data.total / 10));
+      } catch (error) {
+        setError("Lỗi khi tải bài viết");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, [category, currentPage]);
 
   const handleDeletePost = async (postId: number) => {
     try {
@@ -88,10 +85,7 @@ export default function BlogList({
     );
   }
 
-  if (
-    !blogPostListResponse?.data.items ||
-    blogPostListResponse?.data.items.length === 0
-  ) {
+  if (!blogs.length) {
     return (
       <div className={styles.empty}>
         <p>Chưa có bài viết nào trong mục này</p>
@@ -101,7 +95,7 @@ export default function BlogList({
 
   return (
     <div className={styles.blogList}>
-      {blogPostListResponse.data.items.map((post) => (
+      {blogs.map((post) => (
         <div key={post.id} className={styles.blogCard}>
           {/* Thumbnail */}
           <div className={styles.thumbnailContainer}>
@@ -143,20 +137,22 @@ export default function BlogList({
             {/* Post stats */}
             <div className={styles.postStats}>
               <span>
-                <i className="far fa-comment"></i> {post.commentCount}
+                <FaRegComment /> {post.commentCount}
               </span>
               <span>
-                <i className="far fa-heart"></i> {post.likeCount}
+                <FaRegHeart /> {post.likeCount}
               </span>
             </div>
 
             {/* Nút xóa bài viết */}
-            <button
-              onClick={() => handleDeletePost(post.id)}
-              className={styles.deleteButton}
-            >
-              Xóa
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => handleDeletePost(post.id)}
+                className={styles.deleteButton}
+              >
+                Xóa
+              </button>
+            )}
           </div>
         </div>
       ))}
@@ -175,7 +171,7 @@ export default function BlogList({
       </div>
     </div>
   );
-}
+};
 
 // Helper function to get category color
 function getCategoryColor(category: string): string {
@@ -189,3 +185,5 @@ function getCategoryColor(category: string): string {
   };
   return categoryColors[category] || "#6B7280";
 }
+
+export default BlogList;

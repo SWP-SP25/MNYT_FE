@@ -113,6 +113,7 @@
 .fileUploadLabel:hover {
     background-color: #55A6C3;
     border-color: #55A6C3;
+    color: #fff;
 }
 
 .fileUploadLabel svg {

@@ -25,6 +25,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import CommentList from "@/app/blog/components/CommentList";
 import { uploadImage } from "@/utils/uploadImage";
+import CreateBlogPost from "@/app/blog/CRUD/CreateBlogPost";
 
 // Thêm interface để type checking
 interface Comment {
@@ -168,8 +169,8 @@ const BlogDetail = () => {
   useEffect(() => {
     const liked = localStorage.getItem(`liked-${id}`);
     const saved = localStorage.getItem(`saved-${id}`);
-    if (liked) setIsLiked(true);
-    if (saved) setIsSaved(true);
+    if (liked) setIsLiked(JSON.parse(liked));
+    if (saved) setIsSaved(JSON.parse(saved));
   }, [id]);
 
   // Thêm vào useEffect
@@ -317,6 +318,10 @@ const BlogDetail = () => {
       }
     }
     console.log(userData);
+  };
+
+  const handlePostCreated = (newPost: BlogPost) => {
+    setPost(newPost); // Cập nhật state với bài viết mới
   };
 
   return (
@@ -505,6 +510,16 @@ const BlogDetail = () => {
           ))}
         </div>
       </div>
+
+      {/* Hiển thị nội dung bài viết */}
+      <CreateBlogPost onPostCreated={handlePostCreated} />
+      {/* Hiển thị nội dung bài viết */}
+      {post && (
+        <div>
+          <h1>{post.title}</h1>
+          <div dangerouslySetInnerHTML={{ __html: post.content }} />
+        </div>
+      )}
     </div>
   );
 };

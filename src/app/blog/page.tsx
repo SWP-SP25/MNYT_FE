@@ -6,6 +6,8 @@ import Sidebar from "./sidebar/Sidebar";
 import Pagination from "./Pagination/Pagination";
 import CreateBlogPost from "./CRUD/CreateBlogPost";
 import { useState, useCallback, useEffect } from "react";
+import axios from "axios";
+import Link from "next/link";
 
 // Định nghĩa các types
 type SortOption = "newest" | "oldest" | "most-viewed" | "most-commented";
@@ -15,18 +17,25 @@ const BlogPage = () => {
   const [currentCategory, setCurrentCategory] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1); // Bắt đầu với trang 1
   const [sortBy, setSortBy] = useState<SortOption>("newest");
-  const totalPages = 10; // Sau này sẽ lấy từ API
+  const [blogs, setBlogs] = useState([]); // State để lưu danh sách blog
+  const [totalPages, setTotalPages] = useState(0); // State cho tổng số trang
   const blogsPerPage = 10; // Số lượng blog hiển thị trên mỗi trang
 
-  // Giả lập dữ liệu blog (thay thế bằng dữ liệu thực từ API)
-  const allBlogs = Array.from(
-    { length: 30 },
-    (_, index) => `Blog ${index + 1}`
-  ); // Giả lập 30 blog
+  const fetchBlogs = async (category: string) => {
+    try {
+      const response = await axios.get(
+        `https://api-mnyt.purintech.id.vn/api/BlogPosts/by-category?category=${category}`
+      );
+      setBlogs(response.data.data);
+      setTotalPages(Math.ceil(response.data.total / blogsPerPage));
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+    }
+  };
 
-  // Tính toán các blog cần hiển thị dựa trên trang hiện tại
-  const startIndex = (currentPage - 1) * blogsPerPage;
-  const currentBlogs = allBlogs.slice(startIndex, startIndex + blogsPerPage);
+  useEffect(() => {
+    fetchBlogs(currentCategory);
+  }, [currentCategory]);
 
   // Khôi phục trạng thái từ localStorage khi component mount
   useEffect(() => {
@@ -56,7 +65,7 @@ const BlogPage = () => {
   };
 
   const refreshPosts = () => {
-    // Logic để làm mới danh sách bài viết
+    fetchBlogs(currentCategory);
   };
 
   return (
@@ -73,9 +82,8 @@ const BlogPage = () => {
           category={currentCategory}
           sortBy={sortBy}
           currentPage={currentPage}
-          blogs={currentBlogs} // Truyền danh sách blog hiện tại
           onPageChange={handlePageChange}
-          onPostDeleted={refreshPosts} // Gọi lại để làm mới danh sách khi xóa
+          onPostDeleted={refreshPosts}
         />
         <Pagination
           currentPage={currentPage}

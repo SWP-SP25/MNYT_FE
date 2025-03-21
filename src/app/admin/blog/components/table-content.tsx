@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button as MuiButton, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import axios from 'axios';
 import { BlogManage, Blog } from "@/types/blogAdmin";
+import { useAuth } from "@/hooks/useAuth";
 
 interface FormData {
     category: string;
@@ -20,6 +21,7 @@ interface FormData {
 }
 
 export const TableContent = () => {
+    const { user } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState<FormData>({
         category: '',
@@ -100,6 +102,28 @@ export const TableContent = () => {
         });
     };
 
+    const handleStatusChange = async (blogId: number, newStatus: string) => {
+        try {
+            if (!user?.id) {
+                console.error('No user ID available');
+                return;
+            }
+            await axios.patch(
+                `https://api-mnyt.purintech.id.vn/api/BlogPosts/${blogId}/change-status?accountId=${user.id}&status=${newStatus}`,
+                {},
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            // Refresh the blog data after status change
+            window.location.reload();
+        } catch (error) {
+            console.error('Error updating blog status:', error);
+        }
+    };
+
     const handleChange = (field: string) => (event: any) => {
         setFormData(prev => ({
             ...prev,
@@ -129,9 +153,9 @@ export const TableContent = () => {
             key: 'status'
         },
         {
-            title: 'Published Date',
-            dataIndex: 'publishedDay',
-            key: 'publishedDay'
+            title: 'Category',
+            dataIndex: 'category',
+            key: 'category'
         },
         {
             title: 'Likes',
@@ -149,15 +173,25 @@ export const TableContent = () => {
             render: (_, record) => {
                 const items: MenuProps['items'] = [
                     {
-                        key: 'update',
-                        label: 'Update',
-                        onClick: () => showUpdateModal(record)
+                        key: 'view',
+                        label: 'View Blog',
+                        onClick: () => window.open(`/blog/${record.id}`, '_blank')
                     },
                     {
-                        key: 'delete',
-                        label: 'Delete',
-                        danger: true,
-                        onClick: () => handleDelete(record)
+                        key: 'status',
+                        label: 'Change Status',
+                        children: [
+                            {
+                                key: 'Removed',
+                                label: 'Set as Removed',
+                                onClick: () => handleStatusChange(record.id, 'Removed')
+                            },
+                            {
+                                key: 'Pushlished',
+                                label: 'Set as Published',
+                                onClick: () => handleStatusChange(record.id, 'Pushlished')
+                            }
+                        ]
                     }
                 ];
                 return (
@@ -176,7 +210,10 @@ export const TableContent = () => {
                     Add Blog
                 </Button>
             </div>
-            <Table<Blog> columns={columns} dataSource={blogView?.data}/>
+            <Table<Blog> 
+                columns={columns} 
+                dataSource={blogView?.data?.filter(blog => blog.status !== 'Draft')}
+            />
             
             <Dialog open={isModalOpen} onClose={handleCancel} maxWidth="sm" fullWidth>
                 <DialogTitle>Create New Blog</DialogTitle>

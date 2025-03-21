@@ -5,33 +5,7 @@ import PlanCard from './components/PlanCard';
 import useAxios from '@/hooks/useFetchAxios';
 import { MembersipOnwers } from '@/types/membershipOwner';
 import { useAuth } from '@/hooks/useAuth';
-
-const basicFeatures = [
-    { isIncluded: true, text: 'Theo dõi lịch thai kỳ cơ bản' },
-    { isIncluded: true, text: 'Nhắc nhở lịch khám định kỳ' },
-    { isIncluded: true, text: 'Tham gia cộng đồng mẹ bầu' },
-    { isIncluded: true, text: 'Tra cứu thông tin cơ bản' },
-    { isIncluded: false, text: 'Tư vấn dinh dưỡng chi tiết' },
-    { isIncluded: false, text: 'Gói tập luyện cho mẹ bầu' }
-];
-
-const standardFeatures = [
-    { isIncluded: true, text: 'Tất cả quyền lợi gói Cơ Bản' },
-    { isIncluded: true, text: 'Lịch dinh dưỡng theo tuần' },
-    { isIncluded: true, text: 'Gói bài tập cho mẹ bầu' },
-    { isIncluded: true, text: 'Tư vấn trực tuyến' },
-    { isIncluded: true, text: 'Theo dõi cân nặng & dinh dưỡng' },
-    { isIncluded: true, text: 'Nhận thông báo quan trọng' }
-];
-
-const premiumFeatures = [
-    { isIncluded: true, text: 'Tất cả quyền lợi gói Tiện Ích' },
-    { isIncluded: true, text: 'Tư vấn bác sĩ 24/7' },
-    { isIncluded: true, text: 'Gói khám thai định kỳ' },
-    { isIncluded: true, text: 'Hỗ trợ đặt lịch ưu tiên' },
-    { isIncluded: true, text: 'Quà tặng cho mẹ và bé' },
-    { isIncluded: true, text: 'Chế độ chăm sóc đặc biệt' }
-];
+import { MembershipPlans } from '@/types/membershipPlan';
 
 const Membership = () => {
     // get membership của user đã login
@@ -43,7 +17,60 @@ const Membership = () => {
         }
     );
 
-    console.log("Account membership:", membershipData?.data);
+    const {response: membershipView, error: membershipError, loading: membershipLoading} = useAxios<MembershipPlans>(
+        {
+            url: 'https://api-mnyt.purintech.id.vn/api/MembershipPlan',
+            method: 'get'
+        });
+
+    if (membershipLoading) {
+        return <div className={styles.membershipContainer}>Loading...</div>;
+    }
+
+    if (membershipError) {
+        return <div className={styles.membershipContainer}>Error loading membership plans</div>;
+    }
+
+    const plans = membershipView?.data || [];
+    const currentMembership = membershipData?.data;
+    const currentPlanId = currentMembership?.membershipPlanId;
+
+    // Function to convert description into features array
+    const getFeaturesFromDescription = (description: string) => {
+        return description.split('.').map(feature => ({
+            isIncluded: true,
+            text: feature.trim()
+        })).filter(feature => feature.text.length > 0);
+    };
+
+    // Function to determine button text based on membership status
+    const getButtonText = (planId: number) => {
+        if (!currentMembership) {
+            return "Đăng ký ngay";
+        }
+
+        const isActive = currentMembership.status === "Active";
+        const isExpired = new Date(currentMembership.endDate) < new Date();
+        const isCurrentPlan = planId === currentPlanId;
+
+        if (isCurrentPlan) {
+            if (isExpired) {
+                return "Gia hạn ngay";
+            }
+            return "Gói Hiện Tại";
+        }
+
+        if (!isActive || isExpired) {
+            return "Đăng ký ngay";
+        }
+
+        // If user has an active plan but wants to upgrade
+        if (planId > currentPlanId) {
+            return "Nâng cấp ngay";
+        }
+
+        return "Đăng ký ngay";
+    };
 
     return (
         <div className={styles.membershipContainer}>
@@ -53,28 +80,17 @@ const Membership = () => {
             </p>
 
             <div className={styles.membershipPlans}>
-                <PlanCard
-                    icon={FaBabyCarriage}
-                    title="Cơ Bản"
-                    features={basicFeatures}
-                    buttonText="Gói Hiện Tại"
-                    isDefault={true}
-                />
-
-                <PlanCard
-                    icon={FaHeart}
-                    title="Tiện Ích"
-                    features={standardFeatures}
-                    buttonText="Nâng cấp ngay"
-                />
-
-                <PlanCard
-                    icon={FaCrown}
-                    title="Cao Cấp"
-                    features={premiumFeatures}
-                    buttonText="Trải nghiệm ngay"
-                    isBestValue={true}
-                />
+                {plans.map((plan, index) => (
+                    <PlanCard
+                        key={plan.id}
+                        icon={index === 0 ? FaBabyCarriage : index === 1 ? FaHeart : FaCrown}
+                        title={plan.name}
+                        features={getFeaturesFromDescription(plan.description)}
+                        buttonText={getButtonText(plan.id)}
+                        isDefault={plan.id === currentPlanId}
+                        isBestValue={index === 2}
+                    />
+                ))}
             </div>
         </div>
     );

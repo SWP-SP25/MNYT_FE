@@ -235,7 +235,7 @@ export const TableContent =() =>
                         Cancel
                     </Button>
                     <Button onClick={() => handleUpdateAccount(selectedAccount?.id || 0)} variant="contained" color="primary">
-                        Update {selectedAccount?.id}
+                        Update
                     </Button>
                 </DialogActions>
             </Dialog>

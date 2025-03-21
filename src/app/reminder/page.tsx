@@ -1,41 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import {
-    Container,
-    Button,
-    Dialog,
-    Snackbar,
-    Alert,
-    List,
-    ListItem,
-    ListItemText,
-    ListItemIcon,
-    Checkbox,
-    Typography,
-    Box,
-    Grid,
-    Paper,
-    IconButton,
-    Popover,
-    Chip,
-    Select,
-    MenuItem,
-    CircularProgress
-} from '@mui/material';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Container, Dialog, Snackbar, Alert, Box, Grid, Paper } from '@mui/material';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import AddIcon from '@mui/icons-material/Add';
 import ReminderForm from './components/ReminderForm';
+import TimelineDayView from './components/TimelineDayView';
 import type { Reminder as UserReminder } from '@/types/schedule';
+import type { Reminder } from '@/types/reminder';
 import { useAuth } from '@/hooks/useAuth';
 import { useReminders } from '@/hooks/useReminder';
 import styles from './page.module.css';
 import moment from 'moment';
-import CloseIcon from '@mui/icons-material/Close';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 const REMINDER_TAGS = [
     { value: 'prenental_checkup', label: 'Khám thai', color: '#f44336' },
@@ -48,75 +25,94 @@ const REMINDER_TAGS = [
 export default function ReminderPage() {
     // Lấy thông tin người dùng
     const { user } = useAuth();
-    console.log('User object in reminder page:', user);
+    const userId = user && (user as any).id ? parseInt((user as any).id) : undefined;
 
-    // Lấy userId và test API
-    const userId = user?.id ? parseInt(user.id) : undefined;
-    console.log('User ID for API calls:', userId);
-
-    // Sử dụng hook useReminders để test API
+    // Sử dụng hook useReminders để giao tiếp với API Backend
     const {
-        reminders: apiReminders,
-        loading: apiLoading,
-        error: apiError,
-        refreshReminders,
-        updateReminderStatus,
-        addUserReminder
+        reminders: apiReminders,       // Dữ liệu reminders từ API 
+        loading: apiLoading,           // Trạng thái loading khi gọi API
+        error: apiError,               // Lỗi từ API (nếu có)
+        refreshReminders,              // Hàm làm mới dữ liệu từ API
+        updateReminderStatus,          // Hàm gọi API để cập nhật trạng thái reminder
+        addUserReminder                // Hàm gọi API để tạo reminder mới
     } = useReminders({ userId });
 
-    // Log kết quả từ hook
+    // Ref cho container chính
+    const mainContainerRef = useRef<HTMLDivElement>(null);
+
+    // Xử lý vấn đề hiệu ứng khi hover và cuộn
+    const handleScroll = useCallback(() => {
+        if (mainContainerRef.current) {
+            // Đảm bảo rằng scroll position được lưu trữ đúng
+            const scrollTop = mainContainerRef.current.scrollTop;
+            requestAnimationFrame(() => {
+                if (mainContainerRef.current) {
+                    mainContainerRef.current.scrollTop = scrollTop;
+                }
+            });
+        }
+    }, []);
+
+    // Sử dụng useEffect để thêm event listener cho scroll
     useEffect(() => {
-        console.log('API Reminders from hook:', apiReminders);
-        console.log('API Loading state:', apiLoading);
-        console.log('API Error state:', apiError);
-    }, [apiReminders, apiLoading, apiError]);
+        const container = mainContainerRef.current;
+        if (container) {
+            container.addEventListener('scroll', handleScroll, { passive: true });
+        }
+
+        return () => {
+            if (container) {
+                container.removeEventListener('scroll', handleScroll);
+            }
+        };
+    }, [handleScroll]);
 
     // State cho giao diện hiện tại
-    const [userReminders, setUserReminders] = useState<UserReminder[]>([]);
+    const [userReminders, setUserReminders] = useState<Array<{
+        id: string;
+        title: string;
+        description: string;
+        date: string;
+        time: string;
+        tag: string;
+        color: string;
+        status: 'pending' | 'done' | 'skip';
+    }>>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: '',
-        severity: 'success' as 'success' | 'error'
+        severity: 'success' as 'success' | 'error' | 'warning' | 'info'
     });
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const [selectedReminder, setSelectedReminder] = useState<UserReminder | null>(null);
-    const [refreshing, setRefreshing] = useState(false);
     const [fadeIn, setFadeIn] = useState(true);
 
-    // Chuyển đổi reminders từ API sang định dạng của giao diện
+    // Chuyển đổi reminders từ API sang định dạng của giao diện frontend
     useEffect(() => {
         if (apiReminders && apiReminders.length > 0) {
-            console.log('Converting API reminders to UI format');
-
-            const convertedReminders: UserReminder[] = apiReminders.map(apiReminder => {
-                // Đảm bảo date là string và có định dạng YYYY-MM-DD
+            // Chuyển đổi dữ liệu từ định dạng API sang định dạng phù hợp với UI
+            const convertedReminders = apiReminders.map(apiReminder => {
                 const date = apiReminder.date || moment().format('YYYY-MM-DD');
-                // Mặc định time là 09:00 nếu không có
                 const time = "09:00";
 
-                // Xác định tag dựa trên loại reminder và period
-                let tag: string;
+                let tag;
 
                 if (apiReminder.type === 'user') {
-                    tag = 'user'; // Tag cho reminder người dùng tự tạo
+                    tag = 'user';
                 } else if (apiReminder.period) {
-                    // Phân loại tag dựa trên tuần thai cho reminder hệ thống
                     if (apiReminder.period < 12) {
-                        tag = 'prenental_checkup'; // Khám thai định kỳ đầu
+                        tag = 'prenental_checkup';
                     } else if (apiReminder.period >= 12 && apiReminder.period < 24) {
-                        tag = 'ultrasound'; // Siêu âm giữa kỳ
+                        tag = 'ultrasound';
                     } else if (apiReminder.period >= 24 && apiReminder.period < 36) {
-                        tag = 'lab_tests'; // Xét nghiệm
+                        tag = 'lab_tests';
                     } else {
-                        tag = 'vaccination'; // Tiêm chủng cuối kỳ
+                        tag = 'vaccination';
                     }
                 } else {
-                    tag = 'prenental_checkup'; // Mặc định là khám thai
+                    tag = 'prenental_checkup';
                 }
 
-                // Xác định màu sắc dựa trên tag
                 const color = REMINDER_TAGS.find(t => t.value === tag)?.color || '#ff9800';
 
                 return {
@@ -131,15 +127,13 @@ export default function ReminderPage() {
                 };
             });
 
-            console.log('Converted reminders:', convertedReminders);
             setUserReminders(convertedReminders);
         }
     }, [apiReminders]);
 
-    // Hiển thị thông báo lỗi nếu có
+    // Hiển thị thông báo lỗi từ API nếu có
     useEffect(() => {
         if (apiError) {
-            console.error('API Error in page component:', apiError);
             setSnackbar({
                 open: true,
                 message: `Lỗi: ${apiError}`,
@@ -150,51 +144,48 @@ export default function ReminderPage() {
 
     // Khi refreshing, fade out
     useEffect(() => {
-        if (refreshing) {
-            setFadeIn(false);
-        } else {
-            // Fade in sau một chút delay để dữ liệu mới được load
+        if (!fadeIn) {
             const timer = setTimeout(() => {
                 setFadeIn(true);
             }, 300);
             return () => clearTimeout(timer);
         }
-    }, [refreshing]);
+    }, [fadeIn]);
 
-    const handleAddReminder = (newReminder: Omit<UserReminder, 'id'>, refreshAfterDelay: boolean = false) => {
-        console.log('New reminder created with UI data:', newReminder);
-
-        // Đóng form
+    // Xử lý việc thêm reminder mới (sẽ gọi API thông qua ReminderForm)
+    const handleAddReminder = (newReminder: Omit<UserReminder, 'id'>, refreshAfterDelay = false) => {
         setIsFormOpen(false);
-        // Chọn ngày của reminder mới
         setSelectedDate(newReminder.date);
 
-        // Hiển thị thông báo thành công
         setSnackbar({
             open: true,
             message: 'Tạo reminder thành công!',
             severity: 'success'
         });
 
-        // Nếu refreshAfterDelay = true, tự động refresh trang sau 4 giây
+        // Nếu refreshAfterDelay = true, sẽ gọi API refreshReminders sau 4 giây
         if (refreshAfterDelay) {
-            console.log('Will refresh after 4 seconds');
             setTimeout(() => {
-                console.log('Refreshing reminders...');
-                refreshReminders();
-            }, 4000); // 4 giây
+                refreshReminders(); // Gọi API để lấy lại dữ liệu mới nhất
+            }, 4000);
         }
     };
 
-    const handleDateClick = (arg: any) => {
-        console.log('Date clicked:', arg.dateStr);
-        setSelectedDate(arg.dateStr);
+    const handleDateClick = (arg: { dateStr: string }) => {
+        if (selectedDate) {
+            setSelectedDate(arg.dateStr);
+            const newSelectedDateReminders = userReminders
+                .filter(reminder => reminder.date === arg.dateStr)
+                .sort((a, b) => a.time.localeCompare(b.time));
+            setFadeIn(false);
+            setTimeout(() => setFadeIn(true), 200);
+        } else {
+            setSelectedDate(arg.dateStr);
+        }
     };
 
-    const handleStatusChange = (reminderId: string, status: 'skip' | 'done' | 'pending') => {
-        console.log('Changing status for reminder', reminderId, 'to', status);
-
-        // Gọi API để cập nhật trạng thái
+    const handleStatusChange = (reminderId: string, status: 'pending' | 'done' | 'skip') => {
+        // Gọi API để cập nhật trạng thái của reminder
         updateReminderStatus(reminderId, status)
             .then(success => {
                 if (success) {
@@ -214,367 +205,299 @@ export default function ReminderPage() {
     };
 
     const statusColors = {
-        skip: '#ff0000',
+        skip: '#e53935',
         done: '#4caf50',
         pending: '#1976d2'
     };
 
-    // Kết hợp reminders từ API và reminders do người dùng tạo
-    const allReminders = [...userReminders];
-    console.log('All reminders for display:', allReminders);
-
+    // Lọc reminder theo ngày được chọn
     const selectedDateReminders = selectedDate
-        ? allReminders
+        ? userReminders
             .filter(reminder => reminder.date === selectedDate)
             .sort((a, b) => a.time.localeCompare(b.time))
         : [];
 
-    const handleEventMouseEnter = (info: any) => {
-        const reminder = allReminders.find(r => r.id === info.event.id);
-        if (reminder) {
-            setSelectedReminder(reminder);
-            setAnchorEl(info.el);
-        }
+    // Xoá hoặc vô hiệu hóa các handler này
+    const handleEventMouseEnter = () => {
+        // Không làm gì cả
     };
 
     const handleEventMouseLeave = () => {
-        setAnchorEl(null);
-        setSelectedReminder(null);
+        // Không làm gì cả
     };
 
-    const events = allReminders.map(reminder => ({
+    const events = userReminders.map(reminder => ({
         id: reminder.id,
         title: reminder.title,
         start: `${reminder.date}T${reminder.time}:00`,
         end: moment(`${reminder.date}T${reminder.time}:00`).add(30, 'minutes').format('YYYY-MM-DDTHH:mm:ss'),
         description: reminder.description,
         allDay: false,
-        color: statusColors[reminder.status as 'skip' | 'done' | 'pending' || 'pending'],
+        color: statusColors[reminder.status],
         textColor: '#ffffff',
         display: 'block',
         extendedProps: {
             status: reminder.status || 'pending',
-            tag: reminder.tag
+            tag: reminder.tag,
+            originalColor: reminder.color
         }
     }));
 
-    console.log('Calendar events:', events);
+    useEffect(() => {
+        const syncHeight = () => {
+            const calendarEl = document.getElementById('mainCalendar');
+            const timelineEl = document.querySelector(`.${styles.timelineContainer}`);
 
-    const refreshRemindersWithIndicator = () => {
-        setRefreshing(true);
-        refreshReminders();
+            if (calendarEl && timelineEl && timelineEl.parentElement) {
+                // Điều chỉnh chiều cao của container chứa timeline
+                timelineEl.parentElement.style.height = `${calendarEl.offsetHeight}px`;
+            }
+        };
 
-        // Sau 2 giây, tắt indicator (giả định API call không quá 2 giây)
-        setTimeout(() => {
-            setRefreshing(false);
-        }, 2000);
+        // Thực hiện đồng bộ khi selectedDate thay đổi
+        if (selectedDate) {
+            // Đợi một chút để đảm bảo FullCalendar đã render xong
+            setTimeout(syncHeight, 50);
+            setTimeout(syncHeight, 200); // Thử lại sau 200ms đề phòng FullCalendar render chậm
+        }
+
+        window.addEventListener('resize', syncHeight);
+        return () => {
+            window.removeEventListener('resize', syncHeight);
+        };
+    }, [selectedDate, styles.timelineContainer]);
+
+    // Xử lý khi click vào link "more"
+    const handleMoreLinkClick = (arg: { date: Date }): void => {
+        // Mở TimelineView cho ngày đó
+        setSelectedDate(moment(arg.date).format('YYYY-MM-DD'));
+        // Không return anything
     };
+
+    // Đăng ký event listener để tùy chỉnh popover sau khi nó được tạo
+    useEffect(() => {
+        const customizePopover = () => {
+            const popovers = document.querySelectorAll('.fc-popover');
+            popovers.forEach(popover => {
+                // Kiểm tra nếu popover chưa được tùy chỉnh
+                if (!popover.classList.contains('customized')) {
+                    // Thêm class để đánh dấu đã tùy chỉnh
+                    popover.classList.add('customized');
+
+                    // Tùy chỉnh title
+                    const title = popover.querySelector('.fc-popover-title');
+                    if (title) {
+                        title.textContent = 'Tất cả sự kiện';
+                    }
+
+                    // Tùy chỉnh các sự kiện trong popover
+                    const events = popover.querySelectorAll('.fc-event');
+                    events.forEach(event => {
+                        // Thêm style hoặc listener cho từng event
+                        event.addEventListener('click', (e) => {
+                            // Xử lý khi click vào event trong popover
+                            const eventId = event.getAttribute('data-event-id');
+                            if (eventId) {
+                                // Tìm và hiển thị chi tiết event
+                                const reminder = userReminders.find(r => r.id === eventId);
+                                if (reminder) {
+                                    setSelectedDate(reminder.date);
+                                }
+                            }
+                            e.stopPropagation();
+                        });
+                    });
+                }
+            });
+        };
+
+        // Đợi một chút để FullCalendar tạo popover
+        document.addEventListener('click', () => {
+            setTimeout(customizePopover, 50);
+        });
+
+        return () => {
+            document.removeEventListener('click', customizePopover);
+        };
+    }, [userReminders]);
+
+    // useEffect để xử lý cảnh báo khi có quá nhiều sự kiện
+    useEffect(() => {
+        // Nhóm sự kiện theo ngày
+        const eventsByDate: Record<string, any[]> = {};
+
+        userReminders.forEach(reminder => {
+            if (!eventsByDate[reminder.date]) {
+                eventsByDate[reminder.date] = [];
+            }
+            eventsByDate[reminder.date].push(reminder);
+        });
+
+        // Kiểm tra nếu có ngày nào có quá nhiều sự kiện (ví dụ: trên 5)
+        Object.keys(eventsByDate).forEach(date => {
+            if (eventsByDate[date].length > 5) {
+                console.log(`Ngày ${date} có ${eventsByDate[date].length} sự kiện. Có thể ảnh hưởng đến hiển thị.`);
+                // Có thể thêm logic để hiển thị cảnh báo hoặc thực hiện các hành động khác
+            }
+        });
+    }, [userReminders]);
 
     return (
         <Container
-            maxWidth="xl"
+            maxWidth={false}
+            ref={mainContainerRef}
             sx={{
-                pt: '80px',
-                px: 3,
-                minHeight: 'calc(100vh - 64px)'
+                pt: 3,
+                pb: 3,
+                px: { xs: 2, sm: 3, md: 4 },
+                mt: '64px',
+                mb: '16px',
+                minHeight: 'calc(100vh - 64px - 16px - 24px - 24px)',
+                backgroundColor: '#f9fcf9',
+                overflow: 'hidden',
+                position: 'relative',
+                '& *': {
+                    backfaceVisibility: 'hidden',
+                    WebkitFontSmoothing: 'antialiased',
+                }
             }}
         >
-            <Box sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                mb: 2
-            }}>
-                <Typography variant="h4" component="h1">
-                    Hệ thống nhắc nhở
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button
-                        variant="outlined"
-                        onClick={() => {
-                            console.log('Refresh button clicked');
-                            refreshRemindersWithIndicator();
-                        }}
-                        disabled={apiLoading || refreshing}
-                        startIcon={refreshing ? <CircularProgress size={20} /> : null}
-                    >
-                        Làm mới
-                    </Button>
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => setIsFormOpen(true)}
-                        sx={{
-                            bgcolor: '#1976d2',
-                            '&:hover': {
-                                bgcolor: '#1565c0'
-                            }
-                        }}
-                    >
-                        TẠO REMINDER
-                    </Button>
-                </Box>
-            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <Grid container spacing={3} sx={{
+                    opacity: fadeIn ? 1 : 0.6,
+                    transition: 'opacity 0.3s ease-in-out'
+                }}>
+                    {selectedDate && (
+                        <Grid item xs={12} md={3} sx={{
+                            height: { xs: 'auto', md: 'fit-content' },
+                            position: 'relative',
+                            display: 'flex'
+                        }}>
+                            <Paper
+                                className={styles.hideScrollbar}
+                                sx={{
+                                    p: 0,
+                                    overflow: 'hidden',
+                                    height: { xs: 'calc(100vh - 220px)', md: 'auto' },
+                                    width: '100%',
+                                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+                                    borderRadius: 2,
+                                    my: 0,
+                                    flexGrow: 1,
+                                    display: 'flex',
+                                    flexDirection: 'column'
+                                }}
+                            >
+                                <TimelineDayView
+                                    date={selectedDate}
+                                    reminders={selectedDateReminders}
+                                    onClose={() => setSelectedDate(null)}
+                                    handleStatusChange={(reminderId: string, status: string) => handleStatusChange(reminderId, status as 'pending' | 'done' | 'skip')}
+                                />
+                            </Paper>
+                        </Grid>
+                    )}
 
-            {/* Hiển thị trạng thái API (chỉ để test) */}
-            {/* <Paper sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="body2">
-                    <strong>API Status:</strong> {apiLoading ? 'Loading...' : apiError ? 'Error' : 'Success'}
-                    {apiError && ` - ${apiError}`}
-                </Typography>
-                <Typography variant="body2">
-                    <strong>API Reminders:</strong> {apiReminders?.length || 0}
-                </Typography>
-            </Paper> */}
-
-            <Grid container spacing={3} sx={{
-                opacity: fadeIn ? 1 : 0.6,
-                transition: 'opacity 0.3s ease-in-out'
-            }}>
-                {selectedDate && (
-                    <Grid item xs={12} md={4}>
-                        <Paper className={styles.reminderList}>
-                            <div className={styles.reminderListHeader}>
-                                <Typography variant="h6">
-                                    Reminders ngày {moment(selectedDate).format('DD/MM/YYYY')}
-                                </Typography>
-                                <IconButton
-                                    onClick={() => setSelectedDate(null)}
-                                    size="small"
-                                    className={styles.closeButton}
-                                >
-                                    <CloseIcon />
-                                </IconButton>
-                            </div>
-                            {selectedDateReminders.length > 0 ? (
-                                <List>
-                                    {selectedDateReminders.map((reminder) => (
-                                        <ListItem
-                                            key={reminder.id}
-                                            className={styles.reminderItem}
-                                            disablePadding
-                                            sx={{
-                                                position: 'relative',
-                                                zIndex: 2,
-                                                flexDirection: 'column',
-                                                alignItems: 'stretch',
-                                                gap: 1
-                                            }}
-                                        >
-                                            <ListItemText
-                                                primary={
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <Typography>
-                                                            {reminder.title}
-                                                        </Typography>
-                                                        <Chip
-                                                            size="small"
-                                                            label={REMINDER_TAGS.find(t => t.value === reminder.tag)?.label}
-                                                            sx={{
-                                                                bgcolor: reminder.color,
-                                                                color: 'white',
-                                                                height: '20px'
-                                                            }}
-                                                        />
-                                                    </Box>
-                                                }
-                                                secondary={
-                                                    <>
-                                                        <Typography component="span" variant="body2">
-                                                            {reminder.time}
-                                                        </Typography>
-                                                        <Typography
-                                                            component="p"
-                                                            variant="body2"
-                                                            color="textSecondary"
-                                                        >
-                                                            {reminder.description}
-                                                        </Typography>
-                                                    </>
-                                                }
-                                            />
-                                            <Select
-                                                value={reminder.status || 'pending'}
-                                                onChange={(e) => handleStatusChange(reminder.id, e.target.value as 'skip' | 'done' | 'pending')}
-                                                size="small"
-                                                MenuProps={{
-                                                    sx: {
-                                                        zIndex: 9999
-                                                    }
-                                                }}
-                                                sx={{
-                                                    width: '100%',
-                                                    maxWidth: '200px',
-                                                    alignSelf: 'flex-end',
-                                                    '& .MuiSelect-select': {
-                                                        py: 0.5
-                                                    }
-                                                }}
-                                            >
-                                                <MenuItem value="pending">Chưa làm</MenuItem>
-                                                <MenuItem value="done">Đã làm</MenuItem>
-                                                <MenuItem value="skip">Bỏ qua</MenuItem>
-                                            </Select>
-                                        </ListItem>
-                                    ))}
-                                </List>
-                            ) : (
-                                <Typography variant="body2" color="textSecondary" className={styles.noReminders}>
-                                    Không có reminder nào
-                                </Typography>
-                            )}
-                        </Paper>
+                    <Grid item xs={12} md={selectedDate ? 9 : 12}>
+                        <div className={styles.calendar} id="mainCalendar">
+                            <FullCalendar
+                                plugins={[dayGridPlugin, interactionPlugin]}
+                                initialView="dayGridMonth"
+                                headerToolbar={{
+                                    left: 'prev,next today',
+                                    center: 'title',
+                                    right: 'addReminder'
+                                }}
+                                customButtons={{
+                                    addReminder: {
+                                        text: '+',
+                                        click: () => setIsFormOpen(true)
+                                    }
+                                }}
+                                events={events}
+                                editable={true}
+                                selectable={true}
+                                selectMirror={true}
+                                dayMaxEvents={false}
+                                moreLinkText={(n) => `Xem thêm ${n} sự kiện`}
+                                moreLinkClick={handleMoreLinkClick}
+                                weekends={true}
+                                height="auto"
+                                locale="vi"
+                                dateClick={handleDateClick}
+                                buttonText={{
+                                    today: 'Hôm nay'
+                                }}
+                                eventTimeFormat={{
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: false
+                                }}
+                                eventContent={(eventInfo) => {
+                                    const status = eventInfo.event.extendedProps.status;
+                                    return {
+                                        html: `
+                                            <div class="${styles.eventContent} ${status === 'done' ? styles.checkedEvent : ''}">
+                                                <div class="${styles.eventTitle}">
+                                                    ${eventInfo.event.title}
+                                                </div>
+                                                <div class="${styles.eventTime}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;">
+                                                        <circle cx="12" cy="12" r="10"></circle>
+                                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                                    </svg>
+                                                    ${eventInfo.timeText}
+                                                </div>
+                                            </div>
+                                        `
+                                    };
+                                }}
+                                moreLinkClassNames={styles.moreLink}
+                            />
+                        </div>
                     </Grid>
-                )}
-
-                <Grid item xs={12} md={selectedDate ? 8 : 12}>
-                    <div className={styles.calendar}>
-                        <FullCalendar
-                            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                            initialView="dayGridMonth"
-                            headerToolbar={{
-                                left: 'prev,next today',
-                                center: 'title',
-                                right: 'dayGridMonth,timeGridWeek'
-                            }}
-                            events={events}
-                            editable={true}
-                            selectable={true}
-                            selectMirror={true}
-                            dayMaxEvents={true}
-                            weekends={true}
-                            height="auto"
-                            locale="vi"
-                            slotMinTime="06:00:00"
-                            slotMaxTime="22:00:00"
-                            dateClick={handleDateClick}
-                            buttonText={{
-                                today: 'Hôm nay',
-                                month: 'Tháng',
-                                week: 'Tuần'
-                            }}
-                            eventTimeFormat={{
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false
-                            }}
-                            slotDuration="00:30:00"
-                            eventContent={(eventInfo) => {
-                                const status = eventInfo.event.extendedProps.status;
-                                return {
-                                    html: `
-                                        <div class="${styles.eventContent} ${status === 'done' ? styles.checkedEvent : ''}">
-                                            <div class="${styles.eventTitle}">
-                                                ${eventInfo.event.title}
-                                            </div>
-                                            <div class="${styles.eventTime}">
-                                                ${eventInfo.timeText}
-                                            </div>
-                                        </div>
-                                    `
-                                };
-                            }}
-                            eventMouseEnter={handleEventMouseEnter}
-                            eventMouseLeave={handleEventMouseLeave}
-                        />
-                    </div>
                 </Grid>
-            </Grid>
 
-            <Dialog
-                open={isFormOpen}
-                onClose={() => setIsFormOpen(false)}
-                maxWidth="sm"
-                fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: 1,
-                        boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.15)',
-                        zIndex: 1
-                    }
-                }}
-            >
-                <ReminderForm
-                    onSubmit={handleAddReminder}
-                    onCancel={() => setIsFormOpen(false)}
-                    initialDate={selectedDate}
-                    addUserReminder={addUserReminder}
-                />
-            </Dialog>
-
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={4000}
-                onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-            >
-                <Alert
-                    severity={snackbar.severity}
-                    onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-                    elevation={6}
-                    variant="filled"
+                <Dialog
+                    open={isFormOpen}
+                    onClose={() => setIsFormOpen(false)}
+                    maxWidth="sm"
+                    fullWidth
+                    PaperProps={{
+                        sx: {
+                            borderRadius: 2,
+                            boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.15)',
+                            overflow: 'hidden'
+                        }
+                    }}
                 >
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
+                    <ReminderForm
+                        onSubmit={handleAddReminder as (reminder: Omit<Reminder, 'id'>, refreshAfterDelay?: boolean) => void}
+                        onCancel={() => setIsFormOpen(false)}
+                        initialDate={selectedDate}
+                        addUserReminder={addUserReminder}
+                    />
+                </Dialog>
 
-            <Popover
-                open={Boolean(anchorEl)}
-                anchorEl={anchorEl}
-                onClose={() => setAnchorEl(null)}
-                anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'left',
-                }}
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                }}
-                sx={{
-                    pointerEvents: 'none',
-                }}
-                PaperProps={{
-                    sx: {
-                        p: 2,
-                        maxWidth: 300,
-                        boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.15)',
-                    }
-                }}
-            >
-                {selectedReminder && (
-                    <Box>
-                        <Typography variant="h6" sx={{ mb: 1 }}>
-                            {selectedReminder.title}
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                            <Chip
-                                size="small"
-                                label={REMINDER_TAGS.find(t => t.value === selectedReminder.tag)?.label}
-                                sx={{
-                                    bgcolor: selectedReminder.color,
-                                    color: 'white'
-                                }}
-                            />
-                            <Chip
-                                size="small"
-                                label={selectedReminder.status || 'Chưa làm'}
-                                sx={{
-                                    bgcolor: statusColors[selectedReminder.status as 'skip' | 'done' | 'pending' || 'pending'],
-                                    color: 'white'
-                                }}
-                            />
-                        </Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                            <AccessTimeIcon sx={{ fontSize: 16, mr: 1, verticalAlign: 'text-bottom' }} />
-                            {moment(`${selectedReminder.date} ${selectedReminder.time}`).format('DD/MM/YYYY HH:mm')}
-                        </Typography>
-                        {selectedReminder.description && (
-                            <Typography variant="body2">
-                                {selectedReminder.description}
-                            </Typography>
-                        )}
-                    </Box>
-                )}
-            </Popover>
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={4000}
+                    onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                    <Alert
+                        severity={snackbar.severity}
+                        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+                        elevation={6}
+                        variant="filled"
+                        sx={{
+                            bgcolor: snackbar.severity === 'success' ? '#4caf50' : '#e53935'
+                        }}
+                    >
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
+            </Box>
         </Container>
     );
 }

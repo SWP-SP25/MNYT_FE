@@ -20,7 +20,7 @@ interface LoginCredentials {
 
 interface RegisterCredentials {
     username: string;
-    enail: string;
+    email: string;
     password: string;
 }
 

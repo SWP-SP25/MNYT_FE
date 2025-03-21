@@ -25,7 +25,7 @@ export interface Blog {
 
 export enum Status {
     Draft = "Draft",
-    Published = "Pushlished",
+    Published = "Published",
     Removed = "Removed",
     Reported = "Reported"
 }

@@ -145,7 +145,15 @@ export const TableContent =() =>
         {
             title:"Status",
             dataIndex:'status',
-            key:'status'
+            key:'status',
+            render: (status: string) => (
+                <span style={{ 
+                    color: status === 'Active' ? '#52c41a' : '#ff4d4f',
+                    fontWeight: 'bold'
+                }}>
+                    {status}
+                </span>
+            )
         },
         {
             title:'',
@@ -162,7 +170,8 @@ export const TableContent =() =>
                             {
                                 key: 'unban',
                                 label: 'Unban',
-                                onClick: () => handleUnbanAccount(record.id)
+                                onClick: () => handleUnbanAccount(record.id),
+                                style: { color: '#52c41a' }
                             }
                         ]
                         : [

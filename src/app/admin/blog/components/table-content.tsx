@@ -150,7 +150,24 @@ export const TableContent = () => {
         {
             title: 'Status',
             dataIndex: 'status',
-            key: 'status'
+            key: 'status',
+            render: (status: string) => {
+                let color = 'inherit';
+                switch (status) {
+                    case 'Removed':
+                        color = '#ff4d4f'; // red
+                        break;
+                    case 'Published':
+                        color = '#52c41a'; // green
+                        break;
+                    case 'Reported':
+                        color = '#faad14'; // yellow
+                        break;
+                    default:
+                        color = 'inherit';
+                }
+                return <span style={{ color }}>{status}</span>;
+            }
         },
         {
             title: 'Category',
@@ -187,9 +204,9 @@ export const TableContent = () => {
                                 onClick: () => handleStatusChange(record.id, 'Removed')
                             },
                             {
-                                key: 'Pushlished',
+                                key: 'Published',
                                 label: 'Set as Published',
-                                onClick: () => handleStatusChange(record.id, 'Pushlished')
+                                onClick: () => handleStatusChange(record.id, 'Published')
                             }
                         ]
                     }

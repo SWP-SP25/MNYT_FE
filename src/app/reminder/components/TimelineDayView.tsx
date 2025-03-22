@@ -22,7 +22,6 @@ const REMINDER_TAGS = [
     { value: 'ultrasound', label: 'Siêu âm', color: '#4caf50' },
     { value: 'lab_tests', label: 'Xét nghiệm', color: '#2196f3' },
     { value: 'vaccination', label: 'Tiêm chủng', color: '#ff9800' },
-    { value: 'user', label: 'Tự tạo', color: '#9c27b0' },
 ];
 
 const TimelineDayView: React.FC<TimelineDayViewProps> = ({

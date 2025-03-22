@@ -19,7 +19,6 @@ const REMINDER_TAGS = [
     { value: 'ultrasound', label: 'Siêu âm', color: '#4caf50' },
     { value: 'lab_tests', label: 'Xét nghiệm', color: '#2196f3' },
     { value: 'vaccination', label: 'Tiêm chủng', color: '#ff9800' },
-    { value: 'user', label: 'Tự tạo', color: '#9c27b0' },
 ];
 
 export default function ReminderPage() {
@@ -37,6 +36,12 @@ export default function ReminderPage() {
         addUserReminder                // Hàm gọi API để tạo reminder mới
     } = useReminders({ userId });
 
+    // Log kết quả từ hook trả về
+    useEffect(() => {
+        console.log('API Reminders from hook:', apiReminders);
+        console.log('API Loading state:', apiLoading);
+        console.log('API Error state:', apiError);
+    }, [apiReminders, apiLoading, apiError]);
     // Ref cho container chính
     const mainContainerRef = useRef<HTMLDivElement>(null);
 
@@ -68,16 +73,7 @@ export default function ReminderPage() {
     }, [handleScroll]);
 
     // State cho giao diện hiện tại
-    const [userReminders, setUserReminders] = useState<Array<{
-        id: string;
-        title: string;
-        description: string;
-        date: string;
-        time: string;
-        tag: string;
-        color: string;
-        status: 'pending' | 'done' | 'skip';
-    }>>([]);
+    const [userReminders, setUserReminders] = useState<Reminder[]>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [snackbar, setSnackbar] = useState({
@@ -95,9 +91,9 @@ export default function ReminderPage() {
                 const date = apiReminder.date || moment().format('YYYY-MM-DD');
                 const time = "09:00";
 
-                let tag;
+                let tag: 'prenental_checkup' | 'ultrasound' | 'lab_tests' | 'vaccination' | 'user';
 
-                if (apiReminder.type === 'user') {
+                if (apiReminder.period === 'user') {
                     tag = 'user';
                 } else if (apiReminder.period) {
                     if (apiReminder.period < 12) {

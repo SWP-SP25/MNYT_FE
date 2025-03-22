@@ -13,6 +13,7 @@ import {
 import styles from "./sidebar.module.css";
 import { AccountBookOutlined, CarryOutOutlined, FundProjectionScreenOutlined } from "@ant-design/icons";
 import { ClassNames } from "@emotion/react";
+import PaidIcon from '@mui/icons-material/Paid';
 
 export const Sidebar = () => {
   return (
@@ -62,6 +63,7 @@ export const Sidebar = () => {
         <h3>Report</h3>
         <nav>
           <Link href="/admin/membership-sale" className={styles.menuItem}>
+          <PaidIcon fontSize="small"/>
           <span>Membership Report</span>
           </Link>
         </nav>

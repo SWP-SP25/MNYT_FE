@@ -1,6 +1,13 @@
 .statsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chartsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
@@ -10,7 +17,7 @@
     align-items: center;
     gap: 1rem;
     margin: 1rem 0;
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 600;
     color: #333;
     border: 1px solid #e0e0e0;
@@ -33,12 +40,13 @@
     background: #e3f2fd;
     border-radius: 12px;
     color: #1976d2;
-    transition: background 0.3s;
+    transition: all 0.3s ease;
 }
 
 .statIcon:hover {
     background: #1976d2;
     color: white;
+    transform: scale(1.05);
 }
 
 .timeSelect {
@@ -132,10 +140,28 @@
     transform: translateY(-5px);
 }
 
+.chartCard {
+    min-height: 400px;
+}
+
+.chart {
+    margin-top: 1rem;
+    height: 300px;
+    width: 100%;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .statsGrid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .chartsGrid {
         grid-template-columns: 1fr;
+    }
+
+    .chartCard {
+        min-height: 350px;
     }
 
     .tableHeader {

@@ -12,6 +12,7 @@ import {
 } from "react-icons/bs";
 import styles from "./sidebar.module.css";
 import { AccountBookOutlined, CarryOutOutlined, FundProjectionScreenOutlined } from "@ant-design/icons";
+import { ClassNames } from "@emotion/react";
 
 export const Sidebar = () => {
   return (
@@ -54,6 +55,14 @@ export const Sidebar = () => {
           <Link href="/admin/preganacy-standard" className={styles.menuItem}>
           <FundProjectionScreenOutlined />
             <span>Pregnancy Standard</span>
+          </Link>
+        </nav>
+      </div>
+      <div className={styles.menuGroup}> 
+        <h3>Report</h3>
+        <nav>
+          <Link href="/admin/membership-sale" className={styles.menuItem}>
+          <span>Membership Report</span>
           </Link>
         </nav>
       </div>

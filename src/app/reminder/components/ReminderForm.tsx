@@ -67,6 +67,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
             start: `${dateStr}T${timeStr}`,
             tag: formData.tag,
             status: 'pending' as const,
+            type: formData.tag, // Gán type từ tag
             color: REMINDER_TAGS.find(t => t.value === formData.tag)?.color
         };
 
@@ -82,7 +83,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
                     reminder.description,
                     dateStr,
                     'pending',  // status
-                    'user'      // type
+                    reminder.type // Gán type từ reminder
                 );
 
                 if (success) {
@@ -284,4 +285,4 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
     );
 };
 
-export default ReminderForm; 
+export default ReminderForm;

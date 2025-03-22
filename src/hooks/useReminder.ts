@@ -13,7 +13,7 @@ interface CalculatedReminder {
     title: string;
     description: string;
     date: string;
-    type: 'system' | 'user';
+    type: string; // Thay đổi để sử dụng giá trị từ API
     period: number;
     status?: 'pending' | 'done' | 'skip';
 }
@@ -24,7 +24,7 @@ interface UserSchedule {
     title: string;
     note: string; // Tương đương với description
     date: string;
-    type: string;
+    type: string; // Sử dụng giá trị từ API
     status: string;
     pregnancyId: number;
     createDate: string;
@@ -122,15 +122,6 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
                 .then(res => {
                     console.log('Fetus record data count:', res.data.length);
                     if (res.data && res.data.length > 0) {
-                        // Log chi tiết về record đầu tiên để kiểm tra period
-                        const firstRecord = res.data[0];
-                        console.log('First record details:', {
-                            id: firstRecord.id,
-                            inputPeriod: firstRecord.inputPeriod,
-                            period: firstRecord.period,
-                            createDate: firstRecord.createDate
-                        });
-
                         setFetusRecordData(res.data);
                         console.log('Fetus record data:', res.data);
                     } else {
@@ -170,31 +161,14 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
                 const pregnancyCreateDate = moment(pregnancyData.createDate);
                 console.log('Pregnancy create date:', pregnancyCreateDate.format('YYYY-MM-DD'));
 
-                // Lấy record đầu tiên (sắp xếp theo thời gian tạo)
-                const sortedRecords = [...fetusRecordData].sort((a, b) =>
-                    new Date(a.createDate).getTime() - new Date(b.createDate).getTime()
-                );
-
-                const firstRecord = sortedRecords[0];
-
-                // Lấy period từ record đầu tiên
-                const initialPeriod = firstRecord.inputPeriod || firstRecord.period;
-                console.log('Initial pregnancy period:', initialPeriod);
-
-                if (!initialPeriod) {
-                    console.error('Cannot determine initial pregnancy period - inputPeriod and period are both null/undefined');
-                    setError('Không thể xác định tuần thai ban đầu');
-                    return;
-                }
-
                 // Tạo reminders dựa trên schedule templates
                 const calculatedReminders: CalculatedReminder[] = [];
 
                 scheduleTemplates.forEach(template => {
                     // Chỉ tạo reminder cho các tuần thai từ hiện tại đến tuần 40
-                    if (template.period >= initialPeriod && template.period <= 40) {
+                    if (template.period >= 0 && template.period <= 40) { // Bỏ điều kiện ban đầu
                         // Tính số tuần cần thêm vào từ ngày tạo hồ sơ
-                        const weeksToAdd = template.period - initialPeriod;
+                        const weeksToAdd = template.period;
 
                         // Tính ngày dự kiến cho reminder này
                         const reminderDate = moment(pregnancyCreateDate).add(weeksToAdd, 'weeks');
@@ -204,28 +178,34 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
                             title: template.title || `Lịch khám thai tuần ${template.period}`,
                             description: template.description || `Khám thai định kỳ tuần ${template.period}`,
                             date: reminderDate.format('YYYY-MM-DD'),
-                            type: 'system',
+                            type: template.type, // Sử dụng type từ API
                             period: template.period,
                             status: template.status
                         });
                     }
                 });
 
-                console.log('Calculated reminders count:', calculatedReminders.length);
-                if (calculatedReminders.length === 0) {
-                    console.log('No reminders were calculated. Check template periods vs initialPeriod:', initialPeriod);
-                    console.log('Template periods:', scheduleTemplates.map(t => t.period));
-                } else {
-                    console.log('First few calculated reminders:', calculatedReminders.slice(0, 3));
-                }
+                // Xử lý nhắc nhở của người dùng
+                userReminders.forEach(userReminder => {
+                    calculatedReminders.push({
+                        id: userReminder.id,
+                        title: userReminder.title,
+                        description: userReminder.description,
+                        date: userReminder.date,
+                        type: userReminder.type, // Sử dụng type từ API
+                        period: 0, // Thiết lập period mặc định là 0 cho lịch người dùng tự tạo
+                        status: userReminder.status
+                    });
+                });
 
+                console.log('Calculated reminders count:', calculatedReminders.length);
                 setSystemReminders(calculatedReminders);
             } catch (err) {
                 console.error('Error calculating reminders:', err);
                 setError('Lỗi khi tính toán lịch khám');
             }
         }
-    }, [pregnancyData, fetusRecordData, scheduleTemplates]);
+    }, [pregnancyData, fetusRecordData, scheduleTemplates, userReminders]);
 
     // 6. Lấy reminder do người dùng tự tạo
     useEffect(() => {
@@ -247,8 +227,8 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
                                 title: schedule.title || 'Lịch hẹn',
                                 description: schedule.note || 'Chi tiết lịch hẹn',
                                 date: schedule.date, // Sử dụng trực tiếp ngày từ API
-                                type: 'user',
-                                period: 0, // Không có period cho lịch người dùng tự tạo
+                                type: schedule.type, // Sử dụng type từ API
+                                period: 0, // Thiết lập period mặc định là 0 cho lịch người dùng tự tạo
                                 status: schedule.status as 'pending' | 'done' | 'skip' || 'pending'
                             }));
 
@@ -261,7 +241,6 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
                 })
                 .catch(err => {
                     console.error('Error fetching user schedules:', err);
-                    // Không set error ở đây vì có thể chưa có lịch nào
                     setUserReminders([]);
                 });
         }
@@ -295,27 +274,11 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
             let endpoint = '';
             let payload = {};
 
-            if (systemReminder) {
-                // Nếu là reminder từ template
-                console.log('Updating system reminder:', systemReminder);
-
-                endpoint = `https://api-mnyt.purintech.id.vn/api/ScheduleTemplate`;
-
-                // Giữ nguyên tất cả dữ liệu hiện tại, chỉ cập nhật status
-                payload = {
-                    id: systemReminder.id,
-                    title: systemReminder.title,
-                    description: systemReminder.description,
-                    period: systemReminder.period,
-                    type: systemReminder.type,
-                    status: status,
-                    // Thêm các trường khác nếu cần
-                };
-            } else if (userReminder) {
+            if (userReminder) {
                 // Nếu là reminder người dùng tự tạo
                 console.log('Updating user reminder:', userReminder);
 
-                endpoint = `https://api-mnyt.purintech.id.vn/api/ScheduleUser`;
+                endpoint = `https://api-mnyt.purintech.id.vn/api/ScheduleUser/${userReminder.id}`;
 
                 // Giữ nguyên tất cả dữ liệu hiện tại, chỉ cập nhật status
                 payload = {
@@ -323,10 +286,9 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
                     title: userReminder.title,
                     note: userReminder.description, // 'note' thay vì 'description' cho user reminder
                     date: userReminder.date,
-                    type: userReminder.type,
+                    type: userReminder.type, // Giữ nguyên type
                     status: status,
                     pregnancyId: pregnancyData.id,
-                    // Thêm các trường khác nếu cần
                 };
             }
 
@@ -337,15 +299,7 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
             console.log('Update status response:', response.data);
 
             // Cập nhật state local tùy theo loại reminder
-            if (systemReminder) {
-                setSystemReminders(prev =>
-                    prev.map(reminder =>
-                        reminder.id.toString() === reminderId
-                            ? { ...reminder, status }
-                            : reminder
-                    )
-                );
-            } else if (userReminder) {
+            if (userReminder) {
                 setUserReminders(prev =>
                     prev.map(reminder =>
                         reminder.id.toString() === reminderId
@@ -366,7 +320,7 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
     };
 
     // Hàm để thêm reminder người dùng tự tạo
-    const addUserReminder = async (title: string, description: string, date: string, status: string = 'pending', type: string = 'user') => {
+    const addUserReminder = async (title: string, description: string, date: string, status: string = 'pending', type: string) => {
         if (!pregnancyData || !pregnancyData.id) {
             console.error('Cannot add user reminder: missing pregnancy data');
             setError('Không thể tạo lịch: thiếu dữ liệu thai kỳ');
@@ -381,7 +335,7 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
             const payload = {
                 title: title,
                 status: status,
-                type: type,
+                type: type, // Sử dụng type từ thẻ tag đã chọn
                 date: date,
                 note: description,  // 'note' thay vì 'description'
                 pregnancyId: pregnancyData.id
@@ -398,7 +352,7 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
                     title: title,
                     description: description,  // Lưu vào state với tên 'description'
                     date: date,
-                    type: 'user',
+                    type: type, // Gán type từ API
                     period: 0,
                     status: status as 'pending' | 'done' | 'skip'
                 };
@@ -427,52 +381,16 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
             .then(res => {
                 console.log('Refreshed schedule templates count:', res.data.length);
                 setScheduleTemplates(res.data);
-
-                // Làm mới dữ liệu thai kỳ nếu có userId
-                if (userId) {
-                    return axios.get(`https://api-mnyt.purintech.id.vn/api/Pregnancy/accountId/${userId}`);
-                }
-            })
-            .then(res => {
-                if (res) {
-                    console.log('Refreshed pregnancy data:', res.data);
-                    if (res.data && res.data.length > 0) {
-                        setPregnancyData(res.data[0]);
-
-                        // Làm mới dữ liệu lịch do người dùng tự tạo
-                        return axios.get(`https://api-mnyt.purintech.id.vn/api/ScheduleUser/${res.data[0].id}`);
-                    }
-                }
-            })
-            .then(res => {
-                if (res) {
-                    console.log('Refreshed user schedules:', res.data);
-
-                    // Chuyển đổi từ UserSchedule sang CalculatedReminder
-                    const userSchedules: CalculatedReminder[] = res.data
-                        .filter((schedule: UserSchedule) => !schedule.isDeleted)
-                        .map((schedule: UserSchedule) => ({
-                            id: schedule.id,
-                            title: schedule.title || 'Lịch hẹn',
-                            description: schedule.note || 'Chi tiết lịch hẹn',
-                            date: schedule.date,
-                            type: 'user',
-                            period: 0,
-                            status: schedule.status as 'pending' | 'done' | 'skip' || 'pending'
-                        }));
-
-                    setUserReminders(userSchedules);
-                } else {
-                    setUserReminders([]);
-                }
-                setLoading(false);
             })
             .catch(err => {
-                console.log('Error refreshing data:', err);
-                setError('Lỗi khi làm mới dữ liệu');
+                console.log('Error refreshing schedule templates:', err);
+                setError('Lỗi khi làm mới dữ liệu lịch khám');
                 setLoading(false);
             });
     };
+
+    // Thời gian cố định là 09:00 (cần cập nhật sau này khi có dữ liệu từ database)
+    const defaultTime = "09:00"; // Note: Update this to fetch from database later
 
     // Trả về dữ liệu và các hàm cần thiết
     return {

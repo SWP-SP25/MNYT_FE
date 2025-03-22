@@ -42,7 +42,6 @@ const REMINDER_TAGS = [
     { value: 'ultrasound', label: 'Siêu âm', color: '#4caf50' },
     { value: 'lab_tests', label: 'Xét nghiệm', color: '#2196f3' },
     { value: 'vaccination', label: 'Tiêm chủng', color: '#ff9800' },
-    { value: 'user', label: 'Tự tạo', color: '#9c27b0' },
 ];
 
 export default function ReminderPage() {
@@ -91,43 +90,24 @@ export default function ReminderPage() {
             console.log('Converting API reminders to UI format');
 
             const convertedReminders: UserReminder[] = apiReminders.map(apiReminder => {
-                // Đảm bảo date là string và có định dạng YYYY-MM-DD
                 const date = apiReminder.date || moment().format('YYYY-MM-DD');
-                // Mặc định time là 09:00 nếu không có
-                const time = "09:00";
+                const time = "09:00"; // Thời gian cố định (cần cập nhật sau này)
 
-                // Xác định tag dựa trên loại reminder và period
-                let tag: string;
-
-                if (apiReminder.type === 'user') {
-                    tag = 'user'; // Tag cho reminder người dùng tự tạo
-                } else if (apiReminder.period) {
-                    // Phân loại tag dựa trên tuần thai cho reminder hệ thống
-                    if (apiReminder.period < 12) {
-                        tag = 'prenental_checkup'; // Khám thai định kỳ đầu
-                    } else if (apiReminder.period >= 12 && apiReminder.period < 24) {
-                        tag = 'ultrasound'; // Siêu âm giữa kỳ
-                    } else if (apiReminder.period >= 24 && apiReminder.period < 36) {
-                        tag = 'lab_tests'; // Xét nghiệm
-                    } else {
-                        tag = 'vaccination'; // Tiêm chủng cuối kỳ
-                    }
-                } else {
-                    tag = 'prenental_checkup'; // Mặc định là khám thai
-                }
-
+                // Sử dụng tag từ API
+                const tag = apiReminder.type; // Lấy tag từ type của nhắc nhở
+                console.log('tag', tag);
                 // Xác định màu sắc dựa trên tag
                 const color = REMINDER_TAGS.find(t => t.value === tag)?.color || '#ff9800';
 
                 return {
                     id: apiReminder.id.toString(),
-                    title: apiReminder.title || `Lịch khám thai tuần ${apiReminder.period}`,
-                    description: apiReminder.description || `Khám thai định kỳ tuần ${apiReminder.period}`,
+                    title: apiReminder.title || `Lịch khám thai`,
+                    description: apiReminder.description || `Chi tiết lịch khám`,
                     date: date,
                     time: time,
-                    tag: tag,
+                    tag: tag, // Gán tag từ API
                     color: color,
-                    status: apiReminder.status || 'pending'
+                    status: apiReminder.status || 'pending',
                 };
             });
 
@@ -210,6 +190,37 @@ export default function ReminderPage() {
                         severity: 'error'
                     });
                 }
+            });
+    };
+
+    const handleDeleteReminder = (reminderId: string) => {
+        // Gọi API để xóa reminder
+        fetch(`https://api-mnyt.purintech.id.vn/api/ScheduleUser/${reminderId}`, {
+            method: 'DELETE',
+        })
+            .then(response => {
+                if (response.ok) {
+                    setUserReminders(prev => prev.filter(reminder => reminder.id !== reminderId));
+                    setSnackbar({
+                        open: true,
+                        message: 'Xóa reminder thành công!',
+                        severity: 'success'
+                    });
+                } else {
+                    setSnackbar({
+                        open: true,
+                        message: 'Xóa reminder thất bại!',
+                        severity: 'error'
+                    });
+                }
+            })
+            .catch(err => {
+                console.error('Error deleting reminder:', err);
+                setSnackbar({
+                    open: true,
+                    message: 'Lỗi khi xóa reminder!',
+                    severity: 'error'
+                });
             });
     };
 
@@ -414,6 +425,7 @@ export default function ReminderPage() {
                                                 <MenuItem value="done">Đã làm</MenuItem>
                                                 <MenuItem value="skip">Bỏ qua</MenuItem>
                                             </Select>
+                                            <Button onClick={() => handleDeleteReminder(reminder.id)}>Xóa</Button>
                                         </ListItem>
                                     ))}
                                 </List>

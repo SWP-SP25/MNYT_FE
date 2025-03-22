@@ -43,18 +43,18 @@ export const Sidebar = () => {
       <div className={styles.menuGroup}>
         <h3>Configure</h3>
         <nav>
-          {/* <Link href="/admin/schedule-template" className={styles.menuItem}>
+          <Link href="/admin/schedule-template" className={styles.menuItem}>
           <CarryOutOutlined />
             <span>Schedule Template</span>
-          </Link> */}
+          </Link>
           <Link href="/admin/membership-plan" className={styles.menuItem}>
           <AccountBookOutlined />
             <span>Membership Plan</span>
           </Link>
-          {/* <Link href="/admin/preganacy-standard" className={styles.menuItem}>
+          <Link href="/admin/preganacy-standard" className={styles.menuItem}>
           <FundProjectionScreenOutlined />
             <span>Pregnancy Standard</span>
-          </Link> */}
+          </Link>
         </nav>
       </div>
     </aside>

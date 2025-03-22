@@ -17,6 +17,7 @@ interface FormData {
 
 export const TableContent = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState<FormData>({
         name: '',
         description: '',
@@ -45,6 +46,7 @@ export const TableContent = () => {
             price: record.price,
             duration: record.duration
         });
+        setIsEditing(true);
         setIsModalOpen(true);
     };
 
@@ -65,6 +67,7 @@ export const TableContent = () => {
             price: 0,
             duration: 0
         });
+        setIsEditing(false);
         setIsModalOpen(true);
     };
 
@@ -162,7 +165,7 @@ export const TableContent = () => {
             <Table<Membership> columns={columns} dataSource={membershipView?.data}/>
             
             <Dialog open={isModalOpen} onClose={handleCancel} maxWidth="sm" fullWidth>
-                <DialogTitle>Create New Membership Plan</DialogTitle>
+                <DialogTitle>{isEditing ? 'Update Membership Plan' : 'Create New Membership Plan'}</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus

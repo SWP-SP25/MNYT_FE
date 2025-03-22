@@ -19,6 +19,7 @@ interface FormData {
 
 export const TableContent = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isUpdate, setIsUpdate] = useState(false);
     const [formData, setFormData] = useState<FormData>({
         pregnancyType: '',
         type: '',
@@ -27,6 +28,7 @@ export const TableContent = () => {
         maximum: 0,
         unit: ''
     });
+    const [selectedId, setSelectedId] = useState<number | null>(null);
 
     const {response: pregnancyStandardView, error: pregnancyStandardError, loading: pregnancyStandardLoading} = useAxios<PreganacyStandard[]>(
     {
@@ -51,6 +53,8 @@ export const TableContent = () => {
             maximum: record.maximum,
             unit: record.unit
         });
+        setSelectedId(record.id);
+        setIsUpdate(true);
         setIsModalOpen(true);
     };
 
@@ -72,25 +76,40 @@ export const TableContent = () => {
             maximum: 0,
             unit: ''
         });
+        setSelectedId(null);
+        setIsUpdate(false);
         setIsModalOpen(true);
     };
 
     const handleOk = async () => {
         try {
-            const response = await axios.post(
-                'https://api-mnyt.purintech.id.vn/api/PregnancyStandard',
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
+            if (isUpdate && selectedId) {
+                const response = await axios.put(
+                    `https://api-mnyt.purintech.id.vn/api/PregnancyStandard/${selectedId}`,
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
                     }
-                }
-            );
-            console.log('Pregnancy standard created successfully:', response.data);
+                );
+                console.log('Pregnancy standard updated successfully:', response.data);
+            } else {
+                const response = await axios.post(
+                    'https://api-mnyt.purintech.id.vn/api/PregnancyStandard',
+                    [formData],
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                console.log('Pregnancy standard created successfully:', response.data);
+            }
             setIsModalOpen(false);
             window.location.reload();
         } catch (error) {
-            console.error('Error creating pregnancy standard:', error);
+            console.error('Error saving pregnancy standard:', error);
         }
     };
 
@@ -180,7 +199,7 @@ export const TableContent = () => {
             <Table<PreganacyStandard> columns={columns} dataSource={pregnancyStandardView || []}/>
             
             <Dialog open={isModalOpen} onClose={handleCancel} maxWidth="sm" fullWidth>
-                <DialogTitle>Create New Pregnancy Standard</DialogTitle>
+                <DialogTitle>{isUpdate ? 'Update Pregnancy Standard' : 'Create New Pregnancy Standard'}</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
@@ -238,7 +257,7 @@ export const TableContent = () => {
                 <DialogActions>
                     <MuiButton onClick={handleCancel}>Cancel</MuiButton>
                     <MuiButton onClick={handleOk} variant="contained" color="primary">
-                        Create
+                        {isUpdate ? 'Update' : 'Create'}
                     </MuiButton>
                 </DialogActions>
             </Dialog>

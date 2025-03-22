@@ -1,6 +1,7 @@
 export interface ShceduleTemplate {
     period:      number;
     type:        string;
+    tag:         string;
     status:      null | string;
     title:       string;
     description: string;

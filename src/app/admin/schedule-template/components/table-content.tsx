@@ -9,8 +9,10 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button as
 import axios from 'axios';
 
 interface FormData {
+    id?: number;
     period: number;
     type: string;
+    tag: string;
     status: string | null;
     title: string;
     description: string;
@@ -18,9 +20,11 @@ interface FormData {
 
 export const TableContent = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isUpdateMode, setIsUpdateMode] = useState(false);
     const [formData, setFormData] = useState<FormData>({
         period: 0,
         type: '',
+        tag: '',
         status: null,
         title: '',
         description: ''
@@ -42,12 +46,15 @@ export const TableContent = () => {
 
     const showUpdateModal = (record: ShceduleTemplate) => {
         setFormData({
+            id: record.id,
             period: record.period,
             type: record.type,
+            tag: record.tag || '',
             status: record.status,
             title: record.title,
             description: record.description
         });
+        setIsUpdateMode(true);
         setIsModalOpen(true);
     };
 
@@ -64,37 +71,85 @@ export const TableContent = () => {
         setFormData({
             period: 0,
             type: '',
+            tag: '',
             status: null,
             title: '',
             description: ''
         });
+        setIsUpdateMode(false);
         setIsModalOpen(true);
     };
 
     const handleOk = async () => {
         try {
-            const response = await axios.post(
-                'https://api-mnyt.purintech.id.vn/api/ScheduleTemplate',
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+            if (isUpdateMode) {
+                const originalRecord = scheduleView?.find(item => item.id === formData.id);
+                if (!originalRecord) {
+                    console.error('Original record not found');
+                    return;
                 }
-            );
-            console.log('Schedule template created successfully:', response.data);
+
+                const updateData = {
+                    id: formData.id,
+                    period: formData.period,
+                    type: formData.type,
+                    tag: formData.tag,
+                    status: formData.status,
+                    title: formData.title,
+                    description: formData.description,
+                    createDate: originalRecord.createDate,
+                    updateDate: new Date().toISOString(),
+                    isDeleted: false
+                };
+
+                const updateResponse = await axios.put(
+                    'https://api-mnyt.purintech.id.vn/api/ScheduleTemplate',
+                    updateData,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                console.log('Schedule template updated successfully:', updateResponse.data);
+            } else {
+                const createData = {
+                    period: formData.period,
+                    type: formData.type,
+                    tag: formData.tag,
+                    status: formData.status,
+                    title: formData.title,
+                    description: formData.description,
+                    createDate: new Date().toISOString(),
+                    updateDate: new Date().toISOString(),
+                    isDeleted: false
+                };
+
+                const createResponse = await axios.post(
+                    'https://api-mnyt.purintech.id.vn/api/ScheduleTemplate',
+                    [createData],
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                console.log('Schedule template created successfully:', createResponse.data);
+            }
             setIsModalOpen(false);
             window.location.reload();
         } catch (error) {
-            console.error('Error creating schedule template:', error);
+            console.error('Error saving schedule template:', error);
         }
     };
 
     const handleCancel = () => {
         setIsModalOpen(false);
+        setIsUpdateMode(false);
         setFormData({
             period: 0,
             type: '',
+            tag: '',
             status: null,
             title: '',
             description: ''
@@ -128,6 +183,11 @@ export const TableContent = () => {
             title: 'Type',
             dataIndex: 'type',
             key: 'type'
+        },
+        {
+            title: 'Tag',
+            dataIndex: 'tag',
+            key: 'tag'
         },
         {
             title: 'Status',
@@ -170,7 +230,7 @@ export const TableContent = () => {
             <Table<ShceduleTemplate> columns={columns} dataSource={scheduleView || []}/>
             
             <Dialog open={isModalOpen} onClose={handleCancel} maxWidth="sm" fullWidth>
-                <DialogTitle>Create New Schedule Template</DialogTitle>
+                <DialogTitle>{isUpdateMode ? 'Update Schedule Template' : 'Create New Schedule Template'}</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
@@ -210,6 +270,14 @@ export const TableContent = () => {
                     />
                     <TextField
                         margin="dense"
+                        label="Tag"
+                        fullWidth
+                        value={formData.tag}
+                        onChange={handleChange('tag')}
+                        required
+                    />
+                    <TextField
+                        margin="dense"
                         label="Status"
                         fullWidth
                         value={formData.status || ''}
@@ -219,7 +287,7 @@ export const TableContent = () => {
                 <DialogActions>
                     <MuiButton onClick={handleCancel}>Cancel</MuiButton>
                     <MuiButton onClick={handleOk} variant="contained" color="primary">
-                        Create
+                        {isUpdateMode ? 'Update' : 'Create'}
                     </MuiButton>
                 </DialogActions>
             </Dialog>

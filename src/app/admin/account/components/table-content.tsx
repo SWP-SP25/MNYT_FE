@@ -2,16 +2,18 @@
 
 import useAxios from "@/hooks/useFetchAxios"
 import { Account, AccountListResponse } from "@/types/accountsView"
-import { Table, TableProps, Dropdown } from "antd";
+import { Table, TableProps, Dropdown, Input } from "antd";
 import type { MenuProps } from 'antd';
 import axios from "axios";
 import { useState } from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Button } from '@mui/material';
+import { SearchOutlined } from '@ant-design/icons';
 
 export const TableContent =() =>
 {
     const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+    const [searchText, setSearchText] = useState('');
     const [formData, setFormData] = useState({
         userName: '',
         fullName: '',
@@ -125,27 +127,36 @@ export const TableContent =() =>
         {
             title: 'Username',
             dataIndex: 'userName',
-            key: 'userName'
+            key: 'userName',
+            sorter: (a, b) => (a.userName || '').localeCompare(b.userName || '')
         },
         {
             title:'Full Name',
             dataIndex: 'fullName',
-            key:'fullName'
+            key:'fullName',
+            sorter: (a, b) => (a.fullName || '').localeCompare(b.fullName || '')
         },
         {
             title:'Email',
             dataIndex: 'email',
-            key:'email'
+            key:'email',
+            sorter: (a, b) => (a.email || '').localeCompare(b.email || '')
         },
         {
             title:'PhoneNumber',
             dataIndex:'phoneNumber',
-            key:'phoneNumber'
+            key:'phoneNumber',
+            sorter: (a, b) => (a.phoneNumber || '').localeCompare(b.phoneNumber || '')
         },
         {
             title:"Status",
             dataIndex:'status',
             key:'status',
+            filters: [
+                { text: 'Active', value: 'Active' },
+                { text: 'Banned', value: 'Banned' }
+            ],
+            onFilter: (value, record) => record.status === value,
             render: (status: string) => (
                 <span style={{ 
                     color: status === 'Active' ? '#52c41a' : '#ff4d4f',
@@ -193,11 +204,34 @@ export const TableContent =() =>
         }
     ]
       
+    const filteredData = accountView?.data?.filter(account => {
+        if (account.role !== 'Member') return false;
+        if (!searchText) return true;
+        
+        const searchLower = searchText.toLowerCase();
+        return (
+            account.userName?.toLowerCase().includes(searchLower) ||
+            account.fullName?.toLowerCase().includes(searchLower) ||
+            account.email?.toLowerCase().includes(searchLower) ||
+            account.phoneNumber?.toLowerCase().includes(searchLower) ||
+            account.status?.toLowerCase().includes(searchLower)
+        );
+    });
+
     return (
         <>
+            <div style={{ marginBottom: 16 }}>
+                <Input
+                    placeholder="Search accounts..."
+                    prefix={<SearchOutlined />}
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    style={{ width: 300 }}
+                />
+            </div>
             <Table<Account> 
                 columns={columns} 
-                dataSource={accountView?.data?.filter(account => account.role === 'Member')}
+                dataSource={filteredData}
             />
             <Dialog 
                 open={isUpdateModalVisible} 

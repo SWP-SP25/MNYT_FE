@@ -1,8 +1,8 @@
 'use client'
 
 import useAxios from "@/hooks/useFetchAxios"
-import { Dropdown, Table, TableProps, MenuProps, Button } from "antd";
-import { EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
+import { Dropdown, Table, TableProps, MenuProps, Button, Input } from "antd";
+import { EllipsisOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button as MuiButton, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import axios from 'axios';
@@ -23,6 +23,7 @@ interface FormData {
 export const TableContent = () => {
     const { user } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [searchText, setSearchText] = useState('');
     const [formData, setFormData] = useState<FormData>({
         category: '',
         title: '',
@@ -131,26 +132,57 @@ export const TableContent = () => {
         }));
     };
 
+    const handleSearch = (value: string) => {
+        setSearchText(value);
+    };
+
+    const getFilteredData = () => {
+        if (!searchText) return blogView?.data?.filter(blog => blog.status !== 'Draft');
+        
+        const searchLower = searchText.toLowerCase();
+        return blogView?.data?.filter(blog => 
+            blog.status !== 'Draft' && (
+                (blog.title?.toLowerCase() || '').includes(searchLower) ||
+                (blog.authorName?.toLowerCase() || '').includes(searchLower) ||
+                (blog.category?.toLowerCase() || '').includes(searchLower) ||
+                (blog.status?.toLowerCase() || '').includes(searchLower) ||
+                (blog.description?.toLowerCase() || '').includes(searchLower) ||
+                (blog.period?.toString() || '').includes(searchLower) ||
+                (blog.likeCount?.toString() || '').includes(searchLower) ||
+                (blog.commentCount?.toString() || '').includes(searchLower)
+            )
+        );
+    };
+
     const columns: TableProps<Blog>['columns'] = [
         {
             title: 'Title',
             dataIndex: 'title',
-            key: 'title'
+            key: 'title',
+            sorter: (a, b) => a.title.localeCompare(b.title)
         },
         {
             title: 'Author',
             dataIndex: 'authorName',
-            key: 'authorName'
+            key: 'authorName',
+            sorter: (a, b) => a.authorName.localeCompare(b.authorName)
         },
         {
             title: 'Period',
             dataIndex: 'period',
-            key: 'period'
+            key: 'period',
+            sorter: (a, b) => a.period - b.period
         },
         {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
+            filters: [
+                { text: 'Published', value: 'Published' },
+                { text: 'Removed', value: 'Removed' },
+                { text: 'Reported', value: 'Reported' }
+            ],
+            onFilter: (value, record) => record.status === value,
             render: (status: string) => {
                 let color = 'inherit';
                 switch (status) {
@@ -172,17 +204,24 @@ export const TableContent = () => {
         {
             title: 'Category',
             dataIndex: 'category',
-            key: 'category'
+            key: 'category',
+            filters: blogView?.data
+                ? [...new Set(blogView.data.map(blog => blog.category))]
+                    .map(category => ({ text: category, value: category }))
+                : [],
+            onFilter: (value, record) => record.category === value
         },
         {
             title: 'Likes',
             dataIndex: 'likeCount',
-            key: 'likeCount'
+            key: 'likeCount',
+            sorter: (a, b) => a.likeCount - b.likeCount
         },
         {
             title: 'Comments',
             dataIndex: 'commentCount',
-            key: 'commentCount'
+            key: 'commentCount',
+            sorter: (a, b) => a.commentCount - b.commentCount
         },
         {
             title: '',
@@ -222,14 +261,21 @@ export const TableContent = () => {
 
     return (
         <div>
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Input
+                    placeholder="Search blogs..."
+                    prefix={<SearchOutlined />}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    style={{ width: 300 }}
+                    allowClear
+                />
                 <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
                     Add Blog
                 </Button>
             </div>
             <Table<Blog> 
                 columns={columns} 
-                dataSource={blogView?.data?.filter(blog => blog.status !== 'Draft')}
+                dataSource={getFilteredData()}
             />
             
             <Dialog open={isModalOpen} onClose={handleCancel} maxWidth="sm" fullWidth>

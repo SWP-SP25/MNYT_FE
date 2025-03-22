@@ -136,32 +136,48 @@ export const TableContent = () => {
         {
             title: 'Pregnancy Type',
             dataIndex: 'pregnancyType',
-            key: 'pregnancyType'
+            key: 'pregnancyType',
+            filters: pregnancyStandardView ? [...new Set(pregnancyStandardView.map(item => item.pregnancyType))].map(type => ({
+                text: type,
+                value: type
+            })) : [],
+            onFilter: (value, record) => record.pregnancyType === value,
+            sorter: (a, b) => a.pregnancyType.localeCompare(b.pregnancyType)
         },
         {
             title: 'Type',
             dataIndex: 'type',
-            key: 'type'
+            key: 'type',
+            filters: pregnancyStandardView ? [...new Set(pregnancyStandardView.map(item => item.type))].map(type => ({
+                text: type,
+                value: type
+            })) : [],
+            onFilter: (value, record) => record.type === value,
+            sorter: (a, b) => a.type.localeCompare(b.type)
         },
         {
             title: 'Period',
             dataIndex: 'period',
-            key: 'period'
+            key: 'period',
+            sorter: (a, b) => a.period - b.period
         },
         {
             title: 'Minimum',
             dataIndex: 'minimum',
-            key: 'minimum'
+            key: 'minimum',
+            sorter: (a, b) => a.minimum - b.minimum
         },
         {
             title: 'Maximum',
             dataIndex: 'maximum',
-            key: 'maximum'
+            key: 'maximum',
+            sorter: (a, b) => a.maximum - b.maximum
         },
         {
             title: 'Unit',
             dataIndex: 'unit',
-            key: 'unit'
+            key: 'unit',
+            sorter: (a, b) => a.unit.localeCompare(b.unit)
         },
         {
             title: '',

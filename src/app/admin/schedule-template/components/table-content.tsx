@@ -177,22 +177,36 @@ export const TableContent = () => {
         {
             title: 'Period',
             dataIndex: 'period',
-            key: 'period'
+            key: 'period',
+            sorter: (a, b) => a.period - b.period
         },
         {
             title: 'Type',
             dataIndex: 'type',
-            key: 'type'
+            key: 'type',
+            filters: scheduleView ? [...new Set(scheduleView.map(item => item.type))].map(type => ({
+                text: type,
+                value: type
+            })) : [],
+            onFilter: (value, record) => record.type === value,
+            sorter: (a, b) => a.type.localeCompare(b.type)
         },
         {
             title: 'Tag',
             dataIndex: 'tag',
-            key: 'tag'
+            key: 'tag',
+            filters: scheduleView ? [...new Set(scheduleView.map(item => item.tag).filter(Boolean))].map(tag => ({
+                text: tag,
+                value: tag
+            })) : [],
+            onFilter: (value, record) => record.tag === value,
+            sorter: (a, b) => (a.tag || '').localeCompare(b.tag || '')
         },
         {
             title: 'Status',
             dataIndex: 'status',
-            key: 'status'
+            key: 'status',
+            sorter: (a, b) => (a.status || '').localeCompare(b.status || '')
         },
         {
             title: '',

@@ -38,10 +38,14 @@ export const uploadImage = async (file: File): Promise<string> => {
             });
             throw new Error(data.error?.message || data.message || 'Error uploading image');
         }
+        console.log('Image uploaded successfully:', data.secure_url);
 
+        // Chỉ trả về URL mà không lưu vào database
         return data.secure_url;
     } catch (error) {
         console.error('Detailed upload error:', error);
         throw error;
     }
-}; 
+};
+
+// Chú ý: Bỏ hàm saveImageUrlToDatabase để không fix cứng 

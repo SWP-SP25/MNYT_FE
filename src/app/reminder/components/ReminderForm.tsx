@@ -7,7 +7,8 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import type { Reminder } from '@/types/reminder';
-import moment, { Moment } from 'moment';
+import moment from 'moment';
+import { FormReminderDataType } from '@/types/reminder';
 
 // Định nghĩa các tag có sẵn
 const REMINDER_TAGS = [
@@ -23,17 +24,8 @@ interface ReminderFormProps {
     initialDate?: string | null;
     addUserReminder?: (title: string, description: string, date: string, status?: string, type?: string) => Promise<boolean>;
 }
-
-interface FormDataType {
-    title: string;
-    date: Moment | null;
-    time: Moment | null;
-    description: string;
-    tag: string;
-}
-
 const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initialDate, addUserReminder }) => {
-    const [formData, setFormData] = useState<FormDataType>({
+    const [formData, setFormData] = useState<FormReminderDataType>({
         title: '',
         date: initialDate ? moment(initialDate) : null,
         time: null,
@@ -54,8 +46,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
             return;
         }
 
-        const dateStr = formData.date.format('YYYY-MM-DD');
-        const timeStr = formData.time.format('HH:mm');
+        const dateStr = formData.date.format('DD-MM-YYYY');
+        const timeStr = formData.time.format('hh:mm A');
 
         // Tạo đối tượng reminder cho UI
         const reminder: Omit<Reminder, 'id'> = {

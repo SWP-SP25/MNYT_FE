@@ -100,7 +100,7 @@ const BlogDetail = () => {
     error,
     loading,
   } = useAxios<BlogPostDetailResponse>({
-    url: `https://api-mnyt.purintech.id.vn/api/BlogPosts/${id}`,
+    url: `https://api-mnyt.purintech.id.vn/api/Posts/${id}`,
     method: "get",
   });
 
@@ -416,9 +416,8 @@ const BlogDetail = () => {
       {/* Interaction Bar */}
       <div className={styles.interactionBar}>
         <button
-          className={`${styles.interactionButton} ${
-            isLiked ? styles.active : ""
-          }`}
+          className={`${styles.interactionButton} ${isLiked ? styles.active : ""
+            }`}
           onClick={handleLike}
         >
           {isLiked ? <FaHeart /> : <FaRegHeart />}
@@ -433,9 +432,8 @@ const BlogDetail = () => {
           <span>Chia sẻ</span>
         </button>
         <button
-          className={`${styles.interactionButton} ${
-            isSaved ? styles.active : ""
-          }`}
+          className={`${styles.interactionButton} ${isSaved ? styles.active : ""
+            }`}
           onClick={handleSave}
         >
           <FaBookmark />

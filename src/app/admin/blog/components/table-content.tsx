@@ -3,11 +3,12 @@
 import useAxios from "@/hooks/useFetchAxios"
 import { Dropdown, Table, TableProps, MenuProps, Button, Input, Tabs } from "antd";
 import { EllipsisOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button as MuiButton, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import axios from 'axios';
 import { BlogManage, Blog } from "@/types/blogAdmin";
 import { useAuth } from "@/hooks/useAuth";
+import UploadButton from "@/app/components/upload-button/upload";
 
 interface FormData {
     category: string;
@@ -36,17 +37,27 @@ export const TableContent = () => {
         publishedDay: new Date().toISOString().split('T')[0]
     });
 
-    const {response: blogView, error: blogError, loading: blogLoading} = useAxios<BlogManage>(
-    {
-        url: 'https://api-mnyt.purintech.id.vn/api/BlogPosts/admin-posts',
-        method: 'get'
-    });
+    // Ref để lưu trữ hàm tải lên từ component UploadButton
+    const uploadImageRef = useRef<() => Promise<string>>();
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [imageUrl, setImageUrl] = useState<string>('');
 
-    const {response: userBlogView, error: userBlogError, loading: userBlogLoading} = useAxios<BlogManage>(
-    {
-        url: 'https://api-mnyt.purintech.id.vn/api/BlogPosts/all',
-        method: 'get'
-    });
+    const handleImageUploaded = (url: string) => {
+        console.log('Image was uploaded successfully:', url);
+        // Có thể xử lý thêm với URL hình ảnh nếu cần
+    };
+
+    const { response: blogView, error: blogError, loading: blogLoading } = useAxios<BlogManage>(
+        {
+            url: 'https://api-mnyt.purintech.id.vn/api/Posts/blogs',
+            method: 'get'
+        });
+
+    const { response: userBlogView, error: userBlogError, loading: userBlogLoading } = useAxios<BlogManage>(
+        {
+            url: 'https://api-mnyt.purintech.id.vn/api/Posts/forums',
+            method: 'get'
+        });
 
     if (blogError || userBlogError) {
         return <div>Error loading blog data</div>;
@@ -68,17 +79,78 @@ export const TableContent = () => {
         setIsModalOpen(true);
     };
 
+    // Xử lý khi chọn file
+    const handleFileSelected = (file: File | null) => {
+        setSelectedFile(file);
+        console.log('File được chọn:', file?.name);
+    };
+
+    // Xử lý khi có URL
+    const handleUrlChange = (url: string | null) => {
+        if (url) {
+            setFormData(prev => ({
+                ...prev,
+                imageUrl: url
+            }));
+            setImageUrl(url);
+            console.log('URL hình ảnh nhận được:', url);
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                imageUrl: ''
+            }));
+            setImageUrl('');
+        }
+    };
+
     const handleOk = async () => {
         try {
+            // Log form data
+            console.log('Form data trước khi tải ảnh:', formData);
+
+            // Lấy user ID từ useAuth
+            if (!user?.id) {
+                console.error('Không có ID người dùng');
+                return;
+            }
+
+            // Tải ảnh lên nếu có file được chọn
+            let finalImageUrl = imageUrl;
+            if (selectedFile && !imageUrl) {
+                // @ts-ignore
+                const uploadResult = await UploadButton.uploadFile();
+                if (uploadResult) {
+                    finalImageUrl = uploadResult;
+                    setImageUrl(finalImageUrl);
+                    setFormData(prev => ({
+                        ...prev,
+                        imageUrl: finalImageUrl
+                    }));
+                } else {
+                    console.error('Không thể tải lên hình ảnh');
+                    return;
+                }
+            }
+
+            // Cập nhật imageUrl trong formData
+            const blogData = {
+                ...formData,
+                imageUrl: finalImageUrl
+            };
+
+            console.log('Form data sau khi xử lý:', blogData);
+
+            // Đã sửa lại URL từ BlogPosts thành Posts
             const response = await axios.post(
-                'https://api-mnyt.purintech.id.vn/api/BlogPosts?authorId=28',
-                formData,
+                `https://api-mnyt.purintech.id.vn/api/Posts/blog?authorId=${user?.id}`,
+                blogData,
                 {
                     headers: {
                         'Content-Type': 'application/json'
                     }
                 }
             );
+
             console.log('Blog created successfully:', response.data);
             setIsModalOpen(false);
             setFormData({
@@ -91,6 +163,11 @@ export const TableContent = () => {
                 status: '',
                 publishedDay: new Date().toISOString().split('T')[0]
             });
+            setSelectedFile(null);
+            setImageUrl('');
+
+            // Refresh blog data
+            window.location.reload();
         } catch (error) {
             console.error('Error creating blog:', error);
         }
@@ -117,7 +194,7 @@ export const TableContent = () => {
                 return;
             }
             await axios.patch(
-                `https://api-mnyt.purintech.id.vn/api/BlogPosts/${blogId}/change-status?accountId=${user.id}&status=${newStatus}`,
+                `https://api-mnyt.purintech.id.vn/api/Posts/${blogId}/change-status?accountId=${user.id}&status=${newStatus}`,
                 {},
                 {
                     headers: {
@@ -145,15 +222,15 @@ export const TableContent = () => {
 
     const getFilteredData = () => {
         const data = activeTab === 'admin' ? blogView?.data : userBlogView?.data;
-        
+
         if (!searchText) {
             return activeTab === 'admin' ? data : data?.filter(blog => blog.status !== 'Draft');
         }
-        
+
         const searchLower = searchText.toLowerCase();
         const filteredData = activeTab === 'admin' ? data : data?.filter(blog => blog.status !== 'Draft');
-        
-        return filteredData?.filter(blog => 
+
+        return filteredData?.filter(blog =>
             (blog.title?.toLowerCase() || '').includes(searchLower) ||
             (blog.authorName?.toLowerCase() || '').includes(searchLower) ||
             (blog.category?.toLowerCase() || '').includes(searchLower) ||
@@ -305,13 +382,13 @@ export const TableContent = () => {
                     </Button>
                 )}
             </div>
-            <Table<Blog> 
-                columns={columns} 
+            <Table<Blog>
+                columns={columns}
                 dataSource={getFilteredData()}
             />
-            
+
             <Dialog open={isModalOpen} onClose={handleCancel} maxWidth="sm" fullWidth>
-                <DialogTitle>Create New Blog</DialogTitle>
+                <DialogTitle>Tạo Blog Mới</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
@@ -340,13 +417,28 @@ export const TableContent = () => {
                         onChange={handleChange('description')}
                         required
                     />
-                    <TextField
-                        margin="dense"
-                        label="Image URL"
-                        fullWidth
-                        value={formData.imageUrl}
-                        onChange={handleChange('imageUrl')}
-                    />
+
+                    {/* Sử dụng UploadButton với className thêm vào */}
+                    <div style={{ margin: '16px 0' }}>
+                        <UploadButton
+                            onImageChange={handleFileSelected}
+                            onUrlChange={handleUrlChange}
+                            autoUpload={false}
+                            className="w-full" /* Thêm class để làm cho nút full width */
+                        />
+                    </div>
+
+                    {/* Hiển thị URL hình ảnh nếu có */}
+                    {imageUrl && (
+                        <TextField
+                            margin="dense"
+                            label="Image URL"
+                            fullWidth
+                            value={imageUrl}
+                            disabled
+                        />
+                    )}
+
                     <TextField
                         margin="dense"
                         label="Image ID"
@@ -377,9 +469,9 @@ export const TableContent = () => {
                     </FormControl>
                 </DialogContent>
                 <DialogActions>
-                    <MuiButton onClick={handleCancel}>Cancel</MuiButton>
+                    <MuiButton onClick={handleCancel}>Hủy</MuiButton>
                     <MuiButton onClick={handleOk} variant="contained" color="primary">
-                        Create
+                        Tạo
                     </MuiButton>
                 </DialogActions>
             </Dialog>

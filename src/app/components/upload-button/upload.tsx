@@ -3,48 +3,78 @@ import { uploadImage } from '@/utils/uploadImage';
 import styles from './upload.module.css';
 
 interface UploadButtonProps {
-    onUploadSuccess?: (url: string) => void;
+    onImageChange?: (file: File | null) => void;
+    onUrlChange?: (url: string | null) => void;
     className?: string;
+    autoUpload?: boolean;
 }
 
-const UploadButton = ({ onUploadSuccess, className = '' }: UploadButtonProps) => {
+const UploadButton = ({
+    onImageChange,
+    onUrlChange,
+    className = '',
+    autoUpload = false
+}: UploadButtonProps) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>('');
     const [isDragging, setIsDragging] = useState(false);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [uploadedImage, setUploadedImage] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileSelect = (file: File) => {
-        // Chỉ tạo preview, chưa upload
-        const preview = URL.createObjectURL(file);
-        setPreviewImage(preview);
-        setSelectedFile(file);
-        setError('');
-    };
-
-    const handleUpload = async () => {
-        if (!selectedFile) return;
+    // Hàm để xử lý upload ảnh
+    const handleUpload = async (): Promise<string | null> => {
+        if (!selectedFile) return null;
 
         try {
             setLoading(true);
             setError('');
 
-            console.log('Uploading image:', selectedFile.name);
+            console.log('Đang tải lên hình ảnh:', selectedFile.name);
             const url = await uploadImage(selectedFile);
-            console.log('Image uploaded successfully, URL:', url);
+            console.log('Hình ảnh đã được tải lên thành công, URL:', url);
 
-            if (onUploadSuccess) {
-                onUploadSuccess(url);
+            // Thông báo URL hình ảnh cho component cha
+            if (onUrlChange) {
+                onUrlChange(url);
             }
 
-            setUploadedImage(url);
+            return url;
         } catch (error) {
-            console.error('Error uploading image:', error);
-            setError('Failed to upload image. Please try again.');
+            console.error('Lỗi khi tải lên hình ảnh:', error);
+            setError('Không thể tải lên hình ảnh. Vui lòng thử lại.');
+            return null;
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Gán hàm upload cho component cha (nếu cần)
+    const uploadFile = async (): Promise<string | null> => {
+        return handleUpload();
+    };
+
+    // Expose upload method
+    if (typeof window !== 'undefined') {
+        // @ts-ignore
+        UploadButton.uploadFile = uploadFile;
+    }
+
+    const handleFileSelect = async (file: File) => {
+        // Tạo bản xem trước
+        const preview = URL.createObjectURL(file);
+        setPreviewImage(preview);
+        setSelectedFile(file);
+        setError('');
+
+        // Thông báo file đã chọn cho component cha
+        if (onImageChange) {
+            onImageChange(file);
+        }
+
+        // Nếu autoUpload = true, tự động upload
+        if (autoUpload) {
+            await handleUpload();
         }
     };
 
@@ -94,7 +124,15 @@ const UploadButton = ({ onUploadSuccess, className = '' }: UploadButtonProps) =>
         }
         setPreviewImage(null);
         setSelectedFile(null);
-        setUploadedImage(null);
+
+        // Thông báo reset cho component cha
+        if (onImageChange) {
+            onImageChange(null);
+        }
+        if (onUrlChange) {
+            onUrlChange(null);
+        }
+
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
@@ -157,43 +195,28 @@ const UploadButton = ({ onUploadSuccess, className = '' }: UploadButtonProps) =>
                         className={styles.previewImage}
                     />
 
-                    {!uploadedImage ? (
-                        <div className={styles.previewActions}>
-                            <button
-                                type="button"
-                                onClick={handleUpload}
-                                disabled={loading}
-                                className={styles.confirmButton}
-                            >
-                                {loading ? 'Đang tải...' : 'Xác nhận'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={resetUpload}
-                                disabled={loading}
-                                className={styles.cancelButton}
-                            >
-                                Hủy
-                            </button>
-                        </div>
-                    ) : (
-                        <div className={styles.uploadSuccess}>
-                            <div className={styles.successBadge}>Đã tải lên thành công</div>
-                            <button
-                                type="button"
-                                onClick={resetUpload}
-                                className={styles.newUploadButton}
-                            >
-                                Tải ảnh khác
-                            </button>
-                        </div>
-                    )}
+                    {/* Nút xóa trực tiếp trên hình ảnh */}
+                    <button
+                        type="button"
+                        onClick={resetUpload}
+                        className={styles.removeButton}
+                        title="Xóa hình ảnh"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 6L6 18M6 6L18 18" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                    </button>
                 </div>
             )}
 
+            {loading && <p className="text-blue-500">Đang xử lý...</p>}
             {error && <p className="text-red-500">{error}</p>}
         </div>
     );
 };
+
+// Thêm phương thức static để component cha có thể truy cập
+// @ts-ignore
+UploadButton.upload = null;
 
 export default UploadButton;

@@ -40,42 +40,12 @@ export const uploadImage = async (file: File): Promise<string> => {
         }
         console.log('Image uploaded successfully:', data.secure_url);
 
-        const imageUrl = data.secure_url;
-
-        // Lưu URL vào database
-        await saveImageUrlToDatabase(imageUrl);
-
-        return imageUrl;
+        // Chỉ trả về URL mà không lưu vào database
+        return data.secure_url;
     } catch (error) {
         console.error('Detailed upload error:', error);
         throw error;
     }
 };
 
-// Hàm để lưu URL vào database
-const saveImageUrlToDatabase = async (url: string) => {
-    const payload = {
-        type: "image",
-        url: url
-    };
-
-    const response = await fetch('https://api-mnyt.purintech.id.vn/api/Media', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error saving image URL to database:', {
-            status: response.status,
-            statusText: response.statusText,
-            errorData
-        });
-        throw new Error('Failed to save image URL to database');
-    }
-
-    console.log('Image URL saved to database successfully');
-}; 
+// Chú ý: Bỏ hàm saveImageUrlToDatabase để không fix cứng 

@@ -9,6 +9,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button as
 import axios from 'axios';
 
 interface FormData {
+    id: number;
     name: string;
     description: string;
     price: number;
@@ -19,6 +20,7 @@ export const TableContent = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState<FormData>({
+        id: 0,
         name: '',
         description: '',
         price: 0,
@@ -41,6 +43,7 @@ export const TableContent = () => {
 
     const showUpdateModal = (record: Membership) => {
         setFormData({
+            id: record.id,
             name: record.name,
             description: record.description,
             price: record.price,
@@ -62,6 +65,7 @@ export const TableContent = () => {
 
     const handleCreate = () => {
         setFormData({
+            id: 0,
             name: '',
             description: '',
             price: 0,
@@ -73,26 +77,40 @@ export const TableContent = () => {
 
     const handleOk = async () => {
         try {
-            const response = await axios.post(
-                'https://api-mnyt.purintech.id.vn/api/MembershipPlan',
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
+            if (isEditing) {
+                const response = await axios.put(
+                    'https://api-mnyt.purintech.id.vn/api/MembershipPlan',
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
                     }
-                }
-            );
-            console.log('Membership plan created successfully:', response.data);
+                );
+                console.log('Membership plan updated successfully:', response.data);
+            } else {
+                const response = await axios.post(
+                    'https://api-mnyt.purintech.id.vn/api/MembershipPlan',
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                console.log('Membership plan created successfully:', response.data);
+            }
             setIsModalOpen(false);
             window.location.reload();
         } catch (error) {
-            console.error('Error creating membership plan:', error);
+            console.error('Error saving membership plan:', error);
         }
     };
 
     const handleCancel = () => {
         setIsModalOpen(false);
         setFormData({
+            id: 0,
             name: '',
             description: '',
             price: 0,
@@ -157,11 +175,6 @@ export const TableContent = () => {
 
     return (
         <div>
-            <div style={{ marginBottom: 16 }}>
-                <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-                    Add Membership Plan
-                </Button>
-            </div>
             <Table<Membership> columns={columns} dataSource={membershipView?.data}/>
             
             <Dialog open={isModalOpen} onClose={handleCancel} maxWidth="sm" fullWidth>
@@ -185,6 +198,7 @@ export const TableContent = () => {
                         value={formData.description}
                         onChange={handleChange('description')}
                         required
+                        disabled={isEditing}
                     />
                     <TextField
                         margin="dense"
@@ -208,7 +222,7 @@ export const TableContent = () => {
                 <DialogActions>
                     <MuiButton onClick={handleCancel}>Cancel</MuiButton>
                     <MuiButton onClick={handleOk} variant="contained" color="primary">
-                        Create
+                        {isEditing ? 'Update' : 'Create'}
                     </MuiButton>
                 </DialogActions>
             </Dialog>

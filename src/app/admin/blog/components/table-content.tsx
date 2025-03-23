@@ -1,7 +1,7 @@
 'use client'
 
 import useAxios from "@/hooks/useFetchAxios"
-import { Dropdown, Table, TableProps, MenuProps, Button, Input } from "antd";
+import { Dropdown, Table, TableProps, MenuProps, Button, Input, Tabs } from "antd";
 import { EllipsisOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button as MuiButton, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
@@ -24,6 +24,7 @@ export const TableContent = () => {
     const { user } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchText, setSearchText] = useState('');
+    const [activeTab, setActiveTab] = useState('user');
     const [formData, setFormData] = useState<FormData>({
         category: '',
         title: '',
@@ -37,15 +38,21 @@ export const TableContent = () => {
 
     const {response: blogView, error: blogError, loading: blogLoading} = useAxios<BlogManage>(
     {
+        url: 'https://api-mnyt.purintech.id.vn/api/BlogPosts/admin-posts',
+        method: 'get'
+    });
+
+    const {response: userBlogView, error: userBlogError, loading: userBlogLoading} = useAxios<BlogManage>(
+    {
         url: 'https://api-mnyt.purintech.id.vn/api/BlogPosts/all',
         method: 'get'
     });
 
-    if (blogError) {
+    if (blogError || userBlogError) {
         return <div>Error loading blog data</div>;
     }
 
-    if (blogLoading) {
+    if (blogLoading || userBlogLoading) {
         return <div>Loading...</div>;
     }
 
@@ -137,20 +144,24 @@ export const TableContent = () => {
     };
 
     const getFilteredData = () => {
-        if (!searchText) return blogView?.data?.filter(blog => blog.status !== 'Draft');
+        const data = activeTab === 'admin' ? blogView?.data : userBlogView?.data;
+        
+        if (!searchText) {
+            return activeTab === 'admin' ? data : data?.filter(blog => blog.status !== 'Draft');
+        }
         
         const searchLower = searchText.toLowerCase();
-        return blogView?.data?.filter(blog => 
-            blog.status !== 'Draft' && (
-                (blog.title?.toLowerCase() || '').includes(searchLower) ||
-                (blog.authorName?.toLowerCase() || '').includes(searchLower) ||
-                (blog.category?.toLowerCase() || '').includes(searchLower) ||
-                (blog.status?.toLowerCase() || '').includes(searchLower) ||
-                (blog.description?.toLowerCase() || '').includes(searchLower) ||
-                (blog.period?.toString() || '').includes(searchLower) ||
-                (blog.likeCount?.toString() || '').includes(searchLower) ||
-                (blog.commentCount?.toString() || '').includes(searchLower)
-            )
+        const filteredData = activeTab === 'admin' ? data : data?.filter(blog => blog.status !== 'Draft');
+        
+        return filteredData?.filter(blog => 
+            (blog.title?.toLowerCase() || '').includes(searchLower) ||
+            (blog.authorName?.toLowerCase() || '').includes(searchLower) ||
+            (blog.category?.toLowerCase() || '').includes(searchLower) ||
+            (blog.status?.toLowerCase() || '').includes(searchLower) ||
+            (blog.description?.toLowerCase() || '').includes(searchLower) ||
+            (blog.period?.toString() || '').includes(searchLower) ||
+            (blog.likeCount?.toString() || '').includes(searchLower) ||
+            (blog.commentCount?.toString() || '').includes(searchLower)
         );
     };
 
@@ -238,6 +249,11 @@ export const TableContent = () => {
                         label: 'Change Status',
                         children: [
                             {
+                                key: 'Draft',
+                                label: 'Set as Draft',
+                                onClick: () => handleStatusChange(record.id, 'Draft')
+                            },
+                            {
                                 key: 'Removed',
                                 label: 'Set as Removed',
                                 onClick: () => handleStatusChange(record.id, 'Removed')
@@ -261,6 +277,20 @@ export const TableContent = () => {
 
     return (
         <div>
+            <Tabs
+                activeKey={activeTab}
+                onChange={setActiveTab}
+                items={[
+                    {
+                        key: 'user',
+                        label: 'User Blogs',
+                    },
+                    {
+                        key: 'admin',
+                        label: 'Admin Blogs',
+                    },
+                ]}
+            />
             <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Input
                     placeholder="Search blogs..."
@@ -269,9 +299,11 @@ export const TableContent = () => {
                     style={{ width: 300 }}
                     allowClear
                 />
-                <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-                    Add Blog
-                </Button>
+                {activeTab === 'admin' && (
+                    <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+                        Add Blog
+                    </Button>
+                )}
             </div>
             <Table<Blog> 
                 columns={columns} 

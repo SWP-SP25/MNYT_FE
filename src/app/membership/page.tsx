@@ -12,7 +12,7 @@ const Membership = () => {
     const { user } = useAuth();
     const { response: membershipData, loading, error } = useAxios<MembersipOnwers>(
         {
-            url: user?.id ? `https://api-mnyt.purintech.id.vn/api/AccountMembership/GetActive/${user.id}` : '',
+            url: user?.user?.id ? `https://api-mnyt.purintech.id.vn/api/AccountMembership/GetActive/${user.user.id}` : '',
             method: 'get'
         }
     );
@@ -22,6 +22,34 @@ const Membership = () => {
             url: 'https://api-mnyt.purintech.id.vn/api/MembershipPlan',
             method: 'get'
         });
+
+    const handlePayment = async (planId: number) => {
+        if (!user?.user?.id) return;
+        
+        try {
+            const response = await fetch('https://api-mnyt.purintech.id.vn/api/CashPayment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    accountId: user.user.id,
+                    membershipPlanId: planId
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Payment failed');
+            }
+
+            // Handle successful payment
+            alert('Thanh toán thành công!');
+            // You might want to refresh the membership data here
+        } catch (error) {
+            console.error('Payment error:', error);
+            alert('Có lỗi xảy ra khi thanh toán. Vui lòng thử lại.');
+        }
+    };
 
     if (membershipLoading) {
         return <div className={styles.membershipContainer}>Loading...</div>;
@@ -44,7 +72,7 @@ const Membership = () => {
     };
 
     // Function to determine button text based on membership status
-    const getButtonText = (planId: number) => {
+    const getButtonText = (planId: number, index: number) => {
         if (!currentMembership) {
             return "Đăng ký ngay";
         }
@@ -57,7 +85,7 @@ const Membership = () => {
             if (isExpired) {
                 return "Gia hạn ngay";
             }
-            return "Gói Hiện Tại";
+            return "Gói hiện tại";
         }
 
         if (!isActive || isExpired) {
@@ -65,8 +93,13 @@ const Membership = () => {
         }
 
         // If user has an active plan but wants to upgrade
-        if (planId > currentPlanId) {
+        if (currentPlanId && planId > currentPlanId) {
             return "Nâng cấp ngay";
+        }
+
+        // For lower level plans when user has a higher level
+        if (currentPlanId && planId < currentPlanId) {
+            return "Đã có";
         }
 
         return "Đăng ký ngay";
@@ -86,9 +119,10 @@ const Membership = () => {
                         icon={index === 0 ? FaBabyCarriage : index === 1 ? FaHeart : FaCrown}
                         title={plan.name}
                         features={getFeaturesFromDescription(plan.description)}
-                        buttonText={getButtonText(plan.id)}
-                        isDefault={plan.id === currentPlanId}
+                        buttonText={getButtonText(plan.id, index)}
+                        isDefault={Boolean(plan.id === currentPlanId || (currentPlanId && plan.id < currentPlanId))}
                         isBestValue={index === 2}
+                        onButtonClick={() => handlePayment(plan.id)}
                     />
                 ))}
             </div>

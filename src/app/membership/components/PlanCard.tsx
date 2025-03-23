@@ -14,6 +14,7 @@ interface PlanCardProps {
     buttonText: string;
     isDefault?: boolean;
     isBestValue?: boolean;
+    onButtonClick?: () => void;
 }
 
 const PlanCard = ({
@@ -22,7 +23,8 @@ const PlanCard = ({
     features,
     buttonText,
     isDefault,
-    isBestValue
+    isBestValue,
+    onButtonClick
 }: PlanCardProps) => {
     return (
         <div className={styles.plan}>
@@ -40,7 +42,10 @@ const PlanCard = ({
                     />
                 ))}
             </div>
-            <button className={isDefault ? styles.defaultButton : styles.button}>
+            <button 
+                className={isDefault ? styles.defaultButton : styles.button}
+                onClick={onButtonClick}
+            >
                 {buttonText}
             </button>
         </div>

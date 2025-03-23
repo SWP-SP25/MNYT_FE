@@ -184,13 +184,20 @@ const AdminDashboard = () => {
 
   const formatDateByPeriod = (dateString: string, period: 'day' | 'month' | 'year') => {
     const date = new Date(dateString);
+    // Ensure we're working with UTC dates
+    const utcDate = new Date(Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate()
+    ));
+
     switch (period) {
       case 'day':
-        return `${date.getUTCDate().toString().padStart(2, '0')}/${(date.getUTCMonth() + 1).toString().padStart(2, '0')}/${date.getUTCFullYear()}`;
+        return `${utcDate.getUTCDate().toString().padStart(2, '0')}/${(utcDate.getUTCMonth() + 1).toString().padStart(2, '0')}/${utcDate.getUTCFullYear()}`;
       case 'month':
-        return `${(date.getUTCMonth() + 1).toString().padStart(2, '0')}/${date.getUTCFullYear()}`;
+        return `${(utcDate.getUTCMonth() + 1).toString().padStart(2, '0')}/${utcDate.getUTCFullYear()}`;
       case 'year':
-        return date.getUTCFullYear().toString();
+        return utcDate.getUTCFullYear().toString();
       default:
         return formatDate(dateString);
     }
@@ -408,11 +415,29 @@ const AdminDashboard = () => {
         }
         const accountsData = await accountsResponse.json();
 
-        // Create a map of account IDs to their membership IDs
+        // Create a map of account IDs to their active membership IDs
         const accountMembershipMap = new Map<number, number>();
         membershipsData.data.forEach((membership: any) => {
-          if (membership.accountId && membership.membershipId) {
-            accountMembershipMap.set(membership.accountId, membership.membershipId);
+          if (membership.accountId && membership.membershipPlanId) {
+            const endDate = new Date(membership.endDate);
+            const currentDate = new Date();
+            
+            // Convert dates to UTC for comparison
+            const utcEndDate = new Date(Date.UTC(
+              endDate.getUTCFullYear(),
+              endDate.getUTCMonth(),
+              endDate.getUTCDate()
+            ));
+            const utcCurrentDate = new Date(Date.UTC(
+              currentDate.getUTCFullYear(),
+              currentDate.getUTCMonth(),
+              currentDate.getUTCDate()
+            ));
+            
+            // Check if membership is active and not expired
+            if (membership.status === 'Active' && utcEndDate > utcCurrentDate) {
+              accountMembershipMap.set(membership.accountId, membership.membershipPlanId);
+            }
           }
         });
 
@@ -422,10 +447,8 @@ const AdminDashboard = () => {
           if (account.role.toLowerCase() === 'member') {
             const membershipId = accountMembershipMap.get(account.id);
             if (membershipId) {
-              membershipCounts.set(
-                membershipId,
-                (membershipCounts.get(membershipId) || 0) + 1
-              );
+              const currentCount = membershipCounts.get(membershipId) || 0;
+              membershipCounts.set(membershipId, currentCount + 1);
             }
           }
         });
@@ -440,7 +463,7 @@ const AdminDashboard = () => {
         const nonMembers = totalMembers - membersWithMembership;
 
         // Add non-members to the chart
-        labels.push('No Membership');
+        labels.push('No Active Membership');
         data.push(nonMembers);
 
         setMembershipTypeDistribution({

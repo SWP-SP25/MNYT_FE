@@ -338,7 +338,7 @@ const AdminDashboard = () => {
 
     const fetchBlogStats = async () => {
       try {
-        const response = await fetch('https://api-mnyt.purintech.id.vn/api/BlogPosts/all');
+        const response = await fetch('https://api-mnyt.purintech.id.vn/api/Posts/forums');
         if (!response.ok) {
           throw new Error('Failed to fetch blog stats');
         }

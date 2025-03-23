@@ -25,9 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const excludedPaths = ["/login", 
-    "/register", 
-    "/forgotpassword", 
+  const excludedPaths = ["/authenticate",
     "/admin",
     "/admin/blog",
     "/admin/account",
@@ -48,10 +46,10 @@ export default function RootLayout({
           <AuthProvider>
             {!excludedPaths.includes(pathname) && <AppNavBar />}
             <main style={{
-              // Kiểm tra xem đường dẫn hiện tại có nằm trong excludedPaths không
-              // Nếu có, không áp dụng các thuộc tính maxWidth, margin, và padding
-              // Nếu không, áp dụng các thuộc tính để căn giữa và giới hạn chiều rộng
-              ...(excludedPaths.includes(pathname) ? {} : { maxWidth: '1200px', margin: '0 auto', padding: '0 20px' })
+              // Áp dụng một layout thống nhất với padding nhỏ hơn ở hai bên
+              maxWidth: '100%',  // Sử dụng toàn bộ chiều rộng màn hình
+              padding: '0 12px', // Padding nhỏ ở hai bên
+              margin: '0 auto'   // Giữ container ở giữa
             }}>
               {children}
             </main>

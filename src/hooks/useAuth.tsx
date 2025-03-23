@@ -17,13 +17,6 @@ interface LoginCredentials {
     emailOrUsername: string;
     password: string;
 }
-
-interface RegisterCredentials {
-    username: string;
-    enail: string;
-    password: string;
-}
-
 interface AuthContextType {
     user: AuthUser | null;
     loading: boolean;

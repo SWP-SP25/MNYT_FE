@@ -1,32 +1,40 @@
-"use client";
-import { useState, useRef, useEffect } from "react";
-import Container from "react-bootstrap/Container";
-import Nav from "react-bootstrap/Nav";
-import Navbar from "react-bootstrap/Navbar";
-import Form from "react-bootstrap/Form";
-import FormControl from "react-bootstrap/FormControl";
-import Button from "react-bootstrap/Button";
-import Link from "next/link";
-import Image from "next/image";
-import Logo from "@/app/img/Logo.ico";
-import "./app-navbar.css"; // Import CSS thông thường
-import { BsBell, BsSearch } from "react-icons/bs";
-import { Overlay, Popover } from "react-bootstrap";
-import { useAuth } from "@/hooks/useAuth";
-import { AuthRequired } from "@/app/components/AuthRequired";
+'use client';
+import { useState, useRef, useEffect } from 'react';
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import Button from 'react-bootstrap/Button';
+import Link from 'next/link';
+import Image from 'next/image';
+import Logo from '@/app/img/Logo.ico';
+import './app-navbar.css';
+import { BsBell, BsGear, BsChevronDown, BsBoxArrowRight } from 'react-icons/bs';
+import { Overlay, Popover } from 'react-bootstrap';
+import { useAuth } from '@/hooks/useAuth';
+import { AuthRequired } from '@/app/components/AuthRequired';
 
 const AppNavBar = () => {
-  const [search, setSearch] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationTarget = useRef(null);
   const { user, loading, logout } = useAuth();
   const [showAccountPopup, setShowAccountPopup] = useState(false);
   const accountTarget = useRef(null);
 
-  const handleSearch = (e: { preventDefault: () => void }) => {
-    e.preventDefault();
-    console.log("Tìm kiếm:", search);
-    // Chức năng tìm kiếm ở đây
+  // Helper function to get the user name
+  const getUserName = () => {
+    if (!user) return 'Người dùng';
+
+    // Try user.user structure first (as defined in interface)
+    if (user.user && (user.user.fullName || user.user.userName)) {
+      return user.user.fullName || user.user.userName;
+    }
+
+    // Fall back to direct properties if they exist
+    if ((user as any).fullName || (user as any).userName) {
+      return (user as any).fullName || (user as any).userName;
+    }
+
+    return 'Người dùng';
   };
 
   useEffect(() => {
@@ -49,7 +57,12 @@ const AppNavBar = () => {
         <div className="brand">
           <Link href="/" passHref legacyBehavior>
             <a>
-              <Image src={Logo} alt="Logo" width={40} height={40} />
+              <Image
+                src={Logo}
+                alt="Logo"
+                width={40}
+                height={40}
+              />
             </a>
           </Link>
           <Link href="/" passHref legacyBehavior>
@@ -58,23 +71,8 @@ const AppNavBar = () => {
         </div>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          {/* Begin of Search bar */}
-          <Form className="search-form" onSubmit={handleSearch}>
-            <FormControl
-              type="search"
-              placeholder="Chúng tôi có thể giúp gì cho bạn"
-              className="search-input"
-              aria-label="Search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <Button className="search-btn" type="submit">
-              <BsSearch />
-            </Button>
-          </Form>
-          {/* End of search bar */}
           {/* Begin of menu nav */}
-          <Nav className="nav-links">
+          <Nav className="nav-links me-auto">
             <AuthRequired>
               <Link href="/reminder" passHref legacyBehavior>
                 <Nav.Link>Reminder</Nav.Link>
@@ -91,6 +89,11 @@ const AppNavBar = () => {
               </Link>
             </AuthRequired>
             <AuthRequired>
+              <Link href="/forum" passHref legacyBehavior>
+                <Nav.Link>Forum</Nav.Link>
+              </Link>
+            </AuthRequired>
+            <AuthRequired>
               <Link href="/membership" passHref legacyBehavior>
                 <Nav.Link>Membership</Nav.Link>
               </Link>
@@ -99,62 +102,44 @@ const AppNavBar = () => {
           {/* End of menu nav */}
           {/* Begin of Login/Register */}
           <Nav className="auth-section">
-            <div ref={notificationTarget}>
-              <Nav.Link
-                className="notification-bell"
-                onClick={() => setShowNotifications(!showNotifications)}
-              >
-                <BsBell />
-              </Nav.Link>
-            </div>
-
-            <Overlay
-              target={notificationTarget.current}
-              show={showNotifications}
-              placement="bottom"
-              rootClose
-              onHide={() => setShowNotifications(false)}
-            >
-              <Popover id="notifications-popover">
-                <Popover.Header as="h3">Thông báo</Popover.Header>
-                <Popover.Body>
-                  <div className="notifications-list">
-                    <p>Không có thông báo mới</p>
-                  </div>
-                </Popover.Body>
-              </Popover>
-            </Overlay>
-
             <div className="d-flex align-items-center gap-3">
               {loading ? (
                 <span className="text-secondary small">Đang tải...</span>
               ) : user ? (
-                <div className="d-flex align-items-center gap-3">
-                  <span
+                <div className="user-account-section">
+                  <div className="user-greeting">
+                    Xin chào<span className="user-name">
+                      {getUserName()}
+                    </span>
+                  </div>
+                  <div ref={notificationTarget} className="notification-icon">
+                    <Nav.Link
+                      className="notification-bell"
+                      onClick={() => setShowNotifications(!showNotifications)}
+                    >
+                      <BsBell />
+                    </Nav.Link>
+                  </div>
+                  <div
                     ref={accountTarget}
-                    className="text-secondary small"
+                    className="account-dropdown-icon"
                     onClick={() => setShowAccountPopup(!showAccountPopup)}
                   >
-                    Xin chào,{" "}
-                    <span className="fw-medium text-dark">
-                      {user ? user.fullName : "Người dùng"}
-                    </span>
-                  </span>
-                  <button
-                    onClick={() => logout()}
-                    className="btn btn-outline-secondary btn-sm rounded-pill"
-                  >
-                    Đăng xuất
-                  </button>
+                    <BsChevronDown className="dropdown-icon" />
+                  </div>
                 </div>
               ) : (
                 <div className="auth-buttons">
-                  <Link href="/login" passHref legacyBehavior>
-                    <Nav.Link className="auth-link">Đăng Nhập</Nav.Link>
+                  <Link href="/authenticate" passHref legacyBehavior>
+                    <Nav.Link className="auth-link">
+                      Đăng Nhập
+                    </Nav.Link>
                   </Link>
                   <span className="divider">|</span>
-                  <Link href="/login?mode=register" passHref legacyBehavior>
-                    <Nav.Link className="auth-link">Đăng Ký</Nav.Link>
+                  <Link href="/authenticate?mode=register" passHref legacyBehavior>
+                    <Nav.Link className="auth-link">
+                      Đăng Ký
+                    </Nav.Link>
                   </Link>
                 </div>
               )}
@@ -168,27 +153,61 @@ const AppNavBar = () => {
       <Overlay
         target={accountTarget.current}
         show={showAccountPopup}
-        placement="bottom"
+        placement="bottom-end"
         rootClose
         onHide={() => setShowAccountPopup(false)}
       >
         <Popover id="account-popover">
-          <Popover.Header as="h3">Quản lý tài khoản</Popover.Header>
+          <Popover.Header as="h3">
+            Quản lý tài khoản
+            <button
+              className="logout-icon-button"
+              onClick={() => {
+                logout();
+                setShowAccountPopup(false);
+              }}
+              title="Đăng xuất"
+            >
+              <BsBoxArrowRight />
+            </button>
+          </Popover.Header>
           <Popover.Body>
             <div className="account-management">
               <Link href="/account" passHref legacyBehavior>
-                <a onClick={() => setShowAccountPopup(false)}>
-                  Quản lý tài khoản
+                <a className="account-option" onClick={() => setShowAccountPopup(false)}>
+                  Thông tin cá nhân
                 </a>
               </Link>
-              {/* Thêm các tùy chọn khác nếu cần */}
+              <Link href="/account/settings" passHref legacyBehavior>
+                <a className="account-option" onClick={() => setShowAccountPopup(false)}>
+                  Cài đặt tài khoản
+                </a>
+              </Link>
             </div>
           </Popover.Body>
         </Popover>
       </Overlay>
-      {/* End of pop-up quản lý tài khoản */}
+
+      {/* Pop-up thông báo */}
+      <Overlay
+        target={notificationTarget.current}
+        show={showNotifications}
+        placement="bottom-end"
+        rootClose
+        onHide={() => setShowNotifications(false)}
+      >
+        <Popover id="notifications-popover">
+          <Popover.Header as="h3">Thông báo</Popover.Header>
+          <Popover.Body>
+            <div className="notifications-list">
+              <p>Không có thông báo mới</p>
+            </div>
+          </Popover.Body>
+        </Popover>
+      </Overlay>
+      {/* End of pop-up thông báo */}
     </Navbar>
   );
-};
+}
 
 export default AppNavBar;

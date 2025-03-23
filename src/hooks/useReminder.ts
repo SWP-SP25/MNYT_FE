@@ -1,36 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import moment from 'moment';
-
-// Props cho hook
-interface UseRemindersProps {
-    userId?: number;
-}
-
-// Interface cho reminder đã được tính toán
-interface CalculatedReminder {
-    id: number;
-    title: string;
-    description: string;
-    date: string;
-    type: 'system' | 'user';
-    period: number;
-    status?: 'pending' | 'done' | 'skip';
-}
-
-// Interface cho reminder người dùng tự tạo
-interface UserSchedule {
-    id: number;
-    title: string;
-    note: string; // Tương đương với description
-    date: string;
-    type: string;
-    status: string;
-    pregnancyId: number;
-    createDate: string;
-    updateDate: string;
-    isDeleted: boolean;
-}
+import { CalculatedReminder, UserSchedule, UseRemindersProps } from '@/types/reminder';
 
 export const useReminders = ({ userId }: UseRemindersProps) => {
     console.log('useReminders hook initialized with userId:', userId);
@@ -206,7 +177,8 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
                             date: reminderDate.format('YYYY-MM-DD'),
                             type: 'system',
                             period: template.period,
-                            status: template.status
+                            status: template.status,
+                            tag: template.tag
                         });
                     }
                 });
@@ -248,8 +220,21 @@ export const useReminders = ({ userId }: UseRemindersProps) => {
                                 description: schedule.note || 'Chi tiết lịch hẹn',
                                 date: schedule.date, // Sử dụng trực tiếp ngày từ API
                                 type: 'user',
-                                period: 0, // Không có period cho lịch người dùng tự tạo
-                                status: schedule.status as 'pending' | 'done' | 'skip' || 'pending'
+                                period: 0,//user schedule thì reminder không có period
+                                status: schedule.status as 'pending' | 'done' | 'skip' || 'pending',
+                                tag: schedule.tag as 'prenental_checkup' | 'ultrasound' | 'lab_tests' | 'vaccination'
+                                //UserSchedule chi tiết để đối chiếu
+                                // export interface UserSchedule {
+                                //     id: number;
+                                //     title: string;
+                                //     note: string; // Tương đương với description
+                                //     date: string;
+                                //     type: string;
+                                //     status: string;
+                                //     pregnancyId: number;
+                                //     isDeleted: boolean;
+                                //     tag: 'prenental_checkup' | 'ultrasound' | 'lab_tests' | 'vaccination';
+                                // }
                             }));
 
                         console.log('Converted user schedules:', userSchedules);

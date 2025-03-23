@@ -14,13 +14,6 @@ import { BlogResponse } from '@/types/blog';
 import styles from './maincontent.module.css';
 import { useAuth } from "@/hooks/useAuth";
 import axios from 'axios';
-import {
-    calculateEFW,
-    calculateEFWWithoutACFL,
-    predictLengthFromFL,
-    predictLengthFromCRL,
-    predictHC
-} from '@/utils/predictCalculations';
 //Tùy chỉnh các hiệu ứng chuyển động cho các phần tử trong giao diện bằng cách sử dụng thư viện framer-motion
 //Định nghĩa hiệu ứng "Fade In Up" cho các phần tử
 const fadeInUp = {

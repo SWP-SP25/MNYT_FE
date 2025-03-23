@@ -1,7 +1,7 @@
 "use client";
 import styles from "./blogDetail.module.css";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   FaRegHeart,
@@ -13,15 +13,11 @@ import {
 } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale/vi";
-import {
-  blogService,
-  commentService,
-  BlogPost,
-  Comment,
-} from "@/app/services/api";
+import { blogService } from "@/app/services/api";
 import useAxios from "@/hooks/useFetchAxios";
 import { BlogDetail, BlogPostDetailResponse } from "@/types/blogDetail";
 import axios from "axios";
+<<<<<<< Updated upstream
 import Cookies from "js-cookie";
 import CommentList from "@/app/blog/components/CommentList";
 import { uploadImage } from "@/utils/uploadImage";
@@ -61,6 +57,8 @@ interface BlogPost {
   tags: string[];
   coverImage: string;
 }
+=======
+>>>>>>> Stashed changes
 
 // Thêm interface cho related posts
 interface RelatedPost {
@@ -86,15 +84,11 @@ const BlogDetail = () => {
   const [post, setPost] = useState<BlogDetail | null>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [commentText, setCommentText] = useState("");
   const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
   const [tableOfContents, setTableOfContents] = useState<TableOfContentsItem[]>(
     []
   );
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   const {
     response: blogPostDetailResponse,
     error,
@@ -211,22 +205,6 @@ const BlogDetail = () => {
     }));
   };
 
-  // Thêm useEffect để lấy bình luận
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const commentsResponse = await commentService.getPostComments(
-          id as string
-        );
-        setComments(commentsResponse.data.items); // Cập nhật state comments
-      } catch (error) {
-        console.error("Error fetching comments:", error);
-      }
-    };
-
-    fetchComments();
-  }, [id]);
-
   if (loading) return <div>Đang tải...</div>;
   if (error) return <div>{error}</div>;
   if (!post) return <div>Không tìm thấy bài viết</div>;
@@ -270,6 +248,7 @@ const BlogDetail = () => {
     });
   };
 
+<<<<<<< Updated upstream
   // Bình luận xuất hiện real-time
 
   const handleSubmitComment = async (e: React.FormEvent) => {
@@ -319,6 +298,8 @@ const BlogDetail = () => {
     console.log(userData);
   };
 
+=======
+>>>>>>> Stashed changes
   return (
     <div className={styles.blogDetailContainer}>
       {/* Header */}
@@ -403,7 +384,6 @@ const BlogDetail = () => {
             <span className={styles.statLabel}>Người theo dõi</span>
           </div>
         </div>
-        {/* <button className={styles.followButton}>Theo dõi tác giả</button> */}
       </div>
 
       {/* Tags */}
@@ -423,10 +403,7 @@ const BlogDetail = () => {
           {isLiked ? <FaHeart /> : <FaRegHeart />}
           <span>{post.likeCount}</span>
         </button>
-        <button className={styles.interactionButton}>
-          <FaRegComment />
-          <span>{post.commentCount}</span>
-        </button>
+
         <button className={styles.interactionButton} onClick={handleShare}>
           <FaShare />
           <span>Chia sẻ</span>
@@ -439,38 +416,6 @@ const BlogDetail = () => {
           <FaBookmark />
           <span>{isSaved ? "Đã lưu" : "Lưu bài"}</span>
         </button>
-      </div>
-
-      {/* Comments Section */}
-      <div className={styles.commentsSection}>
-        <h3>Bình luận ({comments.length})</h3>
-
-        {/* Comment Form */}
-        <form onSubmit={handleSubmitComment} className={styles.commentForm}>
-          <textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Viết bình luận của bạn..."
-            className={styles.commentInput}
-          />
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept="image/*"
-            className={styles.fileInput}
-            onChange={(e) => {
-              if (e.target.files) {
-                setImageFile(e.target.files[0]);
-              }
-            }}
-          />
-          <button type="submit" className={styles.submitButton}>
-            Gửi bình luận
-          </button>
-        </form>
-
-        {/* Comments List */}
-        <CommentList comments={comments} />
       </div>
 
       {/* Related Posts */}

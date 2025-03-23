@@ -68,7 +68,29 @@ const FilterSort: FC<FilterSortProps> = ({
                 </div>
             </div>
         </div>
+<<<<<<< Updated upstream
     );
+=======
+      </div>
+
+      {/* Sort Dropdown */}
+      <div className={styles.sortContainer}>
+        <div className={styles.sortWrapper}>
+          <select
+            className={styles.sortSelect}
+            value={currentSort}
+            onChange={(e) => onSortChange(e.target.value)}
+          >
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="most-commented">Most Commented</option>
+            <option value="most-liked">Most Liked</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  );
+>>>>>>> Stashed changes
 };
 
 export default FilterSort;

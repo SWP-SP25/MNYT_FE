@@ -1,5 +1,10 @@
+<<<<<<< Updated upstream
 'use client';
 import styles from '../styles/blog.module.css';  // Sửa lại đường dẫn import
+=======
+"use client";
+import styles from "../styles/blog.module.css";
+>>>>>>> Stashed changes
 
 const CategoryMenu = () => {
     const categories = [

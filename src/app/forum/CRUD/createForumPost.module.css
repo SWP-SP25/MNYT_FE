@@ -1,0 +1,282 @@
+.componentContainer {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    width: 100%;
+}
+
+.componentTitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.createPostForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.searchInput {
+    padding: 0.8rem 1.2rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: #55A6C3;
+    box-shadow: 0 0 0 3px rgba(85, 166, 195, 0.1);
+}
+
+textarea.searchInput {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.categoryLabel {
+    font-weight: 500;
+    color: #555;
+    margin-bottom: -0.8rem;
+}
+
+.selectContainer {
+    position: relative;
+}
+
+.categorySelect {
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    appearance: none;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #333;
+}
+
+.categorySelect:focus {
+    outline: none;
+    border-color: #55A6C3;
+    box-shadow: 0 0 0 3px rgba(85, 166, 195, 0.1);
+}
+
+.selectArrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.createPostButton {
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+    margin-right: 20px;
+}
+
+.createPostButton:first-of-type {
+    background-color: #1D6571;
+    color: white;
+    border: none;
+}
+
+.createPostButton:first-of-type:hover {
+    background-color: #1A5B5E;
+    transform: translateY(-2px);
+}
+
+.createPostButton:first-of-type:active {
+    transform: translateY(0);
+}
+
+.createPostButton:last-of-type {
+    background-color: white;
+    color: #666;
+    border: 1px solid #e5e7eb;
+}
+
+.createPostButton:last-of-type:hover {
+    background-color: #f5f5f5;
+}
+
+.error {
+    color: #d32f2f;
+    background-color: #ffeaea;
+    padding: 0.8rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+/* Khu vực upload ảnh */
+.imageUploadContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.imageLabel {
+    font-weight: 500;
+    color: #555;
+}
+
+.imageUploadArea {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: #f7faff;
+    border: 2px dashed #c1d3f9;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 180px;
+    text-align: center;
+}
+
+.imageUploadArea:hover {
+    background-color: #edf3ff;
+    border-color: #55A6C3;
+}
+
+.uploadContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.uploadIcon {
+    color: #55A6C3;
+    margin-bottom: 1rem;
+}
+
+.uploadHint {
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 0.5rem;
+}
+
+.imagePreviewContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+.imagePreview {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.imageActions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    width: 100%;
+    justify-content: center;
+}
+
+.removeImageButton {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.removeImageButton:hover {
+    background-color: #c0392b;
+}
+
+.removeIcon {
+    font-size: 1.2rem;
+    margin-right: 0.3rem;
+}
+
+.changeImageButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: 500;
+}
+
+.changeImageButton:hover {
+    background-color: #2980b9;
+}
+
+.hiddenInput {
+    display: none;
+}
+
+/* Checkbox ẩn danh stylish */
+.anonymousOption {
+    display: flex;
+    align-items: center;
+    margin: 1rem 0;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.container input {
+    display: none;
+}
+
+.container svg {
+    overflow: visible;
+    margin-right: 10px;
+}
+
+.path {
+    fill: none;
+    stroke: #1D6571;
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke-dasharray 0.5s ease, stroke-dashoffset 0.5s ease;
+    stroke-dasharray: 241 9999999;
+    stroke-dashoffset: 0;
+}
+
+.container input:checked ~ svg .path {
+    stroke-dasharray: 70.5096664428711 9999999;
+    stroke-dashoffset: -262.2723388671875;
+}
+
+.anonymousLabel {
+    font-size: 1rem;
+    color: #555;
+    font-weight: 500;
+    margin-left: 5px;
+}

@@ -7,6 +7,10 @@ import Link from "next/link";
 import useAxios from "@/hooks/useFetchAxios";
 import { BlogPostListResponse } from "@/types/blogPostList";
 import axios from "axios";
+<<<<<<< Updated upstream
+=======
+import { FaRegHeart, FaRegComment } from "react-icons/fa";
+>>>>>>> Stashed changes
 
 interface BlogListProps {
   category: string;
@@ -15,6 +19,7 @@ interface BlogListProps {
   onPostDeleted: () => void;
 }
 
+<<<<<<< Updated upstream
 export default function BlogList({
   category,
   currentPage,
@@ -44,10 +49,32 @@ export default function BlogList({
         setError(true);
       })
       .finally(() => {
+=======
+const BlogList = ({ category, currentPage, onPageChange }: BlogListProps) => {
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${category}&page=${currentPage}`
+        );
+        console.log(response.data.data);
+        setBlogs(response.data.data);
+        setTotalPages(Math.ceil(response.data.total / 10));
+      } catch (error) {
+        setError("Lỗi khi tải bài viết");
+      } finally {
+>>>>>>> Stashed changes
         setLoading(false);
       });
   }, [category, currentPage]);
 
+<<<<<<< Updated upstream
   // const {
   //   response: blogPostListResponse,
   //   error,
@@ -78,6 +105,8 @@ export default function BlogList({
 
   console.log("Current posts state:", blogPostListResponse);
 
+=======
+>>>>>>> Stashed changes
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -159,6 +188,7 @@ export default function BlogList({
                 <i className="far fa-heart"></i> {post.likeCount}
               </span>
             </div>
+<<<<<<< Updated upstream
 
             {/* Nút xóa bài viết */}
             <button
@@ -167,6 +197,8 @@ export default function BlogList({
             >
               Xóa
             </button>
+=======
+>>>>>>> Stashed changes
           </div>
         </div>
       ))}

@@ -55,7 +55,7 @@ const Sidebar = () => {
       try {
         // Lấy tổng số bài viết
         axios
-          .get("https://api-mnyt.purintech.id.vn/api/BlogPosts/all")
+          .get("https://api-mnyt.purintech.id.vn/api/Posts/blogs")
           .then((response) => {
             console.log("postsRes =>", response.data);
             if (

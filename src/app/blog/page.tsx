@@ -4,12 +4,11 @@ import BlogList from "./components/BlogList";
 import FilterSort from "./Sort & Filter/FilterSort";
 import Sidebar from "./sidebar/Sidebar";
 import Pagination from "./Pagination/Pagination";
-import CreateBlogPost from "./CRUD/CreateBlogPost";
 import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 
 // Định nghĩa các types
-type SortOption = "newest" | "oldest" | "most-viewed" | "most-commented";
+type SortOption = "newest" | "oldest" | "most-commented" | "most-liked";
 
 const BlogPage = () => {
   // State management
@@ -20,6 +19,7 @@ const BlogPage = () => {
   const blogsPerPage = 10; // Số lượng blog hiển thị trên mỗi trang
   const [posts, setPosts] = useState([]); // State để lưu trữ bài viết
 
+<<<<<<< Updated upstream
   // Giả lập dữ liệu blog (thay thế bằng dữ liệu thực từ API)
   const allBlogs = Array.from(
     { length: 30 },
@@ -29,6 +29,23 @@ const BlogPage = () => {
   // Tính toán các blog cần hiển thị dựa trên trang hiện tại
   const startIndex = (currentPage - 1) * blogsPerPage;
   const currentBlogs = allBlogs.slice(startIndex, startIndex + blogsPerPage);
+=======
+  const fetchBlogs = async (category: string, sort: SortOption) => {
+    try {
+      const response = await axios.get(
+        `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${category}&sort=${sort}&page=${currentPage}`
+      );
+      setBlogs(response.data.data);
+      setTotalPages(Math.ceil(response.data.total / blogsPerPage));
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlogs(currentCategory, sortBy);
+  }, [currentCategory, sortBy, currentPage]);
+>>>>>>> Stashed changes
 
   // Khôi phục trạng thái từ localStorage khi component mount
   useEffect(() => {
@@ -57,6 +74,7 @@ const BlogPage = () => {
     setCurrentPage(page);
   };
 
+<<<<<<< Updated upstream
   const refreshPosts = async () => {
     try {
       const response = await axios.get(
@@ -66,6 +84,10 @@ const BlogPage = () => {
     } catch (error) {
       console.error("Lỗi khi lấy bài viết:", error);
     }
+=======
+  const refreshPosts = () => {
+    fetchBlogs(currentCategory, sortBy);
+>>>>>>> Stashed changes
   };
 
   useEffect(() => {
@@ -75,7 +97,6 @@ const BlogPage = () => {
   return (
     <div className={styles.blogContainer}>
       <div className={styles.mainContent}>
-        <CreateBlogPost onPostCreated={refreshPosts} />
         <FilterSort
           activeCategory={currentCategory}
           currentSort={sortBy}

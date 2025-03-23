@@ -1,0 +1,624 @@
+.forumHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #1D6571;
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.headerTitle h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.headerActions {
+    display: flex;
+    gap: 1rem;
+}
+
+.createPostButton {
+    background-color: #ffffff;
+    color: #1D6571;
+    border: 2px solid #ffffff;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.createPostButton:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-2px);
+}
+
+.createPostButton:active {
+    transform: translateY(0);
+}
+
+.error {
+    color: #d32f2f;
+    background-color: #ffeaea;
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.categoryMenu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+
+.categoryButton {
+    padding: 10px 15px;
+    border-radius: 20px;
+    background: #1D6571;
+    color: white;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.categoryButton:hover {
+    background: #1A5B5E;
+    transform: translateY(-2px);
+}
+
+.categoryButton:active {
+    transform: translateY(0);
+}
+
+/* Phần CSS cho CategorySidebar */
+.sidebarContainer {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 1.5rem;
+}
+
+.sidebarTitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.categoryList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.categoryItem {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #666;
+}
+
+.categoryItem:hover {
+    background-color: #f5f8ff;
+    transform: translateX(5px);
+}
+
+.categoryIcon {
+    font-size: 1.2rem;
+    margin-right: 0.8rem;
+    display: flex;
+    align-items: center;
+}
+
+.categoryName {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.activeCategory {
+    background-color: #55A6C3;
+    color: white;
+}
+
+.activeCategory:hover {
+    background-color: #4895b2;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebarContainer {
+        padding: 1rem;
+    }
+
+    .categoryItem {
+        padding: 0.6rem 0.8rem;
+    }
+
+    .categoryName {
+        font-size: 0.9rem;
+    }
+}
+
+/* Phần tìm kiếm */
+.componentContainer {
+    margin: 1rem 0;
+}
+
+.searchContainer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.searchInput {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.searchInput:focus {
+    border-color: #55A6C3;
+}
+
+.searchButton {
+    background-color: #1D6571;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.searchButton:hover {
+    background-color: #164e58;
+}
+
+.searchButton:disabled {
+    background-color: #7ab5c0;
+    cursor: not-allowed;
+}
+
+.clearSearchButton {
+    background-color: #f0f0f0;
+    color: #666;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.clearSearchButton:hover {
+    background-color: #e0e0e0;
+}
+
+/* Phần chủ đề phổ biến */
+.popularTopicsContainer {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-top: 1.5rem;
+}
+
+.widgetTitle {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.topicList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.topicTag {
+    padding: 6px 12px;
+    background: #f0f5ff;
+    border-radius: 20px;
+    color: #55A6C3;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.topicTag:hover {
+    background: #55A6C3;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Phần thành viên năng nổ */
+.activeUsersContainer {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-top: 1.5rem;
+}
+
+.loadingState {
+    text-align: center;
+    color: #666;
+    font-size: 1rem;
+}
+
+.errorState {
+    text-align: center;
+    color: #e74c3c;
+    font-size: 1rem;
+}
+
+.userList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.userItem {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.userItem:last-child {
+    border-bottom: none;
+}
+
+.userAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 0.8rem;
+    overflow: hidden;
+}
+
+.userAvatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.defaultAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #3498db;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.userInfo {
+    flex: 1;
+}
+
+.userName {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.userPostCount {
+    font-size: 0.9rem;
+    color: #666;
+    background: #f0f5ff;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.userStats {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.postCount {
+    background: #f0f5ff;
+    color: #55A6C3;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f0f0f0;
+    border-top: 3px solid #55A6C3;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Phần danh sách bài viết */
+.postListContainer {
+    padding: 1.5rem;
+}
+
+.categoryTitle {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.postList {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.postCard {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.postCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.postHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.authorInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.avatarPlaceholder {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #55A6C3;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.authorName {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.2rem;
+}
+
+.postDate {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.postCategory {
+    padding: 0.4rem 1rem;
+    background: #f0f7ff;
+    color: #1D6571;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.postTitle {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+    margin: 1rem 0;
+    line-height: 1.4;
+}
+
+.postContent {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.postImageContainer {
+    margin: 1rem 0;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+}
+
+.postImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.postFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+.postStats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.commentCount, .likeCount {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.icon {
+    font-size: 1.2rem;
+}
+
+.readMoreLink {
+    padding: 0.5rem 1rem;
+    background: #1D6571;
+    color: white;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.readMoreLink:hover {
+    background: #1A5B5E;
+}
+
+/* Pagination styles */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 2rem 0;
+}
+
+.paginationNumbers {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.paginationButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 0.5rem;
+    border: 1px solid #e5e7eb;
+    background-color: white;
+    color: #1D6571;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.paginationButton:disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.paginationButton.active {
+    background-color: #1D6571;
+    border-color: #1D6571;
+    color: white;
+}
+
+.paginationButton.prev,
+.paginationButton.next {
+    padding: 0;
+    width: 36px;
+}
+
+.paginationDots {
+    color: #6b7280;
+    padding: 0 4px;
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+    .pagination {
+        gap: 0.25rem;
+    }
+
+    .paginationButton {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.75rem;
+    }
+
+    .paginationNumbers {
+        gap: 0.25rem;
+    }
+}
+
+/* Thêm vào components.module.css */
+.searchInputWrapper {
+    position: relative;
+    flex: 1;
+}
+
+.clearButton {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.clearButton:hover {
+    color: #333;
+    background-color: #f0f0f0;
+}

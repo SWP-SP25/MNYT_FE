@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { BsPersonFill, BsEnvelopeFill, BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { IoMdCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
-// import { FaGoogle } from "react-icons/fa";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
 import Cookies from "js-cookie";
 
 import styles from './page.module.css';
+import fpStyles from './forgot-password.module.css';
 
 // Khai báo kiểu dữ liệu cho thông báo
 type NotificationType = 'success' | 'error' | '';
@@ -18,18 +17,35 @@ type NotificationMessage = string;
 
 const LoginPage = () => {
     const [isActive, setIsActive] = useState(false);
+    const [isForgotActive, setIsForgotActive] = useState(false);
+    const [forgotStep, setForgotStep] = useState(1);
     const router = useRouter();
     const searchParams = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
     const { login, loading: authLoading, error: authError } = useAuth();
     const { fetchData, loading: fetchLoading, error: fetchError } = useFetch();
+    const [username, setUsername] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
     // Thêm state cho thông báo
     const [notification, setNotification] = useState<{
         type: NotificationType,
         message: NotificationMessage
     }>({ type: '', message: '' });
+
+    // Hàm hiển thị thông báo
+    const showNotification = (type: NotificationType, message: NotificationMessage) => {
+        setNotification({ type, message });
+
+        // Tự động ẩn thông báo sau 3 giây
+        setTimeout(() => {
+            setNotification({ type: '', message: '' });
+        }, 3000);
+    };
 
     // Theo dõi lỗi từ useAuth và hiển thị trong popup
     useEffect(() => {
@@ -60,55 +76,6 @@ const LoginPage = () => {
     });
 
     const [registerError, setRegisterError] = useState("");
-
-    // Hàm "dịch" thông báo lỗi sang ngôn ngữ thân thiện với người dùng
-    const getErrorMessage = (errorMsg: string): string => {
-        // Chuẩn hóa thông báo lỗi (viết thường, loại bỏ dấu câu thừa)
-        const normalizedError = errorMsg.toLowerCase().trim();
-
-        // Lỗi đăng nhập
-        if (normalizedError.includes("invalid credentials") ||
-            normalizedError.includes("account is banned")) {
-            return "Sai tài khoản hoặc mật khẩu, vui lòng thử lại.";
-        }
-
-        // Lỗi đăng ký - tên đăng nhập
-        if (normalizedError.includes("user already exists")) {
-            return "Tên đăng nhập đã tồn tại, vui lòng chọn tên khác.";
-        }
-
-        // Lỗi đăng ký - email
-        if (normalizedError.includes("email already exists")) {
-            return "Email này đã được sử dụng, vui lòng dùng email khác.";
-        }
-
-        // Lỗi mật khẩu
-        if (normalizedError.includes("password too weak")) {
-            return "Mật khẩu chưa đủ mạnh. Vui lòng sử dụng ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số.";
-        }
-
-        // Lỗi kết nối
-        if (normalizedError.includes("network error") ||
-            normalizedError.includes("failed to fetch")) {
-            return "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.";
-        }
-
-        // Trường hợp mặc định
-        return errorMsg; // Trả về thông báo gốc nếu không có quy tắc tùy chỉnh
-    };
-
-    // Hiển thị thông báo và tự động ẩn sau 5 giây
-    const showNotification = (type: NotificationType, message: NotificationMessage) => {
-        // Nếu là thông báo lỗi, áp dụng hàm dịch
-        const displayMessage = type === 'error' ? getErrorMessage(message) : message;
-
-        setNotification({ type, message: displayMessage });
-
-        // Tự động ẩn thông báo sau 5 giây
-        setTimeout(() => {
-            setNotification({ type: '', message: '' });
-        }, 5000);
-    };
 
     useEffect(() => {
         // Kiểm tra nếu có query parameter 'mode=register' thì hiển thị form đăng ký
@@ -166,7 +133,9 @@ const LoginPage = () => {
             }
         } catch (err) {
             console.error('Lỗi đăng nhập:', err);
-            // Không cần làm gì ở đây vì đã có useEffect theo dõi authError
+            // Lấy thông báo lỗi từ error object nếu có
+            const errorMessage = err instanceof Error ? err.message : 'Lỗi đăng nhập không xác định';
+            showNotification('error', errorMessage);
         }
     };
 
@@ -194,101 +163,96 @@ const LoginPage = () => {
 
         } catch (err) {
             console.error('Lỗi đăng ký:', err);
-            // Không cần làm gì ở đây vì đã có useEffect theo dõi fetchError
+            // Lấy thông báo lỗi từ error object nếu có
+            const errorMessage = err instanceof Error ? err.message : 'Lỗi đăng ký không xác định';
+            showNotification('error', errorMessage);
         }
     };
 
-    // Thêm một hàm để xử lý sự kiện toggle password
-    const togglePasswordVisibility = (field: 'password' | 'confirmPassword') => {
-        if (field === 'password') {
-            setShowPassword(!showPassword);
-        } else {
-            setShowConfirmPassword(!showConfirmPassword);
+    const handleForgotPasswordSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (forgotStep === 1) {
+            // Ở bước 1, chỉ yêu cầu tên đăng nhập
+            if (!username) {
+                showNotification('error', 'Vui lòng nhập tên đăng nhập');
+                return;
+            }
+            // Xử lý bước 1 - không cần kiểm tra captchaToken
+            setForgotStep(2);
+            showNotification('success', 'Vui lòng đặt mật khẩu mới');
+        } else if (forgotStep === 2) {
+            // Ở bước 2, yêu cầu mật khẩu mới và xác nhận
+            if (newPassword !== confirmNewPassword) {
+                showNotification('error', 'Mật khẩu xác nhận không khớp');
+                return;
+            }
+
+            // Xử lý bước 2 - không cần kiểm tra captchaToken
+            showNotification('success', 'Đổi mật khẩu thành công! Bạn có thể đăng nhập lại.');
+
+            // Reset form và quay lại đăng nhập
+            setTimeout(() => {
+                setIsForgotActive(false);
+                setForgotStep(1);
+                setUsername("");
+                setNewPassword("");
+                setConfirmNewPassword("");
+            }, 2000);
         }
+    };
+
+    // 3. Cập nhật hàm khi quay lại đăng nhập
+    const handleBackToLogin = () => {
+        setIsForgotActive(false);
+        setForgotStep(1);
+        setUsername("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+    };
+
+    // 4. Cập nhật sau khi đặt lại mật khẩu thành công
+    const resetForgotPasswordForm = () => {
+        setIsForgotActive(false);
+        setForgotStep(1);
+        setUsername("");
+        setNewPassword("");
+        setConfirmNewPassword("");
     };
 
     return (
-        <div className={`${styles.container} ${isActive ? styles.active : ''}`}>
-            {/* Hiển thị thông báo - thêm class nhỏ gọn */}
-            {notification.type && (
-                <div className={`${styles.notification} ${styles[notification.type]} ${styles.compact}`}>
-                    {notification.type === 'success' ? (
-                        <IoMdCheckmarkCircle className={styles.notificationIcon} />
-                    ) : (
-                        <IoMdCloseCircle className={styles.notificationIcon} />
-                    )}
-                    <span>{notification.message}</span>
-                    <button
-                        className={styles.closeNotification}
-                        onClick={() => setNotification({ type: '', message: '' })}
-                    >
-                        &times;
-                    </button>
-                </div>
-            )}
-
-            {/* Login Form */}
-            <div className={`${styles['form-box']} ${styles.login}`}>
-                <form onSubmit={handleLoginSubmit}>
-                    <h1>Đăng nhập</h1>
-
-                    <div className={styles['input-box']}>
-                        <input
-                            type="text"
-                            name="username"
-                            placeholder="Tên đăng nhập"
-                            value={loginData.username}
-                            onChange={handleLoginChange}
-                            required
-                        />
-                        <i><BsPersonFill /></i>
+        <>
+            <div className={`${styles.container} ${isActive ? styles.active : ''} ${isForgotActive ? styles.forgotActive : ''}`}>
+                {/* Hiển thị thông báo */}
+                {notification.type && (
+                    <div className={`${styles.notification} ${styles[notification.type]}`}>
+                        {notification.type === 'success' ? (
+                            <IoMdCheckmarkCircle className={styles.notificationIcon} />
+                        ) : (
+                            <IoMdCloseCircle className={styles.notificationIcon} />
+                        )}
+                        <span>{notification.message}</span>
+                        <button
+                            className={styles.closeNotification}
+                            onClick={() => setNotification({ type: '', message: '' })}
+                        >
+                            &times;
+                        </button>
                     </div>
+                )}
 
-                    <div className={styles['input-box']}>
-                        <input
-                            type={showPassword ? "text" : "password"}
-                            name="password"
-                            placeholder="Mật khẩu"
-                            value={loginData.password}
-                            onChange={handleLoginChange}
-                            required
-                        />
-                        <i className={styles['password-icon']} onClick={() => togglePasswordVisibility('password')}>
-                            {showPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
-                        </i>
-                    </div>
+                {/* Login Form */}
+                <div className={`${styles['form-box']} ${styles.login}`}>
+                    <form onSubmit={handleLoginSubmit}>
+                        <h1>Đăng nhập</h1>
 
-                    <div className={styles['remember-forgot']}>
-                        <label>
-                            <input
-                                type="checkbox"
-                                name="rememberMe"
-                                checked={loginData.rememberMe}
-                                onChange={handleLoginChange}
-                            /> Ghi nhớ đăng nhập
-                        </label>
-                        <Link href="/forgotpassword" className={styles['forgot-link']}>Quên mật khẩu?</Link>
-                    </div>
-
-                    <button type="submit" className={styles.btn} disabled={authLoading}>
-                        {authLoading ? "Đang xử lý..." : "Đăng nhập"}
-                    </button>
-                </form>
-            </div>
-
-            {/* Register Form */}
-            <div className={`${styles['form-box']} ${styles.register}`}>
-                <form onSubmit={handleRegisterSubmit}>
-                    <h1>Đăng ký</h1>
-
-                    <div className={styles['input-container']}>
                         <div className={styles['input-box']}>
                             <input
                                 type="text"
                                 name="username"
                                 placeholder="Tên đăng nhập"
-                                value={registerData.username}
-                                onChange={handleRegisterChange}
+                                value={loginData.username}
+                                onChange={handleLoginChange}
                                 required
                             />
                             <i><BsPersonFill /></i>
@@ -296,82 +260,225 @@ const LoginPage = () => {
 
                         <div className={styles['input-box']}>
                             <input
-                                type="email"
-                                name="email"
-                                placeholder="Email"
-                                value={registerData.email}
-                                onChange={handleRegisterChange}
-                                required
-                            />
-                            <i><BsEnvelopeFill /></i>
-                        </div>
-
-                        <div className={styles['input-box']}>
-                            <input
                                 type={showPassword ? "text" : "password"}
                                 name="password"
                                 placeholder="Mật khẩu"
-                                value={registerData.password}
-                                onChange={handleRegisterChange}
+                                value={loginData.password}
+                                onChange={handleLoginChange}
                                 required
                             />
-                            <i
-                                className={styles['password-icon']}
-                                onClick={() => setShowPassword(!showPassword)}
-                            >
+                            <i className={styles['password-icon']} onClick={() => setShowPassword(!showPassword)}>
                                 {showPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
                             </i>
                         </div>
 
-                        <div className={styles['input-box']}>
-                            <input
-                                type={showConfirmPassword ? "text" : "password"}
-                                name="confirmPassword"
-                                placeholder="Xác nhận mật khẩu"
-                                value={registerData.confirmPassword}
-                                onChange={handleRegisterChange}
-                                required
-                            />
-                            <i
-                                className={styles['password-icon']}
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        <div className={styles['remember-forgot']}>
+                            <div className={styles['checkbox-wrapper']}>
+                                <input
+                                    type="checkbox"
+                                    id="rememberMe"
+                                    name="rememberMe"
+                                    checked={loginData.rememberMe}
+                                    onChange={handleLoginChange}
+                                />
+                                <label htmlFor="rememberMe">Ghi nhớ đăng nhập</label>
+                            </div>
+
+                            <button
+                                type="button"
+                                className={styles['forgot-link']}
+                                onClick={() => setIsForgotActive(true)}
                             >
-                                {showConfirmPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
-                            </i>
+                                Quên mật khẩu?
+                            </button>
                         </div>
+
+                        <button type="submit" className={styles.btn} disabled={authLoading}>
+                            {authLoading ? "Đang xử lý..." : "Đăng nhập"}
+                        </button>
+                    </form>
+                </div>
+
+                {/* Register Form */}
+                <div className={`${styles['form-box']} ${styles.register}`}>
+                    <form onSubmit={handleRegisterSubmit}>
+                        <h1>Đăng ký</h1>
+
+                        <div className={styles['input-container']}>
+                            <div className={styles['input-box']}>
+                                <input
+                                    type="text"
+                                    name="username"
+                                    placeholder="Tên đăng nhập"
+                                    value={registerData.username}
+                                    onChange={handleRegisterChange}
+                                    required
+                                />
+                                <i><BsPersonFill /></i>
+                            </div>
+
+                            <div className={styles['input-box']}>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Email"
+                                    value={registerData.email}
+                                    onChange={handleRegisterChange}
+                                    required
+                                />
+                                <i><BsEnvelopeFill /></i>
+                            </div>
+
+                            <div className={styles['input-box']}>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    placeholder="Mật khẩu"
+                                    value={registerData.password}
+                                    onChange={handleRegisterChange}
+                                    required
+                                />
+                                <i
+                                    className={styles['password-icon']}
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
+                                </i>
+                            </div>
+
+                            <div className={styles['input-box']}>
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    name="confirmPassword"
+                                    placeholder="Xác nhận mật khẩu"
+                                    value={registerData.confirmPassword}
+                                    onChange={handleRegisterChange}
+                                    required
+                                />
+                                <i
+                                    className={styles['password-icon']}
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                >
+                                    {showConfirmPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
+                                </i>
+                            </div>
+                        </div>
+
+                        <button type="submit" className={styles.btn} disabled={fetchLoading}>
+                            {fetchLoading ? "Đang xử lý..." : "Đăng ký"}
+                        </button>
+                    </form>
+                </div>
+
+                {/* Forgot Password Form - Đã loại bỏ phần reCAPTCHA */}
+                <div className={styles.forgotPasswordContainer}>
+                    <div className={fpStyles.fpContainer}>
+                        <h1 className={fpStyles.fpTitle}>Khôi phục mật khẩu</h1>
+                        <p className={fpStyles.fpSubtitle}>
+                            {forgotStep === 1
+                                ? "Nhập tên đăng nhập để bắt đầu quá trình đặt lại mật khẩu"
+                                : "Vui lòng tạo mật khẩu mới cho tài khoản của bạn"}
+                        </p>
+
+                        <form className={fpStyles.fpForm} onSubmit={handleForgotPasswordSubmit}>
+                            {forgotStep === 1 ? (
+                                <div className={fpStyles.fpInputGroup}>
+                                    <input
+                                        type="text"
+                                        placeholder="Tên đăng nhập"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        required
+                                        className={fpStyles.fpInput}
+                                    />
+                                    <i className={fpStyles.fpInputIcon}><BsPersonFill /></i>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className={fpStyles.fpInputGroup}>
+                                        <input
+                                            type={showNewPassword ? "text" : "password"}
+                                            placeholder="Mật khẩu mới"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            required
+                                            className={fpStyles.fpInput}
+                                        />
+                                        <i
+                                            className={fpStyles.fpInputIcon}
+                                            onClick={() => setShowNewPassword(!showNewPassword)}
+                                        >
+                                            {showNewPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
+                                        </i>
+                                    </div>
+                                    <div className={fpStyles.fpInputGroup}>
+                                        <input
+                                            type={showConfirmNewPassword ? "text" : "password"}
+                                            placeholder="Xác nhận mật khẩu mới"
+                                            value={confirmNewPassword}
+                                            onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                            required
+                                            className={fpStyles.fpInput}
+                                        />
+                                        <i
+                                            className={fpStyles.fpInputIcon}
+                                            onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                                        >
+                                            {showConfirmNewPassword ? <BsEyeSlashFill /> : <BsEyeFill />}
+                                        </i>
+                                    </div>
+                                </>
+                            )}
+
+                            <button type="submit" className={fpStyles.fpButton}>
+                                {forgotStep === 1 ? "Tiếp tục" : "Đặt lại mật khẩu"}
+                            </button>
+
+                            <div className={fpStyles.fpBackLink}>
+                                <button
+                                    type="button"
+                                    className={fpStyles.fpBackButton}
+                                    onClick={() => {
+                                        setIsForgotActive(false);
+                                        setForgotStep(1);
+                                        setUsername("");
+                                        setNewPassword("");
+                                        setConfirmNewPassword("");
+                                    }}
+                                >
+                                    Quay lại đăng nhập
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {/* Toggle Box */}
+                <div className={styles['toggle-box']}>
+                    <div className={`${styles['toggle-panel']} ${styles['toggle-left']}`}>
+                        <h1>Xin chào!</h1>
+                        <p>Chưa có tài khoản?</p>
+                        <button
+                            className={`${styles.btn} ${styles['register-btn']}`}
+                            onClick={() => setIsActive(true)}
+                        >
+                            Đăng ký
+                        </button>
                     </div>
 
-                    <button type="submit" className={styles.btn} disabled={fetchLoading}>
-                        {fetchLoading ? "Đang xử lý..." : "Đăng ký"}
-                    </button>
-                </form>
-            </div>
-
-            {/* Toggle Box */}
-            <div className={styles['toggle-box']}>
-                <div className={`${styles['toggle-panel']} ${styles['toggle-left']}`}>
-                    <h1>Xin chào!</h1>
-                    <p>Chưa có tài khoản?</p>
-                    <button
-                        className={`${styles.btn} ${styles['register-btn']}`}
-                        onClick={() => setIsActive(true)}
-                    >
-                        Đăng ký
-                    </button>
-                </div>
-
-                <div className={`${styles['toggle-panel']} ${styles['toggle-right']}`}>
-                    <h1>Chào mừng trở lại!</h1>
-                    <p>Đã có tài khoản?</p>
-                    <button
-                        className={`${styles.btn} ${styles['login-btn']}`}
-                        onClick={() => setIsActive(false)}
-                    >
-                        Đăng nhập
-                    </button>
+                    <div className={`${styles['toggle-panel']} ${styles['toggle-right']}`}>
+                        <h1>Chào mừng trở lại!</h1>
+                        <p>Đã có tài khoản?</p>
+                        <button
+                            className={`${styles.btn} ${styles['login-btn']}`}
+                            onClick={() => setIsActive(false)}
+                        >
+                            Đăng nhập
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 export default LoginPage;

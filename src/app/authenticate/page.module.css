@@ -255,18 +255,18 @@
 
 /* Forgot Password Link */
 .forgot-link {
-    text-align: right;
-    margin: -15px 0 15px;
-}
-
-.forgot-link a {
+    background: none;
+    border: none;
     color: #55A6C3;
     font-size: 14px;
-    text-decoration: none;
-    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: right;
+    transition: color 0.2s ease;
+    padding: 0;
+    font-weight: 500;
 }
 
-.forgot-link a:hover {
+.forgot-link:hover {
     color: #4795b1;
     text-decoration: underline;
 }
@@ -382,19 +382,24 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 3px 0 10px;
-    font-size: 13px;
+    margin: 5px 0 15px;
+    width: 100%;
 }
 
 .remember-forgot label {
     display: flex;
     align-items: center;
     cursor: pointer;
+    font-size: 14px;
+    color: #555;
 }
 
 .remember-forgot input[type="checkbox"] {
-    margin-right: 5px;
+    margin-right: 6px;
     cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: #55A6C3;
 }
 
 /* Styles cho thông báo popup hiện đại */
@@ -523,4 +528,123 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+/* Styles cho phần Forgot Password */
+.forgotPasswordContainer {
+    position: absolute;
+    bottom: -100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: bottom 0.8s ease-in-out;
+    z-index: 3;
+}
+
+.container.forgotActive .forgotPasswordContainer {
+    bottom: 0;
+}
+
+.forgotForm {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.forgotForm h1 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #4A55A2;
+    text-align: center;
+}
+
+.forgotForm p {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #7895CB;
+}
+
+.captchaContainer {
+    margin: 15px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.backToLogin {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.backToLogin button {
+    background: none;
+    border: none;
+    color: #55A6C3;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.backToLogin button:hover {
+    text-decoration: underline;
+}
+
+/* Style cải thiện cho checkbox */
+.checkbox-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    outline: none;
+    margin-right: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.checkbox-wrapper input[type="checkbox"]:checked {
+    background-color: #55A6C3;
+    border-color: #55A6C3;
+}
+
+.checkbox-wrapper input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Trong module CSS */
+.fpCaptchaContainer {
+    margin: 15px 0 25px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    min-height: 78px;
+    /* Đảm bảo không gian cho reCAPTCHA */
+    position: relative;
+}
+
+/* Fallback CSS nếu cần thiết */
+.captchaFallback {
+    border: 1px dashed #ccc;
+    padding: 10px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    border-radius: 5px;
 }

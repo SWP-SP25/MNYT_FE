@@ -12,7 +12,7 @@ const Membership = () => {
     const { user } = useAuth();
     const { response: membershipData, loading, error } = useAxios<MembersipOnwers>(
         {
-            url: user?.user?.id ? `https://api-mnyt.purintech.id.vn/api/AccountMembership/GetActive/${user.user.id}` : '',
+            url: user?.id ? `https://api-mnyt.purintech.id.vn/api/AccountMembership/GetActive/${user.id}` : '',
             method: 'get'
         }
     );
@@ -24,7 +24,7 @@ const Membership = () => {
         });
 
     const handlePayment = async (planId: number) => {
-        if (!user?.user?.id) return;
+        if (!user?.id) return;
         
         try {
             const response = await fetch('https://api-mnyt.purintech.id.vn/api/CashPayment', {
@@ -33,7 +33,7 @@ const Membership = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    accountId: user.user.id,
+                    accountId: user.id,
                     membershipPlanId: planId
                 })
             });

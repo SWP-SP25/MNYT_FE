@@ -38,6 +38,7 @@ export const uploadImage = async (file: File): Promise<string> => {
             });
             throw new Error(data.error?.message || data.message || 'Error uploading image');
         }
+        console.log('Image uploaded successfully:', data.secure_url);
 
         const imageUrl = data.secure_url;
 

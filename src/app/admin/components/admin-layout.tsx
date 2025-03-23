@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Logo from '@/app/img/Logo.ico';
 import { BsBell } from 'react-icons/bs';
 import styles from './admin-layout.module.css';
+import UploadButton from '@/app/components/upload-button/upload';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     return (

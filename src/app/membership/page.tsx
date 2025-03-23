@@ -1,130 +1,125 @@
 'use client';
 import styles from './page.module.css';
-import { FaBabyCarriage, FaHeart, FaCrown } from 'react-icons/fa';
-import PlanCard from './components/PlanCard';
-import useAxios from '@/hooks/useFetchAxios';
-import { MembersipOnwers } from '@/types/membershipOwner';
-import { useAuth } from '@/hooks/useAuth';
-import { MembershipPlans } from '@/types/membershipPlan';
+import { FaBabyCarriage, FaHeart, FaCrown, FaCheck, FaTimes } from 'react-icons/fa';
 
 const Membership = () => {
-    // get membership của user đã login
-    const { user } = useAuth();
-    const { response: membershipData, loading, error } = useAxios<MembersipOnwers>(
-        {
-            url: user?.id ? `https://api-mnyt.purintech.id.vn/api/AccountMembership/GetActive/${user.id}` : '',
-            method: 'get'
-        }
-    );
-
-    const {response: membershipView, error: membershipError, loading: membershipLoading} = useAxios<MembershipPlans>(
-        {
-            url: 'https://api-mnyt.purintech.id.vn/api/MembershipPlan',
-            method: 'get'
-        });
-
-    const handlePayment = async (planId: number) => {
-        if (!user?.id) return;
-        
-        try {
-            const response = await fetch('https://api-mnyt.purintech.id.vn/api/CashPayment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    accountId: user.id,
-                    membershipPlanId: planId
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Payment failed');
-            }
-
-            // Handle successful payment
-            alert('Thanh toán thành công!');
-            // You might want to refresh the membership data here
-        } catch (error) {
-            console.error('Payment error:', error);
-            alert('Có lỗi xảy ra khi thanh toán. Vui lòng thử lại.');
-        }
-    };
-
-    if (membershipLoading) {
-        return <div className={styles.membershipContainer}>Loading...</div>;
-    }
-
-    if (membershipError) {
-        return <div className={styles.membershipContainer}>Error loading membership plans</div>;
-    }
-
-    const plans = membershipView?.data || [];
-    const currentMembership = membershipData?.data;
-    const currentPlanId = currentMembership?.membershipPlanId;
-
-    // Function to convert description into features array
-    const getFeaturesFromDescription = (description: string) => {
-        return description.split('.').map(feature => ({
-            isIncluded: true,
-            text: feature.trim()
-        })).filter(feature => feature.text.length > 0);
-    };
-
-    // Function to determine button text based on membership status
-    const getButtonText = (planId: number, index: number) => {
-        if (!currentMembership) {
-            return "Đăng ký ngay";
-        }
-
-        const isActive = currentMembership.status === "Active";
-        const isExpired = new Date(currentMembership.endDate) < new Date();
-        const isCurrentPlan = planId === currentPlanId;
-
-        if (isCurrentPlan) {
-            if (isExpired) {
-                return "Gia hạn ngay";
-            }
-            return "Gói hiện tại";
-        }
-
-        if (!isActive || isExpired) {
-            return "Đăng ký ngay";
-        }
-
-        // If user has an active plan but wants to upgrade
-        if (currentPlanId && planId > currentPlanId) {
-            return "Nâng cấp ngay";
-        }
-
-        // For lower level plans when user has a higher level
-        if (currentPlanId && planId < currentPlanId) {
-            return "Đã có";
-        }
-
-        return "Đăng ký ngay";
-    };
-
     return (
         <div className={styles.membershipContainer}>
             <h1 className={styles.title}>Chọn Gói Đồng Hành</h1>
-            <p className={`${styles.subtitle} fancy-font`}>
-                Hãy để chúng tôi đồng hành cùng bạn trong hành trình làm mẹ tuyệt vời
-            </p>
+            <p className={`${styles.subtitle} fancy-font`}>Hãy để chúng tôi đồng hành cùng bạn trong hành trình làm mẹ tuyệt vời</p>
 
             <div className={styles.membershipPlans}>
-                {plans.map((plan, index) => (
-                    <PlanCard
-                        key={plan.id}
-                        icon={index === 0 ? FaBabyCarriage : index === 1 ? FaHeart : FaCrown}
-                        title={plan.name}
-                        features={getFeaturesFromDescription(plan.description)}
-                        buttonText={getButtonText(plan.id, index)}
-                        isDefault={Boolean(plan.id === currentPlanId || (currentPlanId && plan.id < currentPlanId))}
-                        isBestValue={index === 2}
-                        onButtonClick={() => handlePayment(plan.id)}
-                    />
-                ))}
+                {/* Gói Cơ Bản */}
+                <div className={styles.plan}>
+                    <div className={styles.planTitle}>
+                        <FaBabyCarriage size={24} />
+                        <h2>Cơ Bản</h2>
+                    </div>
+                    <div className={styles.features}>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Theo dõi lịch thai kỳ cơ bản</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Nhắc nhở lịch khám định kỳ</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Tham gia cộng đồng mẹ bầu</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Tra cứu thông tin cơ bản</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaTimes color="#E53E3E" />
+                            <p>Tư vấn dinh dưỡng chi tiết</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaTimes color="#E53E3E" />
+                            <p>Gói tập luyện cho mẹ bầu</p>
+                        </div>
+                    </div>
+                    <button className={styles.defaultButton}>
+                        Gói Hiện Tại
+                    </button>
+                </div>
+
+                {/* Gói Tiện Ích */}
+                <div className={styles.plan}>
+                    <div className={styles.planTitle}>
+                        <FaHeart size={24} />
+                        <h2>Tiện Ích</h2>
+                    </div>
+                    <div className={styles.features}>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Tất cả quyền lợi gói Cơ Bản</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Lịch dinh dưỡng theo tuần</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Gói bài tập cho mẹ bầu</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Tư vấn trực tuyến</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Theo dõi cân nặng & dinh dưỡng</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Nhận thông báo quan trọng</p>
+                        </div>
+                    </div>
+                    <button className={styles.button}>
+                        Nâng cấp ngay
+                    </button>
+                </div>
+
+                {/* Gói Cao Cấp */}
+                <div className={styles.plan}>
+                    <div className={styles.bestValue}>Phổ biến nhất</div>
+                    <div className={styles.planTitle}>
+                        <FaCrown size={24} />
+                        <h2>Cao Cấp</h2>
+                    </div>
+                    <div className={styles.features}>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Tất cả quyền lợi gói Tiện Ích</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Tư vấn bác sĩ 24/7</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Gói khám thai định kỳ</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Hỗ trợ đặt lịch ưu tiên</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Quà tặng cho mẹ và bé</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <FaCheck color="#279357" />
+                            <p>Chế độ chăm sóc đặc biệt</p>
+                        </div>
+                    </div>
+                    <button className={styles.button}>
+                        Trải nghiệm ngay
+                    </button>
+                </div>
             </div>
         </div>
     );

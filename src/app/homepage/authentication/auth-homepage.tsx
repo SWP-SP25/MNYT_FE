@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import { useAuth } from "@/hooks/useAuth";
 import styles from "./auth-homepage.module.css";
 import AppSlider from "../../components/slider/app-slider";
@@ -12,13 +12,13 @@ import { Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText,
 import axios from 'axios';
 
 interface FormSubmitData {
-  birthType: BirthType;
-  lastMenstrualPeriod: string;
-  period: string;
-  bpd: string;
-  hc: string;
-  length: string;
-  efw: string;
+    birthType: BirthType;
+    lastMenstrualPeriod: string;
+    period: string;
+    bpd: string;
+    hc: string;
+    length: string;
+    efw: string;
 }
 
 const AuthenticatedHomePage = () => {
@@ -77,9 +77,9 @@ const AuthenticatedHomePage = () => {
         }
     };
 
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-  };
+    const handleCloseForm = () => {
+        setIsFormOpen(false);
+    };
 
     const handleCloseDialog = () => {
         setConfirmDialog({ ...confirmDialog, open: false });

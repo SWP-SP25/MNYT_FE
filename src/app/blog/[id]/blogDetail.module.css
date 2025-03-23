@@ -147,7 +147,6 @@
     padding: 2rem;
     background: #f8f9fa;
     border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .authorBioHeader {
@@ -479,20 +478,4 @@
     .commentItem {
         gap: 12px;
     }
-}
-
-.fileInput {
-    margin-top: 12px;
-    padding: 8px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    width: 100%;
-    cursor: pointer;
-}
-
-.introduction {
-    margin: 20px 0;
-    font-size: 18px;
-    line-height: 1.6;
-    color: #333;
 }

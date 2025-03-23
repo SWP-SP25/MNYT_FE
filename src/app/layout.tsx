@@ -25,7 +25,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const excludedPaths = ["/login", "/register", "/forgotpassword", "/admin"];
+  const excludedPaths = ["/login", 
+    "/register", 
+    "/forgotpassword", 
+    "/admin",
+    "/admin/blog",
+    "/admin/account",
+    "/admin/schedule-template",
+    "/admin/membership-plan",
+    "/admin/preganacy-standard",
+    "/admin/membership-sale"
+  ];
 
   return (
     <html lang="en">

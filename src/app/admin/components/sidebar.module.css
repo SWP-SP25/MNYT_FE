@@ -1,38 +1,157 @@
+/* Sidebar container */
 .sidebar {
     width: 250px;
-    background: white;
+    background: #ffffff;
     padding: 2rem 1rem;
-    border-right: 1px solid #eee;
-}
-
-.menuGroup {
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: width 0.3s ease;
+  }
+  
+  .collapsed {
+    width: 80px;
+  }
+  
+  /* Menu group styling */
+  .menuGroup {
     margin-bottom: 2rem;
-}
-
-.menuGroup h3 {
+  }
+  
+  .menuGroup h3 {
     font-size: 0.9rem;
     color: #666;
     margin-bottom: 1rem;
     padding-left: 1rem;
-}
-
-.menuItem {
+    font-weight: bold;
+  }
+  
+  /* MENU ITEM với hiệu ứng hover hiện đại */
+  .menuItem {
+    position: relative;           /* Cho ::before và tooltip định vị chính xác */
     display: flex;
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
-    color: #666;
-    text-decoration: none;
     border-radius: 6px;
-    transition: all 0.2s;
-}
-
-.menuItem:hover {
-    background: #f5f7fb;
-    color: #333;
-}
-
-.menuItem.active {
+    text-decoration: none;
+    overflow: hidden;             /* Ẩn phần ::before khi chưa mở rộng */
+    color: #2c9caf;
+    /* Bỏ phần outline */
+    transition: all 1000ms;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 12px;              /* Giảm cỡ chữ cho phù hợp với sidebar */
+  }
+  
+  .menuItem.active {
     background: #e3f2fd;
     color: #1976d2;
-}
+    /* Nếu cần active cũng bỏ outline */
+  }
+  
+  /* Hover: đổi màu, scale, đổ bóng (bỏ outline) */
+  .menuItem:hover {
+    color: #ffffff;
+    transform: scale(1.1);
+    box-shadow: 4px 5px 17px -4px #268391;
+  }
+  
+  /* Hiệu ứng background skew chạy ngang */
+  .menuItem::before {
+    content: "";
+    position: absolute;
+    left: -50px;
+    top: 0;
+    width: 0;
+    height: 100%;
+    background-color: #2c9caf;
+    transform: skewX(45deg);
+    z-index: -1;
+    transition: width 1000ms;
+  }
+  
+  .menuItem:hover::before {
+    width: 250%;
+  }
+  
+  /* Icon */
+  .icon {
+    font-size: 1.2rem;
+    transition: color 0.2s;
+  }
+  
+  .menuItem:hover .icon {
+    color: inherit;
+  }
+  
+  /* Text hiển thị khi sidebar mở */
+  .itemText {
+    display: inline-block;
+  }
+  
+  /* Tooltip hiển thị khi sidebar thu gọn */
+  .tooltip {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%) scale(0.8);
+    transform-origin: left center;
+    white-space: nowrap;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    color: #333;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  
+  .tooltip::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-right-color: #fff;
+  }
+  
+  /* Chỉ hiển thị tooltip khi sidebar thu gọn và hover vào menuItem */
+  .sidebar.collapsed .menuItem:hover .tooltip {
+    display: block;
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  
+  /* Ẩn text và tiêu đề group khi sidebar thu gọn */
+  .collapsed .menuItem {
+    justify-content: center;
+  }
+  
+  .collapsed .itemText {
+    display: none;
+  }
+  
+  .collapsed .menuGroup h3 {
+    display: none;
+  }
+  
+  /* Nút toggle */
+  .toggleButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #1976d2;
+    margin-bottom: 1rem;
+    transition: color 0.3s;
+  }
+  
+  .toggleButton:hover {
+    color: #1565c0;
+  }
+  

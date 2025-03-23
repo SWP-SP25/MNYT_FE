@@ -597,3 +597,24 @@
     align-items: center;
     gap: 0.25rem;
 }
+
+.deleteButton {
+    padding: 0.5rem 1rem; /* Padding cho nút */
+    background-color: #d32f2f; /* Màu nền đỏ */
+    color: white; /* Màu chữ trắng */
+    border: none; /* Bỏ đường viền */
+    border-radius: 4px; /* Bo tròn các góc */
+    cursor: pointer; /* Con trỏ khi hover */
+    font-size: 0.875rem; /* Kích thước chữ */
+    transition: background-color 0.3s, transform 0.2s; /* Hiệu ứng chuyển tiếp cho màu nền và scale */
+}
+
+.deleteButton:hover {
+    background-color: #c62828; /* Màu nền khi hover */
+    transform: scale(1.05); /* Tăng kích thước khi hover */
+}
+
+.deleteButton:focus {
+    outline: none; /* Bỏ outline mặc định */
+    box-shadow: 0 0 5px rgba(211, 47, 47, 0.5); /* Hiệu ứng shadow khi focus */
+}

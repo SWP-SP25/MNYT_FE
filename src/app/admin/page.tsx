@@ -234,12 +234,12 @@ const AdminDashboard = () => {
           throw new Error('Failed to fetch members');
         }
         const data = await response.json() as { data: Account[] };
-        
+
         const memberCount = data.data.filter(account => account.role.toLowerCase() === 'member').length;
         setTotalMembers(memberCount);
 
         const registrationsByPeriod = new Map<string, number>();
-        
+
         data.data.forEach(account => {
           if (account.createDate) {
             const periodKey = formatDateByPeriod(account.createDate, registrationPeriod);
@@ -258,7 +258,7 @@ const AdminDashboard = () => {
             }
             return new Date(Date.UTC(parseInt(str), 0, 1));
           };
-          
+
           return getDateParts(a).getTime() - getDateParts(b).getTime();
         });
 
@@ -288,12 +288,12 @@ const AdminDashboard = () => {
           throw new Error('Failed to fetch sales data');
         }
         const data = await response.json() as { data: MembershipSale[] };
-        
+
         const totalAmount = data.data.reduce((sum, sale) => sum + sale.amount, 0);
         setTotalSales(totalAmount);
 
         const salesByPeriod = new Map<string, number>();
-        
+
         data.data.forEach(sale => {
           if (sale.startDate) {
             const periodKey = formatDateByPeriod(sale.startDate, salesPeriod);
@@ -312,7 +312,7 @@ const AdminDashboard = () => {
             }
             return new Date(Date.UTC(parseInt(str), 0, 1));
           };
-          
+
           return getDateParts(a).getTime() - getDateParts(b).getTime();
         });
 
@@ -343,15 +343,15 @@ const AdminDashboard = () => {
           throw new Error('Failed to fetch blog stats');
         }
         const data = await response.json() as { data: BlogPost[] };
-        
+
         const likes = data.data.reduce((sum, blog) => sum + blog.likeCount, 0);
         const comments = data.data.reduce((sum, blog) => sum + blog.commentCount, 0);
-        
+
         setTotalLikes(likes);
         setTotalComments(comments);
 
         const blogsByPeriod = new Map<string, number>();
-        
+
         data.data.forEach(blog => {
           if (blog.createDate) {
             const periodKey = formatDateByPeriod(blog.createDate, blogPeriod);
@@ -370,7 +370,7 @@ const AdminDashboard = () => {
             }
             return new Date(Date.UTC(parseInt(str), 0, 1));
           };
-          
+
           return getDateParts(a).getTime() - getDateParts(b).getTime();
         });
 
@@ -421,7 +421,7 @@ const AdminDashboard = () => {
           if (membership.accountId && membership.membershipPlanId) {
             const endDate = new Date(membership.endDate);
             const currentDate = new Date();
-            
+
             // Convert dates to UTC for comparison
             const utcEndDate = new Date(Date.UTC(
               endDate.getUTCFullYear(),
@@ -433,7 +433,7 @@ const AdminDashboard = () => {
               currentDate.getUTCMonth(),
               currentDate.getUTCDate()
             ));
-            
+
             // Check if membership is active and not expired
             if (membership.status === 'Active' && utcEndDate > utcCurrentDate) {
               accountMembershipMap.set(membership.accountId, membership.membershipPlanId);
@@ -631,7 +631,7 @@ const AdminDashboard = () => {
               />
             </div>
             <div className={styles.chart}>
-              <Line 
+              <Line
                 options={{
                   ...options,
                   plugins: {
@@ -641,8 +641,8 @@ const AdminDashboard = () => {
                       text: `User Registrations by ${registrationPeriod}`
                     }
                   }
-                }} 
-                data={registrationChartData} 
+                }}
+                data={registrationChartData}
               />
             </div>
           </CardBody>
@@ -653,7 +653,7 @@ const AdminDashboard = () => {
           <CardBody>
             <h3>Membership Distribution</h3>
             <div className={styles.chart}>
-              <Doughnut 
+              <Doughnut
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
@@ -667,7 +667,7 @@ const AdminDashboard = () => {
                     },
                     tooltip: {
                       callbacks: {
-                        label: function(context: any) {
+                        label: function (context: any) {
                           const label = context.label || '';
                           const value = context.raw || 0;
                           const total = (context.dataset.data as number[]).reduce((a: number, b: number) => a + b, 0);
@@ -677,8 +677,8 @@ const AdminDashboard = () => {
                       }
                     }
                   },
-                }} 
-                data={membershipTypeDistribution} 
+                }}
+                data={membershipTypeDistribution}
               />
             </div>
           </CardBody>

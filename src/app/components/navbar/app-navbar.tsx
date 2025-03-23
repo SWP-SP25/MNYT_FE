@@ -130,13 +130,13 @@ const AppNavBar = () => {
                 </div>
               ) : (
                 <div className="auth-buttons">
-                  <Link href="/login" passHref legacyBehavior>
+                  <Link href="/authenticate" passHref legacyBehavior>
                     <Nav.Link className="auth-link">
                       Đăng Nhập
                     </Nav.Link>
                   </Link>
                   <span className="divider">|</span>
-                  <Link href="/login?mode=register" passHref legacyBehavior>
+                  <Link href="/authenticate?mode=register" passHref legacyBehavior>
                     <Nav.Link className="auth-link">
                       Đăng Ký
                     </Nav.Link>

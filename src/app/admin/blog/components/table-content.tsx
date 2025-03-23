@@ -25,7 +25,7 @@ export const TableContent = () => {
     const { user } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchText, setSearchText] = useState('');
-    const [activeTab, setActiveTab] = useState('user');
+    const [activeTab, setActiveTab] = useState('blogs');
     const [formData, setFormData] = useState<FormData>({
         category: '',
         title: '',
@@ -51,19 +51,21 @@ export const TableContent = () => {
         {
             url: 'https://api-mnyt.purintech.id.vn/api/Posts/blogs',
             method: 'get'
-        });
+        }
+    );
 
-    const { response: userBlogView, error: userBlogError, loading: userBlogLoading } = useAxios<BlogManage>(
+    const { response: forumView, error: forumError, loading: forumLoading } = useAxios<BlogManage>(
         {
             url: 'https://api-mnyt.purintech.id.vn/api/Posts/forums',
             method: 'get'
-        });
+        }
+    );
 
-    if (blogError || userBlogError) {
-        return <div>Error loading blog data</div>;
+    if (blogError || forumError) {
+        return <div>Error loading data</div>;
     }
 
-    if (blogLoading || userBlogLoading) {
+    if (blogLoading || forumLoading) {
         return <div>Loading...</div>;
     }
 
@@ -221,16 +223,20 @@ export const TableContent = () => {
     };
 
     const getFilteredData = () => {
-        const data = activeTab === 'admin' ? blogView?.data : userBlogView?.data;
+        const data = activeTab === 'forums' ? forumView?.data : blogView?.data;
 
         if (!searchText) {
-            return activeTab === 'admin' ? data : data?.filter(blog => blog.status !== 'Draft');
+            return activeTab === 'forums' 
+                ? data?.filter((blog: Blog) => blog.status !== 'Draft')
+                : data?.filter((blog: Blog) => blog.status !== 'Draft');
         }
 
         const searchLower = searchText.toLowerCase();
-        const filteredData = activeTab === 'admin' ? data : data?.filter(blog => blog.status !== 'Draft');
+        const filteredData = activeTab === 'forums' 
+            ? data?.filter((blog: Blog) => blog.status !== 'Draft')
+            : data?.filter((blog: Blog) => blog.status !== 'Draft');
 
-        return filteredData?.filter(blog =>
+        return filteredData?.filter((blog: Blog) =>
             (blog.title?.toLowerCase() || '').includes(searchLower) ||
             (blog.authorName?.toLowerCase() || '').includes(searchLower) ||
             (blog.category?.toLowerCase() || '').includes(searchLower) ||
@@ -294,8 +300,8 @@ export const TableContent = () => {
             dataIndex: 'category',
             key: 'category',
             filters: blogView?.data
-                ? [...new Set(blogView.data.map(blog => blog.category))]
-                    .map(category => ({ text: category, value: category }))
+                ? [...new Set(blogView.data.map((blog: Blog) => blog.category))]
+                    .map(category => ({ text: category as string, value: category as string }))
                 : [],
             onFilter: (value, record) => record.category === value
         },
@@ -326,11 +332,6 @@ export const TableContent = () => {
                         label: 'Change Status',
                         children: [
                             {
-                                key: 'Draft',
-                                label: 'Set as Draft',
-                                onClick: () => handleStatusChange(record.id, 'Draft')
-                            },
-                            {
                                 key: 'Removed',
                                 label: 'Set as Removed',
                                 onClick: () => handleStatusChange(record.id, 'Removed')
@@ -359,24 +360,24 @@ export const TableContent = () => {
                 onChange={setActiveTab}
                 items={[
                     {
-                        key: 'user',
-                        label: 'User Blogs',
+                        key: 'blogs',
+                        label: 'Blogs',
                     },
                     {
-                        key: 'admin',
-                        label: 'Admin Blogs',
+                        key: 'forums',
+                        label: 'Forums',
                     },
                 ]}
             />
             <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Input
-                    placeholder="Search blogs..."
+                    placeholder="Search..."
                     prefix={<SearchOutlined />}
                     onChange={(e) => handleSearch(e.target.value)}
                     style={{ width: 300 }}
                     allowClear
                 />
-                {activeTab === 'admin' && (
+                {activeTab === 'blogs' && (
                     <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
                         Add Blog
                     </Button>

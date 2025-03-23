@@ -12,7 +12,7 @@ export const useAuthGuard = (requiredRole?: string) => {
         const userRole = Cookies.get('userRole');
 
         if (!token) {
-            router.push('/login');
+            router.push('/authenticate');
             return;
         }
 

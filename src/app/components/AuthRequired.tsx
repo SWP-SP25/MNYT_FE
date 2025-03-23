@@ -19,7 +19,7 @@ export const AuthRequired: React.FC<AuthRequiredProps> = ({
     const handleClick = (e: React.MouseEvent) => {
         if (!loading && !user) {
             e.preventDefault();
-            router.push('/login');
+            router.push('/authenticate');
             return;
         }
         onClick?.();

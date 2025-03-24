@@ -8,6 +8,11 @@ import { vi } from "date-fns/locale";
 import axios from "axios";
 import Pagination from "./Pagination";
 import { useRouter, usePathname } from "next/navigation";
+import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import DeletePostModal from "../CRUD/DeleteForumPost";
+import { useAuth } from "@/hooks/useAuth";
+import CreateForumPost from "../CRUD/CreateForumPost";
+import deleteStyles from "../CRUD/styles/deleteForumPost.module.css";
 
 // Thêm interface cho dữ liệu tài khoản
 interface Account {
@@ -68,6 +73,23 @@ const PostList = ({
 
   // Reference to track if we're already checking for updates
   const isCheckingRef = useRef(false);
+
+  // Thêm state cho modal chỉnh sửa và xóa
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Thêm state để lưu trữ bài viết đang được chỉnh sửa
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+
+  // Lấy thông tin người dùng hiện tại
+  const { user } = useAuth();
+
+  // Thêm state để theo dõi trạng thái chỉnh sửa và bài viết đang chỉnh sửa
+  const [isEditing, setIsEditing] = useState(false);
+  const [editPost, setEditPost] = useState<Post | null>(null);
 
   // Cập nhật localPosts khi posts prop thay đổi
   useEffect(() => {
@@ -276,6 +298,54 @@ const PostList = ({
     return post.likes || 0;
   };
 
+  // Hàm xử lý khi người dùng nhấn nút Chỉnh sửa
+  const handleEditPost = (postId: number, post: any) => {
+    setEditPost(post);
+    setIsEditing(true);
+  };
+
+  // Hàm xử lý khi chỉnh sửa hoàn tất
+  const handleEditComplete = () => {
+    setIsEditing(false);
+    setEditPost(null);
+    onRefresh();
+  };
+
+  // Hàm xử lý khi hủy chỉnh sửa
+  const handleEditCancel = () => {
+    setIsEditing(false);
+    setEditPost(null);
+  };
+
+  // Hàm xử lý khi nhấn nút xóa
+  const handleDeleteClick = (post: Post) => {
+    setSelectedPost(post);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Hàm xử lý xác nhận xóa bài viết
+  const handleDeleteConfirm = async () => {
+    if (!selectedPost) return;
+
+    try {
+      setIsDeleting(true);
+      await axios.delete(
+        `https://api-mnyt.purintech.id.vn/api/Posts/${selectedPost.id}?accountId=${user?.id}`
+      );
+      setIsDeleteModalOpen(false);
+      // Cập nhật danh sách bài viết
+      onRefresh();
+      // Thông báo xóa thành công
+      alert("Bài viết đã được xóa thành công");
+    } catch (error) {
+      console.error("Lỗi khi xóa bài viết:", error);
+      alert("Có lỗi xảy ra khi xóa bài viết. Vui lòng thử lại sau.");
+    } finally {
+      setIsDeleting(false);
+      setSelectedPost(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingState}>
@@ -392,6 +462,26 @@ const PostList = ({
                     {actualLikes} lượt thích
                   </div>
                 </div>
+
+                {/* Thêm các nút chỉnh sửa và xóa */}
+                {post.authorId === user?.id && (
+                  <div className={styles.postActions}>
+                    <button
+                      onClick={() => handleEditPost(post.id, post)}
+                      className={styles.editButton}
+                    >
+                      Chỉnh sửa
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(post)}
+                      className={styles.deleteButton}
+                      aria-label="Xóa bài viết"
+                    >
+                      <FaTrashAlt /> Xóa
+                    </button>
+                  </div>
+                )}
+
                 <Link
                   href={`/forum/${post.id}`}
                   className={styles.readMoreLink}
@@ -415,6 +505,56 @@ const PostList = ({
           currentPage={currentPage}
           totalPages={Math.ceil(filteredPosts.length / 10)}
           onPageChange={onPageChange}
+        />
+      )}
+
+      {/* Edit Post Modal */}
+      {isEditing && editPost && (
+        <div
+          className={deleteStyles.modalOverlay}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleEditCancel();
+            }
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "90%",
+              maxWidth: "700px",
+              background: "white",
+              borderRadius: "10px",
+              maxHeight: "90vh",
+              overflow: "auto",
+            }}
+          >
+            <CreateForumPost
+              onPostCreated={handleEditComplete}
+              editPost={{
+                id: editPost.id,
+                title: editPost.title,
+                content: editPost.description,
+                image: editPost.image || "",
+                category: editPost.category || "all",
+                isAnonymous: editPost.isAnonymous || false,
+              }}
+              onCancel={handleEditCancel}
+              currentUser={user}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Modal xác nhận xóa bài viết */}
+      {isDeleteModalOpen && selectedPost && (
+        <DeletePostModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          postTitle={selectedPost.title}
+          postId={selectedPost.id}
+          currentUserId={user.id}
         />
       )}
     </div>

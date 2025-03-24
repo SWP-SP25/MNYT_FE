@@ -18,6 +18,8 @@ import {
   FaBookmark,
   FaClock,
 } from "react-icons/fa";
+import { useAuth } from "@/hooks/useAuth";
+import EditForumPost from "../CRUD/EditForumPost";
 
 interface ForumPost {
   id: number;
@@ -49,6 +51,8 @@ const ForumDetailPage = () => {
   const [liked, setLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const { user } = useAuth();
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   // Load like/save status from localStorage
   useEffect(() => {
@@ -60,279 +64,102 @@ const ForumDetailPage = () => {
   }, [postId]);
 
   // Fetch post data
-  useEffect(() => {
-    const fetchPostData = async () => {
-      if (!postId) return;
+  const fetchPostData = async () => {
+    if (!postId) return;
 
-      setLoading(true);
-      try {
-        // Using the correct API endpoint for blog posts
-        const url = `https://api-mnyt.purintech.id.vn/api/Posts/${postId}`;
-        console.log("Fetching post details from URL:", url);
-
-        const response = await axios.get(url);
-        console.log("API response:", response.data);
-
-        if (response.data) {
-          // Handle API response and set post data
-          const postData = response.data.data || response.data;
-          setPost(postData);
-
-          // Add sample pregnant mother content if needed
-          if (!postData.content || postData.content.trim() === "") {
-            addMotherStoryContent(postData);
-          }
-
-          // Fetch comments for this post
-          fetchComments();
-        } else {
-          throw new Error("Invalid response structure");
-        }
-      } catch (error: any) {
-        console.error("Error fetching post details:", error);
-        // If API fails, use fallback content
-        provideFallbackContent();
-        setError(null); // Clear error since we're providing fallback content
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPostData();
-  }, [postId]);
-
-  // Separate function to fetch comments
-  const fetchComments = async () => {
+    setLoading(true);
     try {
-      // FIXED: Using the correct endpoint and HTTP method for comments
-      // Changed from GET to POST and updated URL format
-      const requestData = {
-        blogPostId: Number(postId),
-        page: 1,
-        pageSize: 20,
-      };
+      const url = `https://api-mnyt.purintech.id.vn/api/Posts/${postId}`;
+      console.log("Fetching post details from URL:", url);
 
-      console.log("Fetching comments with data:", requestData);
+      const response = await axios.get(url);
+      console.log("API response:", response);
+      console.log("Post data:", response.data);
 
-      // Try first approach - POST request with data in body
-      try {
-        const commentsResponse = await axios.post(
-          `https://api-mnyt.purintech.id.vn/api/Comments/by-post`,
-          requestData
-        );
+      if (response.data) {
+        let postData;
 
-        if (commentsResponse.data && Array.isArray(commentsResponse.data)) {
-          setComments(commentsResponse.data);
-          return;
+        if (response.data.data) {
+          postData = response.data.data;
+        } else {
+          postData = response.data;
         }
-      } catch (err) {
-        console.log(
-          "First comment fetch approach failed, trying alternative..."
-        );
+
+        const formattedPostData = {
+          ...postData,
+          title: postData.title || "Bài viết không có tiêu đề",
+          content: postData.content || "",
+          image:
+            postData.image || postData.imageUrl || postData.coverImage || "",
+          likeCount: postData.likeCount || 0,
+          commentCount: postData.commentCount || 0,
+        };
+
+        console.log("Formatted post data:", formattedPostData);
+        setPost(formattedPostData);
+        fetchComments();
+      } else {
+        throw new Error("Invalid response structure");
       }
-
-      // Try second approach - different endpoint format
-      try {
-        const commentsUrl = `https://api-mnyt.purintech.id.vn/api/Comments/post/${postId}`;
-        const commentsResponse = await axios.get(commentsUrl);
-
-        if (commentsResponse.data) {
-          setComments(
-            Array.isArray(commentsResponse.data) ? commentsResponse.data : []
-          );
-          return;
-        }
-      } catch (err) {
-        console.log(
-          "Second comment fetch approach failed, trying alternative..."
-        );
-      }
-
-      // Try third approach - query parameters
-      try {
-        const commentsUrl = `https://api-mnyt.purintech.id.vn/api/Comments?blogPostId=${postId}`;
-        const commentsResponse = await axios.get(commentsUrl);
-
-        if (commentsResponse.data) {
-          setComments(
-            Array.isArray(commentsResponse.data) ? commentsResponse.data : []
-          );
-          return;
-        }
-      } catch (err) {
-        console.log(
-          "All comment fetch approaches failed, using fallback comments"
-        );
-        // If all approaches fail, use fallback comments
-        provideFallbackComments();
-      }
-    } catch (commentError) {
-      console.error("Error fetching comments:", commentError);
-      provideFallbackComments();
+    } catch (error: any) {
+      console.error("Error fetching post details:", error);
+      setError(`Không thể tải bài viết. Lỗi: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Provide fallback comments
-  const provideFallbackComments = () => {
-    const fallbackComments: CommentListItem[] = [
-      {
-        id: 1,
-        accountId: 2,
-        accountUserName: "TranThiB",
-        blogPostId: Number(postId),
-        replyId: null,
-        content:
-          "Cảm ơn bạn đã chia sẻ! Tôi cũng đang mang bầu tháng thứ 2 và trải qua nhiều điều tương tự.",
-        createDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      },
-      {
-        id: 2,
-        accountId: 3,
-        accountUserName: "LeThiC",
-        blogPostId: Number(postId),
-        replyId: null,
-        content:
-          "Ốm nghén là điều khó khăn nhất với tôi, bạn đã vượt qua được thật tuyệt vời!",
-        createDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      },
-      {
-        id: 3,
-        accountId: 4,
-        accountUserName: "PhamThiD",
-        blogPostId: Number(postId),
-        replyId: null,
-        content:
-          "Bạn có thể chia sẻ thêm về chế độ ăn uống trong 3 tháng đầu không?",
-        createDate: new Date(Date.now() - 12 * 60 * 60 * 1000),
-      },
-    ];
+  useEffect(() => {
+    fetchPostData();
+  }, [postId]);
 
-    setComments(fallbackComments);
+  // Function to handle post update
+  const handlePostUpdated = () => {
+    fetchPostData(); // Re-fetch the post data
   };
 
-  // Add pregnant mother story content to the post
-  const addMotherStoryContent = (postData: ForumPost) => {
-    const motherStoryContent = `
-      <h2>Hành trình mang thai của tôi - 3 tháng đầu</h2>
-      <p>
-        Xin chào các mẹ và các mẹ tương lai! Hôm nay, tôi muốn chia sẻ về hành trình mang thai của mình trong 3 tháng đầu tiên. Đây là những trải nghiệm thật nhất, với hy vọng có thể giúp các mẹ khác chuẩn bị tinh thần tốt hơn.
-      </p>
-      
-      <h3>Khi biết tin mang thai</h3>
-      <p>
-        Ngày biết tin mình mang thai, cảm xúc của tôi thực sự khó tả - hạnh phúc, lo lắng, hồi hộp, tất cả trộn lẫn vào nhau. Tôi và chồng đã chờ đợi khoảnh khắc này, nhưng khi nó thực sự xảy ra, tôi vẫn cảm thấy không thực chút nào.
-      </p>
-      
-      <h3>Những thay đổi đầu tiên</h3>
-      <p>
-        Tuần đầu tiên, tôi chưa cảm thấy gì nhiều ngoài việc hơi mệt mỏi. Nhưng đến tuần thứ 6, ốm nghén bắt đầu ghé thăm. Tôi bị ốm nghén khá nặng, buồn nôn gần như cả ngày, đặc biệt là vào buổi sáng và tối. Mùi thức ăn, nước hoa, thậm chí cả mùi sữa tắm quen thuộc cũng khiến tôi khó chịu.
-      </p>
-      
-      <h3>Đồ ăn và cơn thèm</h3>
-      <p>
-        Có những món tôi từng rất thích nhưng giờ không thể ăn được, như cà phê và đồ chiên. Ngược lại, tôi lại bắt đầu thèm những món chưa từng thích trước đây, đặc biệt là chua chua như chanh muối, me chua, và đồ chua. Chồng tôi phải chạy khắp nơi để tìm đồ ăn cho tôi, dù đôi khi là giữa đêm!
-      </p>
-      
-      <h3>Khám thai lần đầu</h3>
-      <p>
-        Khoảnh khắc xúc động nhất có lẽ là khi đi khám thai lần đầu và nhìn thấy hình ảnh siêu âm của bé. Chỉ là một chấm nhỏ trên màn hình, nhưng đó là con của chúng tôi! Nghe tiếng tim bé đập là trải nghiệm kỳ diệu nhất mà tôi từng có.
-      </p>
-      
-      <h3>Những khó khăn gặp phải</h3>
-      <p>
-        Ba tháng đầu không hề dễ dàng. Ngoài ốm nghén, tôi còn gặp vấn đề về giấc ngủ, thường xuyên mệt mỏi và đôi khi cảm thấy lo lắng vô cớ. Việc phải giấu chuyện mang thai ở công ty (vì chưa muốn thông báo quá sớm) cũng khiến tôi áp lực, nhất là khi phải chạy vào nhà vệ sinh liên tục vì buồn nôn.
-      </p>
-      
-      <h3>Những thay đổi về tâm lý</h3>
-      <p>
-        Hormone thay đổi khiến cảm xúc của tôi thất thường. Có lúc vui vẻ, có lúc lại khóc vì những chuyện nhỏ nhặt. Đôi khi, tôi lo lắng không biết mình có làm tốt vai trò làm mẹ không, liệu mình có thể bảo vệ và nuôi dạy con tốt không.
-      </p>
-      
-      <h3>Chia sẻ với các mẹ</h3>
-      <p>
-        Nếu bạn đang trong giai đoạn đầu mang thai và gặp nhiều khó khăn, hãy nhớ rằng bạn không đơn độc. Hầu hết các mẹ đều trải qua những thử thách tương tự. Hãy chia sẻ cảm xúc với người thân, đặc biệt là chồng. Đừng cố gắng làm mọi thứ một mình.
-      </p>
-      
-      <h3>Kết luận</h3>
-      <p>
-        Ba tháng đầu tiên của thai kỳ có thể khó khăn, nhưng nhìn lại, tôi thấy đó là khoảng thời gian quý giá và đáng nhớ. Mỗi cơn buồn nôn, mỗi đêm mất ngủ đều là một phần của hành trình tuyệt vời này. Tôi sẽ tiếp tục chia sẻ về ba tháng giữa trong bài viết tới. Các mẹ có trải nghiệm gì đặc biệt trong ba tháng đầu không? Hãy chia sẻ ở phần bình luận nhé!
-      </p>
-    `;
+  // Fetch comments for this post
+  const fetchComments = async () => {
+    try {
+      console.log("Fetching comments for post ID:", postId);
 
-    setPost({
-      ...postData,
-      content: motherStoryContent,
-      title: postData.title || "Hành trình mang thai của tôi - 3 tháng đầu",
-      category: postData.category || "Tâm sự mẹ bầu",
-    });
+      const commentsUrl = `https://api-mnyt.purintech.id.vn/api/Comments/post/${postId}`;
+      const commentsResponse = await axios.get(commentsUrl);
+
+      console.log("Comments response:", commentsResponse);
+
+      let commentsData = [];
+
+      commentsData = commentsResponse.data.data.items;
+
+      commentsData = commentsData.map((comment) => ({
+        ...comment,
+        content: comment.content || "",
+      }));
+
+      console.log("Processed comments data:", commentsData);
+
+      if (commentsData.length > 0) {
+        setComments(commentsData);
+        // Lưu trữ bình luận vào localStorage
+        localStorage.setItem(
+          `forum-comments-${postId}`,
+          JSON.stringify(commentsData)
+        );
+      } else {
+        console.log("No comments found for this post");
+        setComments([]);
+      }
+    } catch (commentError) {
+      console.error("Error fetching comments:", commentError);
+      setComments([]);
+    }
   };
 
-  // Provide fallback content if API fails
-  const provideFallbackContent = () => {
-    const fallbackPost: ForumPost = {
-      id: Number(postId) || 1,
-      title: "Hành trình mang thai của tôi - 3 tháng đầu",
-      content: `
-        <h2>Hành trình mang thai của tôi - 3 tháng đầu</h2>
-        <p>
-          Xin chào các mẹ và các mẹ tương lai! Hôm nay, tôi muốn chia sẻ về hành trình mang thai của mình trong 3 tháng đầu tiên. Đây là những trải nghiệm thật nhất, với hy vọng có thể giúp các mẹ khác chuẩn bị tinh thần tốt hơn.
-        </p>
-        
-        <h3>Khi biết tin mang thai</h3>
-        <p>
-          Ngày biết tin mình mang thai, cảm xúc của tôi thực sự khó tả - hạnh phúc, lo lắng, hồi hộp, tất cả trộn lẫn vào nhau. Tôi và chồng đã chờ đợi khoảnh khắc này, nhưng khi nó thực sự xảy ra, tôi vẫn cảm thấy không thực chút nào.
-        </p>
-        
-        <h3>Những thay đổi đầu tiên</h3>
-        <p>
-          Tuần đầu tiên, tôi chưa cảm thấy gì nhiều ngoài việc hơi mệt mỏi. Nhưng đến tuần thứ 6, ốm nghén bắt đầu ghé thăm. Tôi bị ốm nghén khá nặng, buồn nôn gần như cả ngày, đặc biệt là vào buổi sáng và tối. Mùi thức ăn, nước hoa, thậm chí cả mùi sữa tắm quen thuộc cũng khiến tôi khó chịu.
-        </p>
-        
-        <h3>Đồ ăn và cơn thèm</h3>
-        <p>
-          Có những món tôi từng rất thích nhưng giờ không thể ăn được, như cà phê và đồ chiên. Ngược lại, tôi lại bắt đầu thèm những món chưa từng thích trước đây, đặc biệt là chua chua như chanh muối, me chua, và đồ chua. Chồng tôi phải chạy khắp nơi để tìm đồ ăn cho tôi, dù đôi khi là giữa đêm!
-        </p>
-        
-        <h3>Khám thai lần đầu</h3>
-        <p>
-          Khoảnh khắc xúc động nhất có lẽ là khi đi khám thai lần đầu và nhìn thấy hình ảnh siêu âm của bé. Chỉ là một chấm nhỏ trên màn hình, nhưng đó là con của chúng tôi! Nghe tiếng tim bé đập là trải nghiệm kỳ diệu nhất mà tôi từng có.
-        </p>
-        
-        <h3>Những khó khăn gặp phải</h3>
-        <p>
-          Ba tháng đầu không hề dễ dàng. Ngoài ốm nghén, tôi còn gặp vấn đề về giấc ngủ, thường xuyên mệt mỏi và đôi khi cảm thấy lo lắng vô cớ. Việc phải giấu chuyện mang thai ở công ty (vì chưa muốn thông báo quá sớm) cũng khiến tôi áp lực, nhất là khi phải chạy vào nhà vệ sinh liên tục vì buồn nôn.
-        </p>
-        
-        <h3>Những thay đổi về tâm lý</h3>
-        <p>
-          Hormone thay đổi khiến cảm xúc của tôi thất thường. Có lúc vui vẻ, có lúc lại khóc vì những chuyện nhỏ nhặt. Đôi khi, tôi lo lắng không biết mình có làm tốt vai trò làm mẹ không, liệu mình có thể bảo vệ và nuôi dạy con tốt không.
-        </p>
-        
-        <h3>Chia sẻ với các mẹ</h3>
-        <p>
-          Nếu bạn đang trong giai đoạn đầu mang thai và gặp nhiều khó khăn, hãy nhớ rằng bạn không đơn độc. Hầu hết các mẹ đều trải qua những thử thách tương tự. Hãy chia sẻ cảm xúc với người thân, đặc biệt là chồng. Đừng cố gắng làm mọi thứ một mình.
-        </p>
-        
-        <h3>Kết luận</h3>
-        <p>
-          Ba tháng đầu tiên của thai kỳ có thể khó khăn, nhưng nhìn lại, tôi thấy đó là khoảng thời gian quý giá và đáng nhớ. Mỗi cơn buồn nôn, mỗi đêm mất ngủ đều là một phần của hành trình tuyệt vời này. Tôi sẽ tiếp tục chia sẻ về ba tháng giữa trong bài viết tới. Các mẹ có trải nghiệm gì đặc biệt trong ba tháng đầu không? Hãy chia sẻ ở phần bình luận nhé!
-        </p>
-      `,
-      category: "Tâm sự mẹ bầu",
-      createDate: new Date().toISOString(),
-      accountId: 1,
-      accountName: "NguyenThiA",
-      authorId: 1,
-      authorName: "NguyenThiA",
-      isAnonymous: false,
-      likeCount: 15,
-      commentCount: 3,
-      coverImage: "/images/pregnancy.jpg",
-    };
-
-    setPost(fallbackPost);
-    provideFallbackComments();
-  };
+  // Load comments from localStorage on initial render
+  useEffect(() => {
+    fetchComments();
+  }, [postId]);
 
   // Handle like post
   const handleLike = async () => {
@@ -409,63 +236,80 @@ const ForumDetailPage = () => {
     }
   };
 
-  // Handle submit comment
+  // Handle submit comment - Sửa lại để sử dụng API endpoint đúng
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || !post) return;
 
+    const userId = user?.id || 1;
+
     const newCommentItem: CommentListItem = {
-      id: Date.now(), // Temporary ID
-      accountId: 1, // Replace with actual user ID
-      accountUserName: "CurrentUser", // Replace with actual username
+      id: Date.now(),
+      accountId: userId,
+      accountUserName: user?.name || "Người dùng",
       blogPostId: Number(postId),
       replyId: null,
       content: newComment,
       createDate: new Date(),
     };
 
-    // Add comment to UI immediately
-    setComments([newCommentItem, ...comments]);
-    setNewComment("");
-
-    // Optional: Send comment to API
     try {
-      // FIXED: Using the correct endpoint and params for creating comments
       const response = await axios.post(
-        "https://api-mnyt.purintech.id.vn/api/Comments",
+        `https://api-mnyt.purintech.id.vn/api/Comments?accountId=${userId}`,
         {
-          accountId: 1, // Replace with actual user ID
           blogPostId: Number(postId),
           content: newComment,
-          replyId: null,
         }
       );
 
-      // Update comment with server-generated ID if needed
-      if (response.data && response.data.id) {
-        setComments((prevComments) =>
-          prevComments.map((comment) =>
-            comment.id === newCommentItem.id
-              ? { ...comment, id: response.data.id }
-              : comment
-          )
+      // Thêm bình luận mới vào danh sách hiện tại
+      setComments((prevComments) => {
+        const updatedComments = [...prevComments, newCommentItem];
+        localStorage.setItem(
+          `forum-comments-${postId}`,
+          JSON.stringify(updatedComments)
         );
-      }
-    } catch (error) {
+        return updatedComments;
+      });
+
+      setNewComment("");
+    } catch (error: any) {
       console.error("Error posting comment:", error);
-      // Handle error (e.g., show error message, remove temporary comment)
+      alert(
+        `Không thể đăng bình luận: ${
+          error.response?.data?.message || error.message || "Lỗi không xác định"
+        }`
+      );
     }
   };
 
   // Format date with Vietnam timezone (UTC+7)
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    // Add 7 hours for Vietnam timezone
-    const vietnamTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
-    return formatDistanceToNow(vietnamTime, {
-      locale: vi,
-      addSuffix: true,
-    });
+  const formatDate = (dateString: string | Date) => {
+    try {
+      // Chuyển đổi thành đối tượng Date nếu là chuỗi
+      const date =
+        typeof dateString === "string" ? new Date(dateString) : dateString;
+
+      // Kiểm tra nếu là ngày không hợp lệ
+      if (isNaN(date.getTime())) {
+        return "Vừa xong";
+      }
+
+      // Lấy thời gian hiện tại
+      const now = new Date();
+
+      // Nếu thời gian trong tương lai (lỗi), sử dụng thời gian hiện tại
+      const compareDate = date > now ? new Date(now.getTime() - 60000) : date; // Giảm 1 phút để hiển thị "1 phút trước"
+
+      // Dùng formatDistanceToNow với cờ addSuffix để thêm "cách đây" và "nữa"
+      return formatDistanceToNow(compareDate, {
+        locale: vi,
+        addSuffix: true,
+      });
+    } catch (error) {
+      console.error("Lỗi định dạng thời gian:", error);
+      return "Vừa xong";
+    }
   };
 
   if (loading) {
@@ -492,6 +336,25 @@ const ForumDetailPage = () => {
         ← Quay lại diễn đàn
       </Link>
 
+      {/* Debug info chỉ hiển thị trong development */}
+      {/* {process.env.NODE_ENV === "development" && debugInfo && (
+        <div
+          style={{
+            margin: "10px 0",
+            padding: "10px",
+            background: "#f5f5f5",
+            border: "1px solid #ddd",
+          }}
+        >
+          <details>
+            <summary>Debug Info</summary>
+            <pre style={{ overflow: "auto", maxHeight: "200px" }}>
+              {JSON.stringify(debugInfo, null, 2)}
+            </pre>
+          </details>
+        </div>
+      )} */}
+
       <article className={styles.postContent}>
         <div className={styles.category} style={{ backgroundColor: "green" }}>
           {post.category}
@@ -508,7 +371,7 @@ const ForumDetailPage = () => {
             <span className={styles.authorName}>
               {post.isAnonymous
                 ? "Người dùng ẩn danh"
-                : post.authorName || post.accountName}
+                : user?.name || post.authorName || post.accountName}
             </span>
             <span className={styles.postDate}>
               <FaClock /> {formatDate(post.createDate)}
@@ -516,22 +379,43 @@ const ForumDetailPage = () => {
           </div>
         </div>
 
-        {(post.image || post.coverImage) && (
+        {/* Hiển thị ảnh nếu có */}
+        {post.image && (
           <div className={styles.coverImageContainer}>
             <Image
-              src={post.image || post.coverImage || "/images/pregnancy.jpg"}
+              src={post.image}
               alt={post.title}
               width={800}
               height={400}
               className={styles.coverImage}
+              onError={(e) => {
+                console.error("Error loading image:", e);
+                // Fallback khi ảnh lỗi
+                const imgElement = e.target as HTMLImageElement;
+                imgElement.src = "/images/default-post-image.jpg"; // Đặt ảnh mặc định
+                imgElement.style.objectFit = "contain";
+              }}
             />
           </div>
         )}
 
-        <div
-          className={styles.content}
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
+        {/* Hiển thị nội dung */}
+        {post.description ? (
+          <div className={styles.description}>
+            {/* Sử dụng dangerouslySetInnerHTML nếu content có cấu trúc HTML */}
+            {post.description.includes("<") &&
+            post.description.includes(">") ? (
+              <div dangerouslySetInnerHTML={{ __html: post.description }} />
+            ) : (
+              // Nếu là plain text, hiển thị từng đoạn văn
+              post.description
+                .split("\n")
+                .map((paragraph, idx) => <p key={idx}>{paragraph}</p>)
+            )}
+          </div>
+        ) : (
+          <p className={styles.noContent}>Không có nội dung</p>
+        )}
 
         <div className={styles.interactionBar}>
           <button
@@ -576,7 +460,26 @@ const ForumDetailPage = () => {
           <button type="submit">Đăng bình luận</button>
         </form>
 
-        <CommentSection comments={comments} />
+        {/* Hiển thị phần comment với tên người dùng hiện tại */}
+        <CommentSection
+          comments={
+            Array.isArray(comments)
+              ? comments.map((comment) => {
+                  // Kiểm tra nếu comment bởi user hiện tại
+                  const isCurrentUser = user && comment.accountId === user.id;
+
+                  return {
+                    ...comment,
+                    accountUserName: isCurrentUser
+                      ? user?.name || user?.userName || "Bạn"
+                      : comment.accountUserName || "Người dùng",
+                    // Giữ nguyên trường createDate
+                    createDate: comment.createDate,
+                  };
+                })
+              : []
+          }
+        />
       </div>
     </div>
   );

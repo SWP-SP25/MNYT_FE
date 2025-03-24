@@ -17,7 +17,6 @@ import { blogService } from "@/app/services/api";
 import useAxios from "@/hooks/useFetchAxios";
 import { BlogDetail, BlogPostDetailResponse } from "@/types/blogDetail";
 import axios from "axios";
-<<<<<<< Updated upstream
 import Cookies from "js-cookie";
 import CommentList from "@/app/blog/components/CommentList";
 import { uploadImage } from "@/utils/uploadImage";
@@ -57,8 +56,6 @@ interface BlogPost {
   tags: string[];
   coverImage: string;
 }
-=======
->>>>>>> Stashed changes
 
 // Thêm interface cho related posts
 interface RelatedPost {
@@ -248,7 +245,6 @@ const BlogDetail = () => {
     });
   };
 
-<<<<<<< Updated upstream
   // Bình luận xuất hiện real-time
 
   const handleSubmitComment = async (e: React.FormEvent) => {
@@ -298,8 +294,6 @@ const BlogDetail = () => {
     console.log(userData);
   };
 
-=======
->>>>>>> Stashed changes
   return (
     <div className={styles.blogDetailContainer}>
       {/* Header */}
@@ -396,8 +390,9 @@ const BlogDetail = () => {
       {/* Interaction Bar */}
       <div className={styles.interactionBar}>
         <button
-          className={`${styles.interactionButton} ${isLiked ? styles.active : ""
-            }`}
+          className={`${styles.interactionButton} ${
+            isLiked ? styles.active : ""
+          }`}
           onClick={handleLike}
         >
           {isLiked ? <FaHeart /> : <FaRegHeart />}
@@ -409,8 +404,9 @@ const BlogDetail = () => {
           <span>Chia sẻ</span>
         </button>
         <button
-          className={`${styles.interactionButton} ${isSaved ? styles.active : ""
-            }`}
+          className={`${styles.interactionButton} ${
+            isSaved ? styles.active : ""
+          }`}
           onClick={handleSave}
         >
           <FaBookmark />

@@ -1,16 +1,11 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
-import { blogService, BlogPost, PaginatedResponse } from "@/app/services/api";
+import { useEffect, useState } from "react";
 import styles from "./components.module.css";
 import Image from "next/image";
 import Link from "next/link";
-import useAxios from "@/hooks/useFetchAxios";
-import { BlogPostListResponse } from "@/types/blogPostList";
 import axios from "axios";
-<<<<<<< Updated upstream
-=======
+import Cookies from "js-cookie";
 import { FaRegHeart, FaRegComment } from "react-icons/fa";
->>>>>>> Stashed changes
 
 interface BlogListProps {
   category: string;
@@ -19,42 +14,25 @@ interface BlogListProps {
   onPostDeleted: () => void;
 }
 
-<<<<<<< Updated upstream
-export default function BlogList({
+const BlogList = ({
   category,
   currentPage,
   onPageChange,
   onPostDeleted,
-}: BlogListProps) {
-  const [totalPages, setTotalPages] = useState(1);
-  const [blogPostListResponse, setBlogPostListResponse] =
-    useState<BlogPostListResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  // Sử dụng useMemo để tạo config phụ thuộc vào currentPage và category
-  useEffect(() => {
-    const response = axios.get(
-      `https://api-mnyt.purintech.id.vn/api/BlogPosts/all-paginated?PageNumber=${currentPage}&PageSize=6${
-        category !== "all" ? `&category=${category}` : ""
-      }`
-    );
-
-    response
-      .then((data) => {
-        console.log("fetch blog ", data.data);
-        setBlogPostListResponse(data.data);
-        setError(false);
-      })
-      .catch((e) => {
-        setError(true);
-      })
-      .finally(() => {
-=======
-const BlogList = ({ category, currentPage, onPageChange }: BlogListProps) => {
+}: BlogListProps) => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [totalPages, setTotalPages] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const userData = Cookies.get("user");
+    if (userData) {
+      const user = JSON.parse(userData);
+      setIsAdmin(user.role === "Admin");
+    }
+  }, []);
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -69,33 +47,17 @@ const BlogList = ({ category, currentPage, onPageChange }: BlogListProps) => {
       } catch (error) {
         setError("Lỗi khi tải bài viết");
       } finally {
->>>>>>> Stashed changes
         setLoading(false);
-      });
+      }
+    };
+
+    fetchBlogs();
   }, [category, currentPage]);
-
-<<<<<<< Updated upstream
-  // const {
-  //   response: blogPostListResponse,
-  //   error,
-  //   loading,
-  // } = useAxios<BlogPostListResponse>(config);
-
-  useEffect(() => {
-    if (blogPostListResponse) {
-      setTotalPages(Math.ceil(blogPostListResponse.data.totalItems / 6));
-    }
-  }, [blogPostListResponse]);
-
-  // Gọi onPageChange khi currentPage thay đổi
-  useEffect(() => {
-    onPageChange(currentPage);
-  }, [currentPage, onPageChange]);
 
   const handleDeletePost = async (postId: number) => {
     try {
       await axios.delete(
-        `https://api-mnyt.purintech.id.vn/api/BlogPosts/${postId}`
+        `https://api-mnyt.purintech.id.vn/api/Posts/${postId}`
       );
       onPostDeleted();
     } catch (error) {
@@ -103,10 +65,6 @@ const BlogList = ({ category, currentPage, onPageChange }: BlogListProps) => {
     }
   };
 
-  console.log("Current posts state:", blogPostListResponse);
-
-=======
->>>>>>> Stashed changes
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -127,10 +85,7 @@ const BlogList = ({ category, currentPage, onPageChange }: BlogListProps) => {
     );
   }
 
-  if (
-    !blogPostListResponse?.data.items ||
-    blogPostListResponse?.data.items.length === 0
-  ) {
+  if (!blogs.length) {
     return (
       <div className={styles.empty}>
         <p>Chưa có bài viết nào trong mục này</p>
@@ -140,7 +95,7 @@ const BlogList = ({ category, currentPage, onPageChange }: BlogListProps) => {
 
   return (
     <div className={styles.blogList}>
-      {blogPostListResponse.data.items.map((post) => (
+      {blogs.map((post) => (
         <div key={post.id} className={styles.blogCard}>
           {/* Thumbnail */}
           <div className={styles.thumbnailContainer}>
@@ -182,23 +137,12 @@ const BlogList = ({ category, currentPage, onPageChange }: BlogListProps) => {
             {/* Post stats */}
             <div className={styles.postStats}>
               <span>
-                <i className="far fa-comment"></i> {post.commentCount}
+                <FaRegComment /> {post.commentCount}
               </span>
               <span>
-                <i className="far fa-heart"></i> {post.likeCount}
+                <FaRegHeart /> {post.likeCount}
               </span>
             </div>
-<<<<<<< Updated upstream
-
-            {/* Nút xóa bài viết */}
-            <button
-              onClick={() => handleDeletePost(post.id)}
-              className={styles.deleteButton}
-            >
-              Xóa
-            </button>
-=======
->>>>>>> Stashed changes
           </div>
         </div>
       ))}
@@ -217,7 +161,7 @@ const BlogList = ({ category, currentPage, onPageChange }: BlogListProps) => {
       </div>
     </div>
   );
-}
+};
 
 // Helper function to get category color
 function getCategoryColor(category: string): string {
@@ -231,3 +175,5 @@ function getCategoryColor(category: string): string {
   };
   return categoryColors[category] || "#6B7280";
 }
+
+export default BlogList;

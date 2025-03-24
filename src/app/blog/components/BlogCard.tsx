@@ -122,7 +122,6 @@ const BlogCard = ({ post }: PostProps) => {
           </div>
         </div>
       </div>
-<<<<<<< Updated upstream
       {/* Last Activity */}
       <div className={styles.lastActivity}>
         <span>Hoạt động cuối:</span>
@@ -132,8 +131,6 @@ const BlogCard = ({ post }: PostProps) => {
         })}
       </div>{" "}
       {/* Đảm bảo đóng thẻ div này */}
-=======
->>>>>>> Stashed changes
     </div>
   );
 };

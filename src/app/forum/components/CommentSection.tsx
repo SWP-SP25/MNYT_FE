@@ -14,18 +14,18 @@ const safeCreateDate = (dateString: string) => {
 
   if (isNaN(date.getTime())) return new Date();
 
-  // Thêm 7 giờ cho múi giờ Việt Nam
+  // Cộng thêm 7 giờ cho múi giờ Việt Nam
   return new Date(date.getTime() + 7 * 60 * 60 * 1000);
 };
 
 const CommentSection = ({ comments }: CommentSectionProps) => {
   return (
     <div className={styles.commentsList}>
-      {comments.map((comment) => (
-        <div key={comment.id} className={styles.commentItem}>
+      {comments.map((comment, index) => (
+        <div key={`${comment.id}-${index}`} className={styles.commentItem}>
           <Image
-            src="/images/ava1.jpg" // Thay thế bằng avatar của người dùng nếu có
-            alt={comment.accountUserName || "User Avatar"} // Giá trị mặc định
+            src="/images/ava1.jpg"
+            alt={comment.accountUserName || "User Avatar"}
             width={40}
             height={40}
             className={styles.commentAvatar}

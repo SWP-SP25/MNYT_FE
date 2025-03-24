@@ -622,3 +622,199 @@
     color: #333;
     background-color: #f0f0f0;
 }
+
+.refreshButtonContainer {
+    display: flex;
+    justify-content: center;
+    margin: 25px 0;
+}
+
+.refreshButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background-color: #38a169;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.refreshButton:hover {
+    background-color: #2f855a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(56, 161, 105, 0.2);
+}
+
+.refreshButton:active {
+    transform: translateY(0);
+}
+
+/* CSS cho nút chỉnh sửa và xóa bài viết */
+.postActions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.editButton,
+.deleteButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.editButton {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+.editButton:hover {
+    background-color: #cbd5e0;
+    transform: translateY(-1px);
+}
+
+.deleteButton {
+    background-color: #fed7d7;
+    color: #e53e3e;
+}
+
+.deleteButton:hover {
+    background-color: #feb2b2;
+    transform: translateY(-1px);
+}
+
+.editButton:active,
+.deleteButton:active {
+    transform: translateY(0);
+}
+
+.deleteButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Thêm các style hiện đại cho các nút xem chi tiết */
+.readMoreLink {
+    padding: 8px 16px;
+    background-color: #4299e1;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: inline-block;
+    margin-top: 8px;
+    font-weight: 500;
+}
+
+.readMoreLink:hover {
+    background-color: #3182ce;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(66, 153, 225, 0.15);
+}
+
+.readMoreLink:active {
+    transform: translateY(0);
+}
+
+/* CSS cho modal chỉnh sửa */
+.editModalContent {
+    background-color: white;
+    border-radius: 10px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    position: relative;
+  }
+  
+  .editButton {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 10px;
+    transition: background-color 0.2s;
+  }
+  
+  .editButton:hover {
+    background-color: #357bd8;
+  }
+  
+  /* Container cho form chỉnh sửa hiển thị dạng modal */
+  .editFormContainer {
+    background-color: white;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease;
+    position: relative;
+    padding: 0;
+  }
+  
+  .editFormHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .editFormHeader h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #2d3748;
+  }
+  
+  .closeButton {
+    background: transparent;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #718096;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: all 0.2s;
+  }
+  
+  .closeButton:hover {
+    background-color: #f7fafc;
+    color: #4a5568;
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  } 

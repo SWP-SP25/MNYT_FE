@@ -6,10 +6,10 @@ import axios from "axios";
 import PostList from "./components/PostList";
 import CategorySidebar from "./components/CategorySidebar";
 import ForumHeader from "./components/ForumHeader";
-import PopularTopics from "./components/PopularTopics";
 import ForumSearch from "./components/ForumSearch";
 import ActiveUsers from "./components/ActiveUsers";
 import { useAuth } from "@/hooks/useAuth";
+import EditForumPost from "./CRUD/EditForumPost";
 
 // Interface cho dữ liệu bài viết
 interface ForumPost {
@@ -49,6 +49,12 @@ const ForumPage = () => {
   const postsPerPage = 10; // Số bài viết mỗi trang
 
   const { user } = useAuth();
+
+  // Thêm state để quản lý hiển thị modal chỉnh sửa
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentEditPostId, setCurrentEditPostId] = useState<number | null>(
+    null
+  );
 
   // Hàm xử lý tìm kiếm
   const handleSearch = (query: string) => {
@@ -127,6 +133,12 @@ const ForumPage = () => {
     setCurrentPage(page);
   };
 
+  // Hàm mở modal chỉnh sửa thay vì chuyển trang
+  const handleEditPost = (postId: number) => {
+    setCurrentEditPostId(postId);
+    setIsEditModalOpen(true);
+  };
+
   return (
     <div className={styles.forumContainer}>
       {/* Header của forum */}
@@ -176,6 +188,23 @@ const ForumPage = () => {
             onPageChange={handlePageChange}
             onRefresh={fetchPosts}
           />
+
+          {/* Modal chỉnh sửa bài viết */}
+          {isEditModalOpen && currentEditPostId && (
+            <div className={styles.modalOverlay}>
+              <div className={styles.modalContent}>
+                <EditForumPost
+                  postId={currentEditPostId}
+                  currentUser={user}
+                  onPostUpdated={() => {
+                    setIsEditModalOpen(false);
+                    fetchPosts(); // Hàm lấy lại danh sách bài viết sau khi cập nhật
+                  }}
+                  onCancel={() => setIsEditModalOpen(false)}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

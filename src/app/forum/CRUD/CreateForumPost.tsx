@@ -1,10 +1,11 @@
 "use client";
 import { useState, useCallback, useEffect, useRef } from "react";
 import axios from "axios";
-import styles from "./createForumPost.module.css";
+import styles from "./styles/createForumPost.module.css";
 import Image from "next/image";
 import { AuthUser, useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import UploadButton from "@/app/components/upload-button/upload";
 
 // Định nghĩa kiểu dữ liệu BlogPost
 interface BlogPost {
@@ -37,22 +38,26 @@ const CreateBlogPost = ({
   currentUser?: AuthUser | null;
 }) => {
   const router = useRouter();
+  const formContainerRef = useRef<HTMLDivElement>(null);
 
-  // Kiểm tra authentication ngay khi component được render
-  useEffect(() => {
-    if (!currentUser) {
-      // Nếu người dùng chưa đăng nhập, chuyển hướng đến trang đăng nhập
-      router.push("/login");
-    }
-  }, [currentUser, router]);
+  // Ref phải được khai báo bên trong component
+  const uploadImageRef = useRef<() => Promise<string>>();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    editPost?.image || null
+  );
 
   // Nếu người dùng chưa đăng nhập, không hiển thị form
   if (!currentUser) {
-    return null; // Trả về null để không hiển thị gì trong quá trình chuyển hướng
+    return null;
   }
 
-  const [title, setTitle] = useState(editPost ? editPost.title : "");
-  const [content, setContent] = useState(editPost ? editPost.content : "");
+  const [title, setTitle] = useState(
+    editPost && typeof editPost.title === "string" ? editPost.title : ""
+  );
+  const [content, setContent] = useState(
+    editPost && typeof editPost.content === "string" ? editPost.content : ""
+  );
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>(
@@ -66,6 +71,27 @@ const CreateBlogPost = ({
     editPost?.isAnonymous || false
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Thêm useEffect để scroll đến đầu form khi component được render
+  useEffect(() => {
+    if (formContainerRef.current) {
+      // Scroll đến đầu form
+      formContainerRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+
+      // Focus vào input đầu tiên (title)
+      const titleInput = formContainerRef.current.querySelector(
+        'input[type="text"]'
+      ) as HTMLInputElement;
+      if (titleInput) {
+        setTimeout(() => {
+          titleInput.focus();
+        }, 500); // Đợi animation hoàn thành
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (editPost) {
@@ -119,7 +145,12 @@ const CreateBlogPost = ({
         return;
       }
 
-      if (!title.trim() || !content.trim()) {
+      if (
+        typeof title !== "string" ||
+        !title.trim() ||
+        typeof content !== "string" ||
+        !content.trim()
+      ) {
         setErrorMessage("Tiêu đề và nội dung không được để trống.");
         return;
       }
@@ -130,13 +161,32 @@ const CreateBlogPost = ({
         // Lấy authorId từ currentUser, mặc định là 1 nếu không có
         const authorId = currentUser ? currentUser.id : 1;
 
+        // Xử lý tải ảnh lên nếu có file được chọn
+        let finalImageUrl = imageUrl;
+        if (selectedFile && !imageUrl) {
+          console.log("Bắt đầu tải ảnh lên...");
+          // @ts-ignore - Sử dụng phương thức uploadFile của UploadButton
+          const uploadResult = await UploadButton.uploadFile();
+          if (uploadResult) {
+            finalImageUrl = uploadResult;
+            setImageUrl(finalImageUrl);
+            console.log("Ảnh đã được tải lên thành công:", finalImageUrl);
+          } else {
+            console.error("Không thể tải lên hình ảnh");
+            setErrorMessage("Không thể tải lên hình ảnh, vui lòng thử lại.");
+            setLoading(false);
+            return;
+          }
+        }
+        console.log("Img url === ", finalImageUrl);
+
         // Tạo object data theo đúng format API yêu cầu
         const postData = {
           title: title,
-          content: content,
+          description: content,
           category: selectedCategory,
-          image: image ? await convertImageToBase64(image) : null,
-          isAnonymous: isAnonymous, // Đảm bảo trường này được gửi đến API
+          imageUrl: finalImageUrl, // Sử dụng URL từ uploadResult
+          isAnonymous: isAnonymous,
           // Chỉ đặt authorName khi không ẩn danh
           authorName: isAnonymous
             ? null
@@ -144,11 +194,11 @@ const CreateBlogPost = ({
             ? currentUser.name
             : null,
           // Các trường khác cần thiết cho API
-          description: title.substring(0, 100), // Short description from title
+
           publishedDay: new Date().toISOString().split("T")[0], // Format: YYYY-MM-DD
         };
 
-        console.log("Dữ liệu gửi đi:", postData);
+        console.log("Dữ liệu sap gửi đi:", postData);
         console.log("isAnonymous:", isAnonymous);
 
         if (editPost) {
@@ -180,8 +230,8 @@ const CreateBlogPost = ({
           setTitle("");
           setContent("");
           setSelectedCategory("all");
-          setImage(null);
-          setImagePreview(null);
+          setSelectedFile(null);
+          setImageUrl(null);
           setIsAnonymous(false);
         }
       } catch (error) {
@@ -197,33 +247,16 @@ const CreateBlogPost = ({
       selectedCategory,
       onPostCreated,
       editPost,
-      image,
+      selectedFile,
+      imageUrl,
       isAnonymous,
       currentUser,
       router,
     ]
   );
 
-  // Thêm hàm chuyển đổi ảnh sang base64
-  const convertImageToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        if (typeof reader.result === "string") {
-          // Lấy phần base64 sau dấu phẩy
-          const base64String = reader.result.split(",")[1];
-          resolve(base64String);
-        } else {
-          reject(new Error("Failed to convert image to base64"));
-        }
-      };
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   return (
-    <div className={styles.componentContainer}>
+    <div className={styles.componentContainer} ref={formContainerRef}>
       <h2 className={styles.componentTitle}>
         {editPost ? "Chỉnh sửa bài viết" : "Tạo bài viết mới"}
       </h2>
@@ -264,60 +297,21 @@ const CreateBlogPost = ({
 
         <div className={styles.imageUploadContainer}>
           <div className={styles.imageLabel}>Hình ảnh:</div>
-          {imagePreview ? (
-            <div className={styles.imagePreviewContainer}>
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className={styles.imagePreview}
-              />
-              <div className={styles.imageActions}>
-                <button
-                  type="button"
-                  onClick={handleRemoveImage}
-                  className={styles.removeImageButton}
-                >
-                  <span className={styles.removeIcon}>×</span> Xóa ảnh
-                </button>
-                <button
-                  type="button"
-                  onClick={handleUploadClick}
-                  className={styles.changeImageButton}
-                >
-                  Thay đổi ảnh
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className={styles.imageUploadArea} onClick={handleUploadClick}>
-              <div className={styles.uploadContent}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="40"
-                  height="40"
-                  className={styles.uploadIcon}
-                >
-                  <path fill="none" d="M0 0h24v24H0z" />
-                  <path
-                    d="M4 19h16v-7h2v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-8h2v7zm9-10v7h-2V9H6l6-6 6 6h-5z"
-                    fill="currentColor"
-                  />
-                </svg>
-                <p>Tải lên hình ảnh</p>
-                <span className={styles.uploadHint}>
-                  hoặc kéo thả file vào đây
-                </span>
-              </div>
+
+          {/* Sử dụng UploadButton */}
+          <UploadButton
+            onImageChange={setSelectedFile}
+            onUrlChange={setImageUrl}
+            autoUpload={false}
+            className={styles.imageUploadArea}
+          />
+
+          {/* Hiển thị URL hình ảnh nếu có */}
+          {imageUrl && (
+            <div className={styles.imagePreviewInfo}>
+              <span>Hình ảnh đã chọn sẵn sàng để tải lên khi đăng bài</span>
             </div>
           )}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            ref={fileInputRef}
-            className={styles.hiddenInput}
-          />
         </div>
 
         <div className={styles.anonymousOption}>

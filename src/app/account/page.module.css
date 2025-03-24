@@ -1,0 +1,47 @@
+.userInfo {
+    display: flex;
+    margin-bottom: 30px;
+}
+
+.avatar {
+    margin-right: 30px;
+}
+
+.avatarImg {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4caf50;
+    border: 3px solid #4caf50;
+}
+
+.userDetails h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.userDetails p {
+    margin: 0 0 5px 0;
+    color: #666;
+}
+
+.userRole {
+    margin: 0;
+    color: #4caf50;
+    font-weight: 500;
+}
+
+.loadingContainer {
+    text-align: center;
+    padding: 20px;
+}
+
+.errorContainer {
+    color: red;
+    padding: 20px;
+}

@@ -1,4 +1,3 @@
-// ... existing imports ...
 import styles from "./components.module.css";
 import {
   FaRegHeart,
@@ -9,7 +8,7 @@ import {
 } from "react-icons/fa";
 import Link from "next/link";
 import Image from "next/image";
-import { formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { vi } from "date-fns/locale/vi";
 
 type PostProps = {
@@ -28,7 +27,7 @@ type PostProps = {
       name: string;
       color: string;
     };
-    createdAt: Date;
+    createdAt: string;
     lastActivity: Date;
     preview: string;
     likes: number;
@@ -115,6 +114,10 @@ const BlogCard = ({ post }: PostProps) => {
             <span className={styles.comments}>
               <FaRegComment />
               {post.comments} bình luận
+            </span>
+            <span className={styles.createdAt}>
+              <FaClock />
+              {format(new Date(post.createdAt), "dd/MM/yyyy", { locale: vi })}
             </span>
           </div>
         </div>

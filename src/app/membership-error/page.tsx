@@ -1,13 +1,16 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Button } from '@nextui-org/react';
 import { IoWarningOutline, IoRocketOutline } from 'react-icons/io5';
 import { motion } from 'framer-motion';
 import styles from './page.module.css';
+import { Suspense } from 'react';
 
-export default function MembershipError() {
+// Tách phần xử lý searchParams vào component riêng
+function MembershipErrorContent() {
     const router = useRouter();
+    const { useSearchParams } = require('next/navigation');
     const searchParams = useSearchParams();
     const errorType = searchParams.get('type');
 
@@ -76,5 +79,13 @@ export default function MembershipError() {
                 </button>
             </div>
         </motion.div>
+    );
+}
+
+export default function MembershipError() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <MembershipErrorContent />
+        </Suspense>
     );
 } 

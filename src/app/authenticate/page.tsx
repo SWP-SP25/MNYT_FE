@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, Suspense } from "react";
 import { BsPersonFill, BsEnvelopeFill, BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { IoMdCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
 import Cookies from "js-cookie";
@@ -15,12 +15,24 @@ import fpStyles from './forgot-password.module.css';
 type NotificationType = 'success' | 'error' | 'info' | '';
 type NotificationMessage = string;
 
+// Tách phần xử lý searchParams ra component riêng
+function SearchParamsWrapper({ onInit }: { onInit: (isRegister: boolean) => void }) {
+    const { useSearchParams } = require('next/navigation');
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const mode = searchParams.get('mode');
+        onInit(mode === 'register');
+    }, [searchParams, onInit]);
+
+    return null;
+}
+
 const LoginPage = () => {
     const [isActive, setIsActive] = useState(false);
     const [isForgotActive, setIsForgotActive] = useState(false);
     const [forgotStep, setForgotStep] = useState(1);
     const router = useRouter();
-    const searchParams = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -86,13 +98,12 @@ const LoginPage = () => {
 
     const [registerError, setRegisterError] = useState("");
 
-    useEffect(() => {
-        // Kiểm tra nếu có query parameter 'mode=register' thì hiển thị form đăng ký
-        const mode = searchParams.get('mode');
-        if (mode === 'register') {
+    // Callback để nhận giá trị từ SearchParamsWrapper
+    const handleInitFromParams = React.useCallback((isRegister: boolean) => {
+        if (isRegister) {
             setIsActive(true);
         }
-    }, [searchParams]);
+    }, []);
 
     // Modified function to check if user is already logged in
     useEffect(() => {
@@ -225,7 +236,7 @@ const LoginPage = () => {
                 const response = await fetchData(
                     `https://api-mnyt.purintech.id.vn/api/Accounts/check-exists?username=${username}&email=null`,
                     { method: "GET" }
-                );
+                ) as { data: boolean };
 
                 if (response.data === true) {
                     setForgotStep(2);
@@ -267,7 +278,7 @@ const LoginPage = () => {
                         method: "POST",
                         body: JSON.stringify(requestBody),
                     }
-                );
+                ) as { data: boolean, success: boolean, message: string };
 
                 if (response.data === true || response.success === true) {
                     showNotification('success', 'Đổi mật khẩu thành công');
@@ -334,6 +345,11 @@ const LoginPage = () => {
 
     return (
         <>
+            {/* Bọc component sử dụng useSearchParams trong Suspense */}
+            <Suspense fallback={null}>
+                <SearchParamsWrapper onInit={handleInitFromParams} />
+            </Suspense>
+
             <div className={`${styles.container} ${isActive ? styles.active : ''} ${isForgotActive ? styles.forgotActive : ''}`}>
                 {/* Hiển thị thông báo */}
                 {notification.type && (

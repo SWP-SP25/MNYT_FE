@@ -1,11 +1,11 @@
 export interface Blogmanage {
     success: boolean;
-    data:    Datum[];
+    data:    Blog[];
     message: string;
     errors:  null;
 }
 
-export interface Datum {
+export interface Blog {
     id:            number;
     category:      string;
     isAnonymous:   boolean;

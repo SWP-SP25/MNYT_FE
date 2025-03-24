@@ -1,39 +1,91 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Button } from '@nextui-org/react';
+import { IoWarningOutline, IoRocketOutline } from 'react-icons/io5';
+import { motion } from 'framer-motion';
 import styles from './page.module.css';
+import { Suspense } from 'react';
 
-export default function MembershipError() {
+// Tách phần xử lý searchParams vào component riêng
+function MembershipErrorContent() {
     const router = useRouter();
+    const { useSearchParams } = require('next/navigation');
     const searchParams = useSearchParams();
     const errorType = searchParams.get('type');
 
     const getMessage = () => {
         switch (errorType) {
             case 'basic-plan':
-                return 'gói hiện tại của bạn không có tính năng đó';
+                return 'Gói thành viên hiện tại của bạn không hỗ trợ tính năng này';
             case 'no-membership':
             default:
-                return 'bạn phải chọn gói thành viên để sử dụng web của chúng tôi';
+                return 'Bạn cần chọn một gói thành viên để trải nghiệm đầy đủ dịch vụ của chúng tôi';
+        }
+    };
+
+    const getSubtitle = () => {
+        switch (errorType) {
+            case 'basic-plan':
+                return 'Hãy nâng cấp để mở khóa tất cả tính năng cao cấp!';
+            case 'no-membership':
+            default:
+                return 'Chọn gói phù hợp với nhu cầu của bạn ngay hôm nay!';
         }
     };
 
     return (
-        <div className={styles.container}>
-            <div className={styles.content}>
-                <h1 className={styles.title}>Thông báo</h1>
-                <p className={styles.message}>
-                    {getMessage()}
-                </p>
-                <Button 
-                    color="primary"
-                    onClick={() => router.push('/membership')}
-                    className={styles.button}
+        <motion.div
+            className={styles.container}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+        >
+            <div className={styles.card}>
+                <div className={styles.iconContainer}>
+                    {errorType === 'basic-plan' ?
+                        <IoRocketOutline className={styles.icon} /> :
+                        <IoWarningOutline className={styles.icon} />
+                    }
+                </div>
+
+                <h1 className={styles.title}>
+                    {errorType === 'basic-plan' ? 'Cần nâng cấp' : 'Chưa có gói thành viên'}
+                </h1>
+
+                <p className={styles.message}>{getMessage()}</p>
+                <p className={styles.subtitle}>{getSubtitle()}</p>
+
+                <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                 >
-                    {errorType === 'basic-plan' ? 'Nâng cấp gói thành viên' : 'Chọn gói thành viên'}
-                </Button>
+                    <Button
+                        color="primary"
+                        onClick={() => router.push('/membership')}
+                        className={styles.button}
+                        size="lg"
+                        startContent={<IoRocketOutline />}
+                    >
+                        {errorType === 'basic-plan' ? 'Nâng cấp ngay' : 'Chọn gói thành viên'}
+                    </Button>
+                </motion.div>
+
+                <button
+                    className={styles.backButton}
+                    onClick={() => router.back()}
+                >
+                    Quay lại
+                </button>
             </div>
-        </div>
+        </motion.div>
+    );
+}
+
+export default function MembershipError() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <MembershipErrorContent />
+        </Suspense>
     );
 } 

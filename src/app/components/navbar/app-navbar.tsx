@@ -9,6 +9,7 @@ import Image from 'next/image';
 import Logo from '@/app/img/Logo.ico';
 import './app-navbar.css';
 import { BsBell, BsGear, BsChevronDown, BsBoxArrowRight } from 'react-icons/bs';
+import { FaBabyCarriage, FaHeart, FaCrown, FaBaby } from 'react-icons/fa';
 import { Overlay, Popover } from 'react-bootstrap';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthRequired } from '@/app/components/AuthRequired';
@@ -19,6 +20,12 @@ const AppNavBar = () => {
   const { user, loading, logout } = useAuth();
   const [showAccountPopup, setShowAccountPopup] = useState(false);
   const accountTarget = useRef(null);
+  const [showUserInfoPopup, setShowUserInfoPopup] = useState(false);
+  const userInfoTarget = useRef(null);
+  const [membershipPlan, setMembershipPlan] = useState('Đang tải...');
+  const [membershipLoading, setMembershipLoading] = useState(false);
+  const [membershipId, setMembershipId] = useState(1); // Mặc định là gói cơ bản
+  const [membershipEndDate, setMembershipEndDate] = useState('');
 
   // Helper function to get the user name
   const getUserName = () => {
@@ -36,6 +43,102 @@ const AppNavBar = () => {
 
     return 'Người dùng';
   };
+
+  // Function to get membership icon based on plan
+  const getMembershipIcon = () => {
+    switch (membershipId) {
+      case 1:
+        return <FaBaby className="membership-icon basic" />;
+      case 2:
+        return <FaHeart className="membership-icon premium" />;
+      case 5:
+        return <FaCrown className="membership-icon vip" />;
+      default:
+        return <FaBaby className="membership-icon basic" />;
+    }
+  };
+
+  // Function to format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  // Function to fetch and format membership data
+  const fetchMembershipData = async (userId: string) => {
+    if (!userId) return;
+
+    setMembershipLoading(true);
+    try {
+      const response = await fetch(`https://api-mnyt.purintech.id.vn/api/AccountMembership/GetActive/${userId}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+
+      // Truy cập đúng vào trường data.data
+      const membershipData = data.data;
+      console.log('Membership data:', membershipData);
+
+      if (membershipData) {
+        const membershipIdFromApi = membershipData.membershipPlanId;
+        setMembershipId(membershipIdFromApi || 1);
+
+        // Lưu ngày kết thúc
+        if (membershipData.endDate) {
+          setMembershipEndDate(membershipData.endDate);
+        } else {
+          setMembershipEndDate('');
+        }
+
+        switch (membershipIdFromApi) {
+          case 1:
+            setMembershipPlan('Gói cơ bản');
+            break;
+          case 2:
+            setMembershipPlan('Gói tiện ích');
+            break;
+          case 5:
+            setMembershipPlan('Gói cao cấp');
+            break;
+          default:
+            setMembershipPlan('Gói cơ bản');
+        }
+      } else {
+        setMembershipId(1);
+        setMembershipPlan('Gói cơ bản');
+        setMembershipEndDate('');
+      }
+    } catch (error) {
+      console.error('Error fetching membership data:', error);
+      setMembershipId(1);
+      setMembershipPlan('Gói cơ bản');
+      setMembershipEndDate('');
+    } finally {
+      setMembershipLoading(false);
+    }
+  };
+
+  // Effect to fetch membership data when user changes
+  useEffect(() => {
+    if (user) {
+      console.log('User object:', user); // Log user object để kiểm tra cấu trúc
+      const userId = user.user?.id || (user as any).id;
+      console.log('Extracted user ID:', userId); // Log ID đã trích xuất
+      if (userId) {
+        fetchMembershipData(userId);
+      } else {
+        console.log('No user ID found in user object');
+      }
+    }
+  }, [user]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -173,14 +276,38 @@ const AppNavBar = () => {
           </Popover.Header>
           <Popover.Body>
             <div className="account-management">
-              <Link href="/account" passHref legacyBehavior>
-                <a className="account-option" onClick={() => setShowAccountPopup(false)}>
-                  Thông tin cá nhân
+              <Link href="/membership" passHref legacyBehavior>
+                <a className="membership-info-link" onClick={() => setShowAccountPopup(false)}>
+                  <div className="membership-info">
+                    {membershipLoading ? (
+                      <>
+                        <span className="loading-spinner"></span>
+                        <span className="loading-text">Đang tải...</span>
+                      </>
+                    ) : (
+                      <>
+                        {getMembershipIcon()}
+                        <div className="membership-details">
+                          <strong>Gói hiện tại:</strong>
+                          <span className="membership-name">{membershipPlan}</span>
+                          {membershipEndDate && (
+                            <span className="membership-expiry">
+                              Hết hạn: {formatDate(membershipEndDate)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="view-more-icon">
+                          <span>&rarr;</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </a>
               </Link>
-              <Link href="/account/settings" passHref legacyBehavior>
+              <Link href="/account" passHref legacyBehavior>
                 <a className="account-option" onClick={() => setShowAccountPopup(false)}>
-                  Cài đặt tài khoản
+                  <BsGear className="settings-icon" />
+                  <span>Cài đặt tài khoản</span>
                 </a>
               </Link>
             </div>
@@ -206,6 +333,44 @@ const AppNavBar = () => {
         </Popover>
       </Overlay>
       {/* End of pop-up thông báo */}
+
+      {/* Pop-up thông tin người dùng */}
+      <Overlay
+        target={userInfoTarget.current}
+        show={showUserInfoPopup}
+        placement="bottom-end"
+        rootClose
+        onHide={() => setShowUserInfoPopup(false)}
+      >
+        <Popover id="user-info-popover">
+          <Popover.Header as="h3">
+            Thông tin người dùng
+            <button
+              className="close-icon-button"
+              onClick={() => setShowUserInfoPopup(false)}
+              title="Đóng"
+            >
+              &times;
+            </button>
+          </Popover.Header>
+          <Popover.Body>
+            <div className="user-info-details">
+              <div className="info-row">
+                <strong>Tên:</strong> {getUserName()}
+              </div>
+              <div className="info-row">
+                <strong>Gói hội viên:</strong> {membershipPlan}
+              </div>
+              <div className="view-profile-button">
+                <Link href="/account" passHref legacyBehavior>
+                  <a className="btn btn-sm btn-primary w-100">Xem trang cá nhân đầy đủ</a>
+                </Link>
+              </div>
+            </div>
+          </Popover.Body>
+        </Popover>
+      </Overlay>
+      {/* End of pop-up thông tin người dùng */}
     </Navbar>
   );
 }

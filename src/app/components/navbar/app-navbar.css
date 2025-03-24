@@ -306,3 +306,110 @@
         text-align: left;
     }
 }
+
+/* Styles for membership info */
+.membership-info-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: all 0.2s ease;
+}
+
+.membership-info-link:hover {
+    transform: translateY(-2px);
+    color: inherit;
+}
+
+.membership-info {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa;
+    transition: background-color 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.membership-info:hover {
+    background-color: #e9ecef;
+}
+
+.membership-icon {
+    font-size: 22px;
+    margin-right: 12px;
+    color: #212529;
+}
+
+.membership-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.membership-name {
+    font-weight: 500;
+    font-size: 14px;
+    color: #212529;
+    margin-bottom: 2px;
+}
+
+.membership-expiry {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.view-more-icon {
+    display: flex;
+    align-items: center;
+    color: #6c757d;
+    font-weight: bold;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-top-color: #212529;
+    border-radius: 50%;
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-text {
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Account option styling */
+.account-option {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.2s;
+}
+
+.account-option:hover {
+    background-color: #e9ecef;
+    text-decoration: none;
+    color: inherit;
+}
+
+.settings-icon {
+    margin-right: 10px;
+    color: #212529;
+}

@@ -10,22 +10,82 @@ import BirthTypeForm from '@/app/components/form-setup-fetus/fetus-form';
 import { BirthType, FormFetusData } from '@/types/form';
 import { Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 import axios from 'axios';
+import { styled } from '@mui/material/styles';
 
 interface FormSubmitData {
-  birthType: BirthType;
-  lastMenstrualPeriod: string;
-  period: string;
-  bpd: string;
-  hc: string;
-  length: string;
-  efw: string;
+    birthType: BirthType;
+    lastMenstrualPeriod: string;
+    period: string;
+    bpd: string;
+    hc: string;
+    length: string;
+    efw: string;
 }
+
+// Thêm các component đã styled
+const StyledDialog = styled(Dialog)(({ theme }) => ({
+    '& .MuiPaper-root': {
+        borderRadius: '16px',
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)',
+        padding: '8px',
+        maxWidth: '500px',
+        width: '100%'
+    }
+}));
+
+const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#279357',
+    textAlign: 'center',
+    padding: '16px 24px 0'
+}));
+
+const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
+    padding: '20px 24px'
+}));
+
+const StyledDialogContentText = styled(DialogContentText)(({ theme }) => ({
+    fontSize: '16px',
+    color: '#4a5568',
+    textAlign: 'center'
+}));
+
+const StyledDialogActions = styled(DialogActions)(({ theme }) => ({
+    padding: '0 24px 20px',
+    justifyContent: 'center',
+    gap: '16px'
+}));
+
+const CancelButton = styled(Button)(({ theme }) => ({
+    padding: '10px 24px',
+    borderRadius: '8px',
+    fontWeight: 'bold',
+    color: '#279357',
+    border: '2px solid #279357',
+    backgroundColor: '#fff',
+    '&:hover': {
+        backgroundColor: '#f0fff4'
+    }
+}));
+
+const ConfirmButton = styled(Button)(({ theme }) => ({
+    padding: '10px 24px',
+    borderRadius: '8px',
+    fontWeight: 'bold',
+    color: '#fff',
+    backgroundColor: '#279357',
+    '&:hover': {
+        backgroundColor: '#1f7a47'
+    }
+}));
 
 const AuthenticatedHomePage = () => {
     const { user } = useAuth();
     const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
     const [hasActivePregnancy, setHasActivePregnancy] = useState(false);
     const [activePregnancyId, setActivePregnancyId] = useState<string | null>(null);
+    const [activePregnancyData, setActivePregnancyData] = useState<any | null>(null);
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: '',
@@ -53,7 +113,13 @@ const AuthenticatedHomePage = () => {
                     );
 
                     setHasActivePregnancy(!!activePregnancy);
+                    if (activePregnancy) {
+                        setActivePregnancyId(activePregnancy.id);
+                        // Lưu lại toàn bộ thông tin của thai kỳ để sử dụng khi update
+                        setActivePregnancyData(activePregnancy);
+                    }
                     console.log('Active pregnancy status:', !!activePregnancy);
+                    console.log('Active pregnancy ID:', activePregnancy?.id);
                 } catch (error) {
                     console.error('Error checking active pregnancy:', error);
                     setHasActivePregnancy(false);
@@ -66,28 +132,28 @@ const AuthenticatedHomePage = () => {
 
     const handleOpenForm = () => {
         if (hasActivePregnancy) {
-            // Hiển thị thông báo nếu người dùng đã có thai kỳ active
-            setSnackbar({
+            // Hiển thị dialog xác nhận thay vì snackbar
+            setConfirmDialog({
                 open: true,
-                message: "Mẹ ơi, cùng một thời điểm một người chỉ có thể có một thai kỳ thôi ạ",
-                severity: 'warning'
+                title: "Xác nhận dừng thai kỳ hiện tại",
+                message: "Hiện tại mẹ đang có thai kỳ đang trong thời gian sinh trưởng, mẹ muốn dừng sao?"
             });
         } else {
             setIsFormOpen(true);
         }
     };
 
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-  };
+    const handleCloseForm = () => {
+        setIsFormOpen(false);
+    };
 
     const handleCloseDialog = () => {
         setConfirmDialog({ ...confirmDialog, open: false });
     };
 
     const handleConfirmCreateNew = async () => {
-        if (!activePregnancyId) {
-            console.error('No active pregnancy ID found!');
+        if (!activePregnancyId || !activePregnancyData) {
+            console.error('No active pregnancy data found!');
             handleCloseDialog();
             return;
         }
@@ -95,38 +161,25 @@ const AuthenticatedHomePage = () => {
         try {
             setIsDeleting(true);
 
-            console.log(`Attempting to update pregnancy with ID: ${activePregnancyId}`);
-            console.log('Type of pregnancy ID:', typeof activePregnancyId);
+            // Log original values before any changes
+            console.log('Original pregnancy data:', activePregnancyData);
+            console.log('Pregnancy ID to update:', activePregnancyId);
+            console.log('Original status value:', activePregnancyData.status);
 
-            // Tạo payload đơn giản nhất có thể
+            // Tạo payload với dữ liệu hiện tại và chỉ cập nhật status thành inActive
             const updatePayload = {
-                id: activePregnancyId,
-                status: "inactive",
-                isDeleted: true
+                ...activePregnancyData,
+                status: "inActive"  // Chỉ thay đổi status, giữ nguyên isDeleted
             };
 
-            console.log('Update payload:', updatePayload);
+            console.log('Update payload before sending to API:', JSON.stringify(updatePayload, null, 2));
+            console.log('API endpoint:', `https://api-mnyt.purintech.id.vn/api/Pregnancy`);
+            console.log('HTTP method:', 'PUT');
 
-            // Thử gọi API PUT để cập nhật
-            try {
-                console.log('Sending PUT request to:', 'https://api-mnyt.purintech.id.vn/api/Pregnancy');
-                const updateResponse = await axios.put(`https://api-mnyt.purintech.id.vn/api/Pregnancy`, updatePayload);
-                console.log('Update response:', updateResponse);
-                console.log('Update data:', updateResponse.data);
-            } catch (putError) {
-                console.error('PUT request failed:', putError);
-                console.error('Error response:', putError.response);
-
-                // Nếu PUT thất bại, thử dùng PATCH
-                console.log('Trying PATCH request...');
-                try {
-                    const patchResponse = await axios.patch(`https://api-mnyt.purintech.id.vn/api/Pregnancy`, updatePayload);
-                    console.log('PATCH response:', patchResponse);
-                } catch (patchError) {
-                    console.error('PATCH request failed:', patchError);
-                    throw patchError; // Ném lỗi để catch bên ngoài xử lý
-                }
-            }
+            // Sử dụng PUT method để cập nhật
+            const response = await axios.put(`https://api-mnyt.purintech.id.vn/api/Pregnancy`, updatePayload);
+            console.log('Update response status:', response.status);
+            console.log('Update response data:', response.data);
 
             // Đóng dialog
             handleCloseDialog();
@@ -134,19 +187,20 @@ const AuthenticatedHomePage = () => {
             // Hiển thị thông báo thành công
             setSnackbar({
                 open: true,
-                message: "Đã xóa thai kỳ cũ thành công! Bạn có thể tạo thai kỳ mới.",
+                message: "Đã dừng thai kỳ thành công! Bạn có thể tạo thai kỳ mới.",
                 severity: 'success'
             });
 
             // Cập nhật lại trạng thái
             setHasActivePregnancy(false);
             setActivePregnancyId(null);
+            setActivePregnancyData(null);
 
-            // Sau đó mở form tạo mới
-            // ... code mở form tạo mới thai kỳ ...
+            // Mở form tạo mới
+            setIsFormOpen(true);
 
         } catch (error) {
-            console.error('All update attempts failed:', error);
+            console.error('Update request failed:', error);
 
             // Log chi tiết lỗi để debug
             if (error.response) {
@@ -159,7 +213,7 @@ const AuthenticatedHomePage = () => {
             // Hiển thị thông báo lỗi
             setSnackbar({
                 open: true,
-                message: "Có lỗi xảy ra khi xóa thai kỳ cũ. Vui lòng thử lại sau.",
+                message: "Có lỗi xảy ra khi dừng thai kỳ. Vui lòng thử lại sau.",
                 severity: 'error'
             });
         } finally {
@@ -284,39 +338,37 @@ const AuthenticatedHomePage = () => {
                 onSubmit={handleFormSubmit}
             />
 
-            {/* Dialog xác nhận */}
-            <Dialog
+            {/* Dialog xác nhận đã được styled */}
+            <StyledDialog
                 open={confirmDialog.open}
                 onClose={handleCloseDialog}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >
-                <DialogTitle id="alert-dialog-title">
+                <StyledDialogTitle id="alert-dialog-title">
                     {confirmDialog.title}
-                </DialogTitle>
-                <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
+                </StyledDialogTitle>
+                <StyledDialogContent>
+                    <StyledDialogContentText id="alert-dialog-description">
                         {confirmDialog.message}
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button
+                    </StyledDialogContentText>
+                </StyledDialogContent>
+                <StyledDialogActions>
+                    <CancelButton
                         onClick={handleCloseDialog}
-                        color="primary"
                         disabled={isDeleting}
                     >
                         Không
-                    </Button>
-                    <Button
+                    </CancelButton>
+                    <ConfirmButton
                         onClick={handleConfirmCreateNew}
-                        color="primary"
                         autoFocus
                         disabled={isDeleting}
                     >
                         {isDeleting ? 'Đang xử lý...' : 'Có, tạo mới'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                    </ConfirmButton>
+                </StyledDialogActions>
+            </StyledDialog>
 
             {/* Snackbar thông báo */}
             <Snackbar

@@ -363,23 +363,27 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
                                 value={birthType}
                                 onChange={handleBirthTypeChange}
                                 required
+                                className={styles.customSelect}
                             >
-                                <option value="singletons">1 bé ( Sinh Đơn )</option>
-                                <option value="twins">2 bé ( Sinh đôi )</option>
+                                <option value="singletons" className={styles.customSelect}>1 bé ( Sinh Đơn )</option>
+                                <option value="twins" className={styles.customSelect}>2 bé ( Sinh đôi )</option>
                             </select>
                         </div>
 
                         <>
                             <div className={styles.formGroup}>
                                 <label htmlFor="lastMenstrualPeriod">Ngày hết kinh gần nhất</label>
-                                <input
-                                    type="Date"
-                                    id="lastMenstrualPeriod"
-                                    name="lastMenstrualPeriod"
-                                    value={formData.lastMenstrualPeriod}
-                                    onChange={handleInputChange}
-                                    required
-                                />
+                                <div className={styles.dateInputContainer}>
+                                    <input
+                                        type="Date"
+                                        id="lastMenstrualPeriod"
+                                        name="lastMenstrualPeriod"
+                                        value={formData.lastMenstrualPeriod}
+                                        onChange={handleInputChange}
+                                        required
+                                        className={styles.dateInput}
+                                    />
+                                </div>
                             </div>
 
                             <div className={styles.formGroup}>

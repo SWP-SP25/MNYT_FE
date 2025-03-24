@@ -1,22 +1,24 @@
-export interface BlogManage {
+export interface Blogmanage {
     success: boolean;
-    data:    Blog[];
+    data:    Datum[];
     message: string;
     errors:  null;
 }
 
-export interface Blog {
+export interface Datum {
     id:            number;
     category:      string;
+    isAnonymous:   boolean;
     title:         string;
-    description:   string;
+    typeEnum:      number;
+    description:   null | string;
     authorId:      number;
     authorName:    string;
-    period:        number;
+    period:        number | null;
     status:        Status;
-    publishedDay:  Date;
-    imageId:       number;
-    imageUrl:      string;
+    publishedDay:  Date | null;
+    imageId:       number | null;
+    imageUrl:      null | string;
     createDate:    Date;
     likeCount:     number;
     commentCount:  number;
@@ -27,5 +29,5 @@ export enum Status {
     Draft = "Draft",
     Published = "Published",
     Removed = "Removed",
-    Reported = "Reported"
+    Reported = "Reported",
 }

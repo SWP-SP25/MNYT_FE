@@ -13,7 +13,6 @@ interface FormData {
     period: number;
     type: string;
     tag: string;
-    status: string | null;
     title: string;
     description: string;
 }
@@ -25,7 +24,6 @@ export const TableContent = () => {
         period: 0,
         type: '',
         tag: '',
-        status: null,
         title: '',
         description: ''
     });
@@ -50,7 +48,6 @@ export const TableContent = () => {
             period: record.period,
             type: record.type,
             tag: record.tag || '',
-            status: record.status,
             title: record.title,
             description: record.description
         });
@@ -72,7 +69,6 @@ export const TableContent = () => {
             period: 0,
             type: '',
             tag: '',
-            status: null,
             title: '',
             description: ''
         });
@@ -94,7 +90,6 @@ export const TableContent = () => {
                     period: formData.period,
                     type: formData.type,
                     tag: formData.tag,
-                    status: formData.status,
                     title: formData.title,
                     description: formData.description,
                     createDate: originalRecord.createDate,
@@ -117,7 +112,6 @@ export const TableContent = () => {
                     period: formData.period,
                     type: formData.type,
                     tag: formData.tag,
-                    status: formData.status,
                     title: formData.title,
                     description: formData.description,
                     createDate: new Date().toISOString(),
@@ -150,7 +144,6 @@ export const TableContent = () => {
             period: 0,
             type: '',
             tag: '',
-            status: null,
             title: '',
             description: ''
         });
@@ -201,12 +194,6 @@ export const TableContent = () => {
             })) : [],
             onFilter: (value, record) => record.tag === value,
             sorter: (a, b) => (a.tag || '').localeCompare(b.tag || '')
-        },
-        {
-            title: 'Status',
-            dataIndex: 'status',
-            key: 'status',
-            sorter: (a, b) => (a.status || '').localeCompare(b.status || '')
         },
         {
             title: '',
@@ -289,13 +276,6 @@ export const TableContent = () => {
                         value={formData.tag}
                         onChange={handleChange('tag')}
                         required
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Status"
-                        fullWidth
-                        value={formData.status || ''}
-                        onChange={handleChange('status')}
                     />
                 </DialogContent>
                 <DialogActions>

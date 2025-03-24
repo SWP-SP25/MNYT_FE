@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, Suspense } from "react";
 import { BsPersonFill, BsEnvelopeFill, BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { IoMdCheckmarkCircle, IoMdCloseCircle } from "react-icons/io";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useFetch } from "@/hooks/useFetch";
 import Cookies from "js-cookie";
@@ -12,15 +12,27 @@ import styles from './page.module.css';
 import fpStyles from './forgot-password.module.css';
 
 // Khai báo kiểu dữ liệu cho thông báo
-type NotificationType = 'success' | 'error' | '';
+type NotificationType = 'success' | 'error' | 'info' | '';
 type NotificationMessage = string;
+
+// Tách phần xử lý searchParams ra component riêng
+function SearchParamsWrapper({ onInit }: { onInit: (isRegister: boolean) => void }) {
+    const { useSearchParams } = require('next/navigation');
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const mode = searchParams.get('mode');
+        onInit(mode === 'register');
+    }, [searchParams, onInit]);
+
+    return null;
+}
 
 const LoginPage = () => {
     const [isActive, setIsActive] = useState(false);
     const [isForgotActive, setIsForgotActive] = useState(false);
     const [forgotStep, setForgotStep] = useState(1);
     const router = useRouter();
-    const searchParams = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -37,14 +49,23 @@ const LoginPage = () => {
         message: NotificationMessage
     }>({ type: '', message: '' });
 
-    // Hàm hiển thị thông báo
-    const showNotification = (type: NotificationType, message: NotificationMessage) => {
-        setNotification({ type, message });
+    // Add state to track if user is logged in
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-        // Tự động ẩn thông báo sau 3 giây
+    // Hàm hiển thị thông báo cải tiến
+    const showNotification = (type: NotificationType, message: NotificationMessage) => {
+        // Xóa thông báo hiện tại nếu có
+        setNotification({ type: '', message: '' });
+
+        // Cho phép DOM cập nhật trước khi hiển thị thông báo mới
         setTimeout(() => {
-            setNotification({ type: '', message: '' });
-        }, 3000);
+            setNotification({ type, message });
+
+            // Tự động ẩn thông báo sau 4 giây
+            setTimeout(() => {
+                setNotification({ type: '', message: '' });
+            }, 4000);
+        }, 10);
     };
 
     // Theo dõi lỗi từ useAuth và hiển thị trong popup
@@ -77,13 +98,44 @@ const LoginPage = () => {
 
     const [registerError, setRegisterError] = useState("");
 
-    useEffect(() => {
-        // Kiểm tra nếu có query parameter 'mode=register' thì hiển thị form đăng ký
-        const mode = searchParams.get('mode');
-        if (mode === 'register') {
+    // Callback để nhận giá trị từ SearchParamsWrapper
+    const handleInitFromParams = React.useCallback((isRegister: boolean) => {
+        if (isRegister) {
             setIsActive(true);
         }
-    }, [searchParams]);
+    }, []);
+
+    // Modified function to check if user is already logged in
+    useEffect(() => {
+        const checkLoggedInStatus = () => {
+            const userData = Cookies.get('user');
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    setIsLoggedIn(true);
+
+                    // Show notification
+                    showNotification('info', 'Bạn đã đăng nhập rồi! Đang chuyển hướng...');
+
+                    // Redirect after showing notification
+                    setTimeout(() => {
+                        // Redirect to admin page if admin, otherwise to home page
+                        if (user.role === 'Admin') {
+                            router.push('/admin');
+                        } else {
+                            router.push('/');
+                        }
+                    }, 2000);
+                } catch (error) {
+                    // Clear invalid cookie
+                    Cookies.remove('user');
+                    setIsLoggedIn(false);
+                }
+            }
+        };
+
+        checkLoggedInStatus();
+    }, [router]);
 
     const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
@@ -169,36 +221,77 @@ const LoginPage = () => {
         }
     };
 
-    const handleForgotPasswordSubmit = (e: React.FormEvent) => {
+    const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (forgotStep === 1) {
-            // Ở bước 1, chỉ yêu cầu tên đăng nhập
+            // Bước 1: Kiểm tra username
             if (!username) {
                 showNotification('error', 'Vui lòng nhập tên đăng nhập');
                 return;
             }
-            // Xử lý bước 1 - không cần kiểm tra captchaToken
-            setForgotStep(2);
-            showNotification('success', 'Vui lòng đặt mật khẩu mới');
+
+            try {
+                // Không cần log phức tạp ở đây vì đây là GET request
+                const response = await fetchData(
+                    `https://api-mnyt.purintech.id.vn/api/Accounts/check-exists?username=${username}&email=null`,
+                    { method: "GET" }
+                ) as { data: boolean };
+
+                if (response.data === true) {
+                    setForgotStep(2);
+                    showNotification('success', 'Vui lòng đặt mật khẩu mới');
+                } else {
+                    showNotification('error', 'Tài khoản không tồn tại');
+                }
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Lỗi kiểm tra tài khoản';
+                showNotification('error', errorMessage);
+            }
         } else if (forgotStep === 2) {
-            // Ở bước 2, yêu cầu mật khẩu mới và xác nhận
+            // Bước 2: Đặt lại mật khẩu
+            if (!newPassword || !confirmNewPassword) {
+                showNotification('error', 'Vui lòng nhập đầy đủ thông tin');
+                return;
+            }
+
             if (newPassword !== confirmNewPassword) {
                 showNotification('error', 'Mật khẩu xác nhận không khớp');
                 return;
             }
 
-            // Xử lý bước 2 - không cần kiểm tra captchaToken
-            showNotification('success', 'Đổi mật khẩu thành công! Bạn có thể đăng nhập lại.');
+            // Tạo body request
+            const requestBody = {
+                userName: username,
+                email: "",
+                newPassword: newPassword,
+                confirmNewPassword: confirmNewPassword
+            };
 
-            // Reset form và quay lại đăng nhập
-            setTimeout(() => {
-                setIsForgotActive(false);
-                setForgotStep(1);
-                setUsername("");
-                setNewPassword("");
-                setConfirmNewPassword("");
-            }, 2000);
+            // Log dữ liệu body trước khi gửi
+            console.log("Body request reset-password:", requestBody);
+
+            try {
+                const response = await fetchData(
+                    "https://api-mnyt.purintech.id.vn/api/Accounts/reset-password",
+                    {
+                        method: "POST",
+                        body: JSON.stringify(requestBody),
+                    }
+                ) as { data: boolean, success: boolean, message: string };
+
+                if (response.data === true || response.success === true) {
+                    showNotification('success', 'Đổi mật khẩu thành công');
+                    setTimeout(() => {
+                        resetForgotPasswordForm();
+                    }, 2000);
+                } else {
+                    showNotification('error', response.message || 'Đặt lại mật khẩu thất bại');
+                }
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Lỗi đặt lại mật khẩu';
+                showNotification('error', errorMessage);
+            }
         }
     };
 
@@ -220,16 +313,53 @@ const LoginPage = () => {
         setConfirmNewPassword("");
     };
 
+    // Modify the return statement to show a minimal UI if already logged in
+    if (isLoggedIn) {
+        return (
+            <div className={styles.redirectContainer}>
+                {notification.type && (
+                    <div className={`${styles.notification} ${styles[notification.type]}`}>
+                        {notification.type === 'success' ? (
+                            <IoMdCheckmarkCircle className={styles.notificationIcon} />
+                        ) : notification.type === 'error' ? (
+                            <IoMdCloseCircle className={styles.notificationIcon} />
+                        ) : (
+                            <IoMdCheckmarkCircle className={styles.notificationIcon} />
+                        )}
+                        <span>{notification.message}</span>
+                        <button
+                            className={styles.closeNotification}
+                            onClick={() => setNotification({ type: '', message: '' })}
+                        >
+                            &times;
+                        </button>
+                    </div>
+                )}
+                <div className={styles.redirectMessage}>
+                    <h2>Bạn đã đăng nhập rồi</h2>
+                    <p>Đang chuyển hướng</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
+            {/* Bọc component sử dụng useSearchParams trong Suspense */}
+            <Suspense fallback={null}>
+                <SearchParamsWrapper onInit={handleInitFromParams} />
+            </Suspense>
+
             <div className={`${styles.container} ${isActive ? styles.active : ''} ${isForgotActive ? styles.forgotActive : ''}`}>
                 {/* Hiển thị thông báo */}
                 {notification.type && (
                     <div className={`${styles.notification} ${styles[notification.type]}`}>
                         {notification.type === 'success' ? (
                             <IoMdCheckmarkCircle className={styles.notificationIcon} />
-                        ) : (
+                        ) : notification.type === 'error' ? (
                             <IoMdCloseCircle className={styles.notificationIcon} />
+                        ) : (
+                            <IoMdCheckmarkCircle className={styles.notificationIcon} />
                         )}
                         <span>{notification.message}</span>
                         <button
@@ -369,8 +499,6 @@ const LoginPage = () => {
                         </button>
                     </form>
                 </div>
-
-                {/* Forgot Password Form - Đã loại bỏ phần reCAPTCHA */}
                 <div className={styles.forgotPasswordContainer}>
                     <div className={fpStyles.fpContainer}>
                         <h1 className={fpStyles.fpTitle}>Khôi phục mật khẩu</h1>

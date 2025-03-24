@@ -156,13 +156,13 @@ export const TableContent = () => {
                         key: 'update',
                         label: 'Update',
                         onClick: () => showUpdateModal(record)
-                    },
-                    {
-                        key: 'delete',
-                        label: 'Delete',
-                        danger: true,
-                        onClick: () => handleDelete(record)
                     }
+                    // {
+                    //     key: 'delete',
+                    //     label: 'Delete',
+                    //     danger: true,
+                    //     onClick: () => handleDelete(record)
+                    // }
                 ];
                 return (
                     <Dropdown menu={{ items }} placement="bottomRight">

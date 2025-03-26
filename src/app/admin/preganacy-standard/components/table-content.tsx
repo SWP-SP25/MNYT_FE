@@ -188,12 +188,6 @@ export const TableContent = () => {
                         key: 'update',
                         label: 'Update',
                         onClick: () => showUpdateModal(record)
-                    },
-                    {
-                        key: 'delete',
-                        label: 'Delete',
-                        danger: true,
-                        onClick: () => handleDelete(record)
                     }
                 ];
                 return (
@@ -207,11 +201,6 @@ export const TableContent = () => {
 
     return (
         <div>
-            <div style={{ marginBottom: 16 }}>
-                <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-                    Add Pregnancy Standard
-                </Button>
-            </div>
             <Table<PreganacyStandard> columns={columns} dataSource={pregnancyStandardView || []}/>
             
             <Dialog open={isModalOpen} onClose={handleCancel} maxWidth="sm" fullWidth>

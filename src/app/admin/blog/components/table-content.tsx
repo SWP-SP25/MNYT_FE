@@ -44,9 +44,24 @@ interface FormData {
   publishedDay: string;
 }
 
+interface ForumFormData {
+  category: string;
+  isAnonymous: boolean;
+  title: string;
+  description: string;
+  images: Array<{
+    type: string;
+    url: string;
+  }>;
+  period: number;
+  status: string;
+  publishedDay: string;
+}
+
 export const TableContent = () => {
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isForumModalOpen, setIsForumModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [activeTab, setActiveTab] = useState('blogs');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -59,6 +74,17 @@ export const TableContent = () => {
     imageUrl: "",
     period: 0,
     status: "",
+    publishedDay: new Date().toISOString().split("T")[0],
+  });
+
+  const [forumFormData, setForumFormData] = useState<ForumFormData>({
+    category: '',
+    isAnonymous: false,
+    title: '',
+    description: '',
+    images: [],
+    period: 0,
+    status: '',
     publishedDay: new Date().toISOString().split("T")[0],
   });
 
@@ -94,6 +120,10 @@ export const TableContent = () => {
 
   const handleCreate = () => {
     setIsModalOpen(true);
+  };
+
+  const handleCreateForum = () => {
+    setIsForumModalOpen(true);
   };
 
   const handleFileSelected = (file: File | null) => {
@@ -194,6 +224,86 @@ export const TableContent = () => {
       status: '',
       publishedDay: new Date().toISOString().split('T')[0]
     });
+  };
+
+  const handleForumOk = async () => {
+    try {
+      if (!user?.id) {
+        console.error('No user ID available');
+        return;
+      }
+
+      let finalImageUrl = imageUrl;
+      if (selectedFile && !imageUrl) {
+        // @ts-ignore
+        const uploadResult = await UploadButton.uploadFile();
+        if (uploadResult) {
+          finalImageUrl = uploadResult;
+          setImageUrl(finalImageUrl);
+        } else {
+          console.error('Failed to upload image');
+          return;
+        }
+      }
+
+      const forumData = {
+        ...forumFormData,
+        images: finalImageUrl ? [{
+          type: "image",
+          url: finalImageUrl
+        }] : []
+      };
+
+      const response = await axios.post(
+        `https://api-mnyt.purintech.id.vn/api/Posts/forum?authorId=${user.id}`,
+        forumData,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      console.log('Forum post created successfully:', response.data);
+      setIsForumModalOpen(false);
+      setForumFormData({
+        category: '',
+        isAnonymous: false,
+        title: '',
+        description: '',
+        images: [],
+        period: 0,
+        status: '',
+        publishedDay: new Date().toISOString().split('T')[0]
+      });
+      setSelectedFile(null);
+      setImageUrl('');
+
+      window.location.reload();
+    } catch (error) {
+      console.error('Error creating forum post:', error);
+    }
+  };
+
+  const handleForumCancel = () => {
+    setIsForumModalOpen(false);
+    setForumFormData({
+      category: '',
+      isAnonymous: false,
+      title: '',
+      description: '',
+      images: [],
+      period: 0,
+      status: '',
+      publishedDay: new Date().toISOString().split('T')[0]
+    });
+  };
+
+  const handleForumChange = (field: string) => (event: any) => {
+    setForumFormData(prev => ({
+      ...prev,
+      [field]: event.target.type === 'checkbox' ? event.target.checked : event.target.value
+    }));
   };
 
   const handleStatusChange = async (blogId: number, newStatus: string) => {
@@ -377,9 +487,13 @@ export const TableContent = () => {
           style={{ width: 300 }}
           allowClear
         />
-        {activeTab === 'blogs' && (
+        {activeTab === 'blogs' ? (
           <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
             Add Blog
+          </Button>
+        ) : (
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateForum}>
+            Add Forum Post
           </Button>
         )}
       </div>
@@ -471,6 +585,95 @@ export const TableContent = () => {
           <MuiButton onClick={handleCancel}>Hủy</MuiButton>
           <MuiButton onClick={handleOk} variant="contained" color="primary">
             Tạo
+          </MuiButton>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={isForumModalOpen} onClose={handleForumCancel} maxWidth="sm" fullWidth>
+        <DialogTitle>Create New Forum Post</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Category"
+            fullWidth
+            value={forumFormData.category}
+            onChange={handleForumChange('category')}
+            required
+          />
+          <TextField
+            margin="dense"
+            label="Title"
+            fullWidth
+            value={forumFormData.title}
+            onChange={handleForumChange('title')}
+            required
+          />
+          <TextField
+            margin="dense"
+            label="Description"
+            fullWidth
+            multiline
+            rows={4}
+            value={forumFormData.description}
+            onChange={handleForumChange('description')}
+            required
+          />
+
+          <div style={{ margin: '16px 0' }}>
+            <UploadButton
+              onImageChange={handleFileSelected}
+              onUrlChange={handleUrlChange}
+              autoUpload={false}
+              className="w-full"
+            />
+          </div>
+
+          {imageUrl && (
+            <TextField
+              margin="dense"
+              label="Image URL"
+              fullWidth
+              value={imageUrl}
+              disabled
+            />
+          )}
+
+          <TextField
+            margin="dense"
+            label="Period"
+            fullWidth
+            type="number"
+            value={forumFormData.period}
+            onChange={handleForumChange('period')}
+            required
+          />
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={forumFormData.status}
+              label="Status"
+              onChange={handleForumChange('status')}
+            >
+              <MenuItem value="draft">Draft</MenuItem>
+              <MenuItem value="published">Published</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="dense">
+            <label>
+              <input
+                type="checkbox"
+                checked={forumFormData.isAnonymous}
+                onChange={handleForumChange('isAnonymous')}
+              />
+              Anonymous Post
+            </label>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <MuiButton onClick={handleForumCancel}>Cancel</MuiButton>
+          <MuiButton onClick={handleForumOk} variant="contained" color="primary">
+            Create
           </MuiButton>
         </DialogActions>
       </Dialog>

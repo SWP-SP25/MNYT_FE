@@ -15,6 +15,8 @@ interface PlanCardProps {
     isDefault?: boolean;
     isBestValue?: boolean;
     onButtonClick?: () => void;
+    price: number;
+    disabled?: boolean;
 }
 
 const PlanCard = ({
@@ -24,7 +26,9 @@ const PlanCard = ({
     buttonText,
     isDefault,
     isBestValue,
-    onButtonClick
+    onButtonClick,
+    price,
+    disabled
 }: PlanCardProps) => {
     return (
         <div className={styles.plan}>
@@ -32,6 +36,9 @@ const PlanCard = ({
             <div className={styles.planTitle}>
                 <Icon size={24} />
                 <h2>{title}</h2>
+            </div>
+            <div className={styles.price}>
+                {price.toLocaleString('vi-VN')}đ
             </div>
             <div className={styles.features}>
                 {features.map((feature, index) => (
@@ -43,8 +50,9 @@ const PlanCard = ({
                 ))}
             </div>
             <button 
-                className={isDefault ? styles.defaultButton : styles.button}
+                className={`${isDefault ? styles.defaultButton : styles.button} ${disabled ? styles.disabledButton : ''}`}
                 onClick={onButtonClick}
+                disabled={disabled}
             >
                 {buttonText}
             </button>

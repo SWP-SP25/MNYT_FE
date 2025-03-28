@@ -50,6 +50,13 @@
     cursor: not-allowed;
 }
 
+.disabledButton {
+    background: #e2e8f0 !important;
+    color: #64748b !important;
+    cursor: not-allowed !important;
+    opacity: 0.8;
+}
+
 /* Card của từng gói */
 .plan {
     background: white;
@@ -83,6 +90,15 @@
     font-size: 2rem;
     color: #1a202c;
     font-weight: bold;
+}
+
+/* Price styling */
+.price {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #279357;
+    margin: 20px 0;
+    font-family: 'Dancing Script', cursive;
 }
 
 /* Định dạng danh sách quyền lợi */

@@ -123,6 +123,8 @@ const Membership = () => {
                         isDefault={Boolean(plan.id === currentPlanId || (currentPlanId && plan.id < currentPlanId))}
                         isBestValue={index === 2}
                         onButtonClick={() => handlePayment(plan.id)}
+                        price={plan.price}
+                        disabled={getButtonText(plan.id, index) === "Đã có" || getButtonText(plan.id, index) === "Gói hiện tại"}
                     />
                 ))}
             </div>

@@ -6,6 +6,7 @@ import useAxios from '@/hooks/useFetchAxios';
 import { MembersipOnwers } from '@/types/membershipOwner';
 import { useAuth } from '@/hooks/useAuth';
 import { MembershipPlans } from '@/types/membershipPlan';
+import { VNpay } from '@/types/VNpay';
 
 const Membership = () => {
     // get membership của user đã login
@@ -27,7 +28,7 @@ const Membership = () => {
         if (!user?.id) return;
         
         try {
-            const response = await fetch('https://api-mnyt.purintech.id.vn/api/CashPayment', {
+            const response = await fetch('https://api-mnyt.purintech.id.vn/api/VnPay/CreatePayment', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -42,9 +43,15 @@ const Membership = () => {
                 throw new Error('Payment failed');
             }
 
-            // Handle successful payment
-            alert('Thanh toán thành công!');
-            // You might want to refresh the membership data here
+            const data: VNpay = await response.json();
+            
+            // Check if the response is successful and contains a payment URL
+            if (data.success && data.data) {
+                // Redirect to the payment URL
+                window.location.href = data.data;
+            } else {
+                throw new Error(data.message || 'No payment URL received');
+            }
         } catch (error) {
             console.error('Payment error:', error);
             alert('Có lỗi xảy ra khi thanh toán. Vui lòng thử lại.');

@@ -8,14 +8,14 @@ import Link from 'next/link';
 export default function PaymentSuccess() {
   const router = useRouter();
 
-  useEffect(() => {
-    // Redirect to dashboard after 5 seconds
-    const timer = setTimeout(() => {
-      router.push('/');
-    }, 5000);
+  // useEffect(() => {
+  //   // Redirect to dashboard after 5 seconds
+  //   const timer = setTimeout(() => {
+  //     router.push('/');
+  //   }, 5000);
 
-    return () => clearTimeout(timer);
-  }, [router]);
+  //   return () => clearTimeout(timer);
+  // }, [router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

@@ -29,16 +29,19 @@ import {
   MenuItem,
 } from "@mui/material";
 import axios from "axios";
-import { Blogmanage, Blog } from "@/types/blogAdmin";
+import { Blogmanage, Blog, Category } from "@/types/blogAdmin";
 import { useAuth } from "@/hooks/useAuth";
 import UploadButton from "@/app/components/upload-button/upload";
 
 interface FormData {
   category: string;
+  isAnonymous: boolean;
   title: string;
   description: string;
-  imageId: number;
-  imageUrl: string;
+  images: Array<{
+    id: number;
+    url: string;
+  }>;
   period: number;
   status: string;
   publishedDay: string;
@@ -50,7 +53,7 @@ interface ForumFormData {
   title: string;
   description: string;
   images: Array<{
-    type: string;
+    id: number;
     url: string;
   }>;
   period: number;
@@ -68,12 +71,12 @@ export const TableContent = () => {
   const [imageUrl, setImageUrl] = useState<string>('');
   const [formData, setFormData] = useState<FormData>({
     category: '',
+    isAnonymous: false,
     title: '',
     description: '',
-    imageId: 0,
-    imageUrl: "",
+    images: [],
     period: 0,
-    status: "",
+    status: '',
     publishedDay: new Date().toISOString().split("T")[0],
   });
 
@@ -135,14 +138,17 @@ export const TableContent = () => {
     if (url) {
       setFormData(prev => ({
         ...prev,
-        imageUrl: url
+        images: [{
+          id: 0,
+          url: url
+        }]
       }));
       setImageUrl(url);
       console.log('URL hình ảnh nhận được:', url);
     } else {
       setFormData(prev => ({
         ...prev,
-        imageUrl: ''
+        images: []
       }));
       setImageUrl('');
     }
@@ -166,7 +172,10 @@ export const TableContent = () => {
           setImageUrl(finalImageUrl);
           setFormData(prev => ({
             ...prev,
-            imageUrl: finalImageUrl
+            images: [{
+              id: 0,
+              url: finalImageUrl
+            }]
           }));
         } else {
           console.error('Không thể tải lên hình ảnh');
@@ -176,7 +185,10 @@ export const TableContent = () => {
 
       const blogData = {
         ...formData,
-        imageUrl: finalImageUrl
+        images: finalImageUrl ? [{
+          id: 0,
+          url: finalImageUrl
+        }] : []
       };
 
       console.log('Form data sau khi xử lý:', blogData);
@@ -195,10 +207,10 @@ export const TableContent = () => {
       setIsModalOpen(false);
       setFormData({
         category: '',
+        isAnonymous: false,
         title: '',
         description: '',
-        imageId: 0,
-        imageUrl: '',
+        images: [],
         period: 0,
         status: '',
         publishedDay: new Date().toISOString().split('T')[0]
@@ -216,10 +228,10 @@ export const TableContent = () => {
     setIsModalOpen(false);
     setFormData({
       category: '',
+      isAnonymous: false,
       title: '',
       description: '',
-      imageId: 0,
-      imageUrl: '',
+      images: [],
       period: 0,
       status: '',
       publishedDay: new Date().toISOString().split('T')[0]
@@ -249,7 +261,7 @@ export const TableContent = () => {
       const forumData = {
         ...forumFormData,
         images: finalImageUrl ? [{
-          type: "image",
+          id: 0,
           url: finalImageUrl
         }] : []
       };
@@ -342,7 +354,7 @@ export const TableContent = () => {
     const data = activeTab === 'forums' ? forumView?.data : blogView?.data;
 
     if (!searchText) {
-      return data?.filter((blog: Blog) => blog.status !== 'Draft');
+      return data;
     }
 
     const searchLower = searchText.toLowerCase();
@@ -505,15 +517,20 @@ export const TableContent = () => {
       <Dialog open={isModalOpen} onClose={handleCancel} maxWidth="sm" fullWidth>
         <DialogTitle>Tạo Blog Mới</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Category"
-            fullWidth
-            value={formData.category}
-            onChange={handleChange('category')}
-            required
-          />
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={formData.category}
+              label="Category"
+              onChange={handleChange('category')}
+            >
+              {Object.values(Category).map((category) => (
+                <MenuItem key={category} value={category}>
+                  {category}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <TextField
             margin="dense"
             label="Title"
@@ -554,14 +571,6 @@ export const TableContent = () => {
 
           <TextField
             margin="dense"
-            label="Image ID"
-            fullWidth
-            type="number"
-            value={formData.imageId}
-            onChange={handleChange('imageId')}
-          />
-          <TextField
-            margin="dense"
             label="Period"
             fullWidth
             type="number"
@@ -592,15 +601,20 @@ export const TableContent = () => {
       <Dialog open={isForumModalOpen} onClose={handleForumCancel} maxWidth="sm" fullWidth>
         <DialogTitle>Create New Forum Post</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Category"
-            fullWidth
-            value={forumFormData.category}
-            onChange={handleForumChange('category')}
-            required
-          />
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={forumFormData.category}
+              label="Category"
+              onChange={handleForumChange('category')}
+            >
+              {Object.values(Category).map((category) => (
+                <MenuItem key={category} value={category}>
+                  {category}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <TextField
             margin="dense"
             label="Title"

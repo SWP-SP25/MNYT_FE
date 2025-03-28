@@ -6,7 +6,6 @@ import Image from "next/image";
 import {
   FaRegHeart,
   FaHeart,
-  FaRegComment,
   FaShare,
   FaBookmark,
   FaClock,
@@ -18,8 +17,8 @@ import useAxios from "@/hooks/useFetchAxios";
 import { BlogDetail, BlogPostDetailResponse } from "@/types/blogDetail";
 import axios from "axios";
 import Cookies from "js-cookie";
-import CommentList from "@/app/blog/components/CommentList";
 import { uploadImage } from "@/utils/uploadImage";
+import { useAuth } from "@/hooks/useAuth";
 
 // Thêm interface để type checking
 interface Comment {
@@ -86,6 +85,8 @@ const BlogDetail = () => {
     []
   );
 
+  const { user } = useAuth();
+
   const {
     response: blogPostDetailResponse,
     error,
@@ -100,60 +101,6 @@ const BlogDetail = () => {
       setPost(blogPostDetailResponse.data);
     }
   }, [blogPostDetailResponse]);
-
-  // ***** THÊM ĐOẠN CODE MỚI: Gán nội dung mặc định Postpartum Recovery Tips *****
-  useEffect(() => {
-    if (post) {
-      // Kiểm tra nếu post.content chưa chứa nội dung mẫu (bạn có thể thay đổi điều kiện kiểm tra)
-      if (
-        !post.content ||
-        !post.content.includes("Tổng quan về giai đoạn hậu sản")
-      ) {
-        const postpartumContent = `
-          <h2>Tổng quan về giai đoạn hậu sản</h2>
-          <p>
-            Giai đoạn hậu sản (postpartum) là thời kỳ quan trọng ngay sau khi sinh,
-            kéo dài từ vài tuần đến vài tháng. Đây là lúc cơ thể người mẹ phục hồi
-            sau quá trình mang thai và vượt cạn, đồng thời bắt đầu thích nghi với việc chăm sóc em bé mới chào đời.
-          </p>
-          <h2>1. Chăm sóc cơ thể</h2>
-          <ul>
-            <li>
-              <strong>Nghỉ ngơi đầy đủ:</strong> Giấc ngủ và thời gian nghỉ ngơi rất quan trọng để cơ thể phục hồi và cân bằng hormone.
-            </li>
-            <li>
-              <strong>Vệ sinh cá nhân:</strong> Giữ vùng kín sạch sẽ, thay băng vệ sinh thường xuyên, và nếu có bất kỳ dấu hiệu viêm nhiễm nào, hãy trao đổi với bác sĩ.
-            </li>
-            <li>
-              <strong>Vận động nhẹ nhàng:</strong> Sau khi sinh khoảng 2–6 tuần, bạn có thể bắt đầu vận động nhẹ như đi bộ hoặc tập yoga, giúp máu lưu thông và phục hồi cơ bắp.
-            </li>
-          </ul>
-          <h2>2. Dinh dưỡng và hydrat hóa</h2>
-          <p>
-            Cung cấp đủ dinh dưỡng giúp mẹ nhanh chóng lấy lại sức và hỗ trợ quá trình sản xuất sữa. Bổ sung nhiều rau xanh, trái cây, đạm, và uống đủ nước mỗi ngày. Hạn chế thức ăn chế biến sẵn, đồ uống có ga và cafein.
-          </p>
-          <h2>3. Chăm sóc tinh thần</h2>
-          <ul>
-            <li>
-              <strong>Tránh căng thẳng:</strong> Hãy sắp xếp công việc và gia đình hợp lý, nhờ người thân giúp đỡ việc nhà hoặc chăm em bé khi cần.
-            </li>
-            <li>
-              <strong>Tâm sự và chia sẻ:</strong> Nếu cảm thấy mệt mỏi hoặc căng thẳng, hãy trò chuyện với chồng, bạn bè hoặc chuyên gia tâm lý để được lắng nghe và hỗ trợ.
-            </li>
-            <li>
-              <strong>Nhận biết dấu hiệu trầm cảm sau sinh:</strong> Nếu bạn có triệu chứng buồn bã kéo dài, mất hứng thú với các hoạt động hàng ngày hoặc khó ngủ trầm trọng, hãy tìm đến sự hỗ trợ y tế kịp thời.
-            </li>
-          </ul>
-          <h2>Kết luận</h2>
-          <p>
-            Phục hồi sau sinh là một quá trình đòi hỏi sự kiên nhẫn và hỗ trợ từ gia đình, bạn bè. Hãy chú trọng chăm sóc bản thân, đảm bảo dinh dưỡng, nghỉ ngơi hợp lý và luôn giữ tinh thần tích cực. Nếu có bất kỳ thắc mắc hoặc dấu hiệu bất thường nào, đừng ngần ngại tham vấn ý kiến của bác sĩ.
-          </p>
-        `;
-        setPost({ ...post, content: postpartumContent });
-      }
-    }
-  }, [post]);
-  // ***** END: Thêm nội dung mặc định postpartum recovery tips *****
 
   // Lưu trạng thái thích và lưu bài vào localStorage
   useEffect(() => {
@@ -210,10 +157,9 @@ const BlogDetail = () => {
     setIsLiked((prev) => !prev);
     const newLikeCount = isLiked ? post.likeCount - 1 : post.likeCount + 1;
 
-    // Giả lập API
     try {
       await axios.post(
-        `https://api-mnyt.purintech.id.vn/api/Interactions/like/17?accountId=1`
+        `https://api-mnyt.purintech.id.vn/api/Interactions/like/${id}?accountId=1`
       );
       localStorage.setItem(`liked-${id}`, JSON.stringify(!isLiked));
       setPost((prev) => ({ ...prev, likeCount: newLikeCount }));
@@ -225,10 +171,12 @@ const BlogDetail = () => {
   const handleSave = async () => {
     setIsSaved((prev) => !prev);
 
-    // Giả lập API
     try {
+      // Lấy ID người dùng thực tế từ useAuth hook
+      const userId = user?.id || 1;
+
       await axios.post(
-        `https://api-mnyt.purintech.id.vn/api/Interactions/bookmark/17?accountId=1`
+        `https://api-mnyt.purintech.id.vn/api/Interactions/bookmark/${id}?accountId=${userId}`
       );
       localStorage.setItem(`saved-${id}`, JSON.stringify(!isSaved));
     } catch (error) {

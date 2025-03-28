@@ -1,7 +1,7 @@
 "use client";
 import styles from "@/app/blog/styles/blog.module.css";
 import BlogList from "./components/BlogList";
-import CategoryFilter from "./Sort & Filter/CategoryFilter";
+import BlogFilter from "./Sort & Filter/BlogFilter";
 import Sidebar from "./sidebar/Sidebar";
 import Pagination from "./Pagination/Pagination";
 import { useState, useCallback, useEffect } from "react";
@@ -10,16 +10,17 @@ import axios from "axios";
 const BlogPage = () => {
   // State management
   const [currentCategory, setCurrentCategory] = useState<string>("all");
-  const [currentPage, setCurrentPage] = useState(1); // Bắt đầu với trang 1
+  const [currentSort, setCurrentSort] = useState<string>("latest");
+  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [blogs, setBlogs] = useState([]); // State để lưu danh sách blog
-  const blogsPerPage = 10; // Số lượng blog hiển thị trên mỗi trang
-  const [posts, setPosts] = useState([]); // State để lưu trữ bài viết
+  const [blogs, setBlogs] = useState([]);
+  const blogsPerPage = 10;
+  const [posts, setPosts] = useState([]);
 
-  const fetchBlogs = async (category: string) => {
+  const fetchBlogs = async (category: string, sort: string) => {
     try {
       const response = await axios.get(
-        `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${category}&page=${currentPage}`
+        `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${category}&page=${currentPage}&sort=${sort}`
       );
       setBlogs(response.data.data);
       setTotalPages(Math.ceil(response.data.total / blogsPerPage));
@@ -29,16 +30,19 @@ const BlogPage = () => {
   };
 
   useEffect(() => {
-    fetchBlogs(currentCategory);
-  }, [currentCategory, currentPage]);
+    fetchBlogs(currentCategory, currentSort);
+  }, [currentCategory, currentSort, currentPage]);
 
   // Khôi phục trạng thái từ localStorage khi component mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("blogCurrentPage");
-      if (saved) {
-        setCurrentPage(Number(saved));
-      }
+      const savedPage = localStorage.getItem("blogCurrentPage");
+      const savedCategory = localStorage.getItem("blogCurrentCategory");
+      const savedSort = localStorage.getItem("blogCurrentSort");
+
+      if (savedPage) setCurrentPage(Number(savedPage));
+      if (savedCategory) setCurrentCategory(savedCategory);
+      if (savedSort) setCurrentSort(savedSort);
     }
   }, []);
 
@@ -46,15 +50,22 @@ const BlogPage = () => {
   const handleCategoryChange = useCallback((category: string) => {
     setCurrentCategory(category);
     setCurrentPage(1); // Reset về trang 1 khi đổi category
+    localStorage.setItem("blogCurrentCategory", category);
+  }, []);
+
+  const handleSortChange = useCallback((sort: string) => {
+    setCurrentSort(sort);
+    localStorage.setItem("blogCurrentSort", sort);
   }, []);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    localStorage.setItem("blogCurrentPage", String(page));
   };
 
   const handlePostDeleted = () => {
     // Refresh the blog list
-    window.location.reload();
+    fetchBlogs(currentCategory, currentSort);
   };
 
   const refreshPosts = async () => {
@@ -76,9 +87,11 @@ const BlogPage = () => {
     <div className={styles.blogContainer}>
       <div className={styles.mainContent}>
         <div className={styles.filterBar}>
-          <CategoryFilter
+          <BlogFilter
             onCategoryChange={handleCategoryChange}
+            onSortChange={handleSortChange}
             currentCategory={currentCategory}
+            currentSort={currentSort}
           />
         </div>
         <BlogList

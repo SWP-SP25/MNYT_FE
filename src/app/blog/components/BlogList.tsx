@@ -41,7 +41,7 @@ const BlogList = ({
         const response = await axios.get(
           `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${category}&page=${currentPage}`
         );
-        console.log(response.data.data);
+        console.log("My fetch blog lít", response.data.data);
         setBlogs(response.data.data);
         setTotalPages(Math.ceil(response.data.total / 10));
       } catch (error) {

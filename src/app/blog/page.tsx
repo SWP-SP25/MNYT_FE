@@ -22,6 +22,7 @@ const BlogPage = () => {
       const response = await axios.get(
         `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${category}&page=${currentPage}&sort=${sort}`
       );
+
       setBlogs(response.data.data);
       setTotalPages(Math.ceil(response.data.total / blogsPerPage));
     } catch (error) {

@@ -1,123 +1,127 @@
 .sidebar {
-    position: sticky;
-    top: 24px;
-    height: fit-content;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
-.statsCard,
-.topMembers,
-.trendingTopics {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    animation: fadeIn 0.5s ease-out;
+/* Xóa các style cũ của stats
+.statsCard {
+    ...
 }
-
 .statItem {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid #e5e7eb;
-    color: #4b5563;
+    ...
+}
+*/
+
+/* Thêm các style mới đồng bộ với forum */
+.sidebarContainer {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 5px 20px rgba(39, 147, 87, 0.05);
+    margin-bottom: 1.5rem;
+    border: 1px solid #eef5f1;
 }
 
-.memberList {
-    margin-top: 16px;
-}
-
-.memberItem {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid #e5e7eb;
-    transition: transform 0.3s ease;
-}
-
-.memberItem:hover {
-    transform: translateX(4px);
-}
-
-.memberItem img {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 2px solid #279357;
-    padding: 2px;
-}
-
-@media (max-width: 1280px) {
-    .sidebar {
-        position: static;
-        width: 100%;
-    }
-}
-
-/* Trending Topics */
-.trendingTopics {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.trendingTopics h3 {
-    font-size: 18px;
+.sidebarTitle {
+    font-size: 1.2rem;
     font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 20px;
-}
-
-.tagCloud {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.trendingTag {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    padding: 8px 16px 8px 24px; /* Thêm padding bên trái cho dấu # */
-    background: #f3f4f6;
-    border-radius: 20px;
     color: #279357;
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.3s ease;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid #eef5f1;
+    position: relative;
 }
 
-.trendingTag::before {
-    content: "#";
+.sidebarTitle::after {
+    content: '';
     position: absolute;
-    left: 12px;
-    color: inherit;
-    opacity: 0.7;
-}
-
-.trendingTag:hover {
+    bottom: -2px;
+    left: 0;
+    width: 50px;
+    height: 2px;
     background: #279357;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(39, 147, 87, 0.15);
+    border-radius: 2px;
 }
 
+.categoryList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.categoryItem {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    background-color: #f7fbf9;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #444;
+}
+
+.categoryItem:hover {
+    background-color: #ebf7ef;
+    transform: translateX(5px);
+}
+
+.categoryIcon {
+    margin-right: 0.8rem;
+    color: #279357;
+    display: flex;
+    align-items: center;
+}
+
+.categoryName {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.activeCategory {
+    background-color: #279357;
+    color: white;
+}
+
+.activeCategory .categoryIcon {
+    color: white;
+}
+
+.activeCategory:hover {
+    background-color: #1e7a45;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-    .tagCloud {
-        gap: 8px;
+    .sidebarContainer {
+        padding: 1.2rem;
     }
-    
-    .trendingTag {
-        font-size: 13px;
-        padding: 6px 14px 6px 20px;
+
+    .categoryItem {
+        padding: 0.7rem 1rem;
     }
-    
-    .trendingTag::before {
-        left: 10px;
+
+    .categoryName {
+        font-size: 0.9rem;
     }
+}
+
+/* Animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.categoryItem {
+    animation: slideIn 0.3s ease-out forwards;
 }

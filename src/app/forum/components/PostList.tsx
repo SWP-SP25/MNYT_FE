@@ -503,7 +503,7 @@ const PostList = ({
       {!loading && !error && filteredPosts.length > 0 && (
         <Pagination
           currentPage={currentPage}
-          totalPages={Math.ceil(filteredPosts.length / 10)}
+          totalPages={totalPages}
           onPageChange={onPageChange}
         />
       )}

@@ -42,18 +42,9 @@ const BlogList = ({
         const response = await axios.get<BlogResponse>(
           `https://api-mnyt.purintech.id.vn/api/Posts/blogs/by-category/paginated?category=${category}&PageNumber=${currentPage}&PageSize=10`
         );
-        console.log("Raw API Response:", response.data);
-        
-        if (response.data.success && response.data.data.items) {
-          const publishedBlogs = response.data.data.items.filter((post: BlogPost) => 
-            post.status === "Published" && post.typeEnum === 0
-          );
-          console.log("Published Blogs:", publishedBlogs);
-          setBlogs(publishedBlogs);
-          setTotalPages(response.data.data.totalPages);
-        } else {
-          setError("Không thể tải dữ liệu bài viết");
-        }
+        console.log("My fetch blog lít", response.data.data);
+        setBlogs(response.data.data);
+        setTotalPages(Math.ceil(response.data.total / 10));
       } catch (error) {
         setError("Lỗi khi tải bài viết");
       } finally {

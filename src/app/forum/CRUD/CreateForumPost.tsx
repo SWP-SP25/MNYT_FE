@@ -260,110 +260,188 @@ const CreateBlogPost = ({
       <h2 className={styles.componentTitle}>
         {editPost ? "Chỉnh sửa bài viết" : "Tạo bài viết mới"}
       </h2>
+
       <form onSubmit={handleSubmit} className={styles.createPostForm}>
         {errorMessage && <div className={styles.error}>{errorMessage}</div>}
 
-        <input
-          type="text"
-          placeholder="Tiêu đề bài viết"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className={styles.searchInput}
-        />
-
-        <textarea
-          placeholder="Nội dung bài viết"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className={styles.searchInput}
-        />
-
-        <div className={styles.categoryLabel}>Chọn chủ đề:</div>
-        <div className={styles.selectContainer}>
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className={styles.categorySelect}
-            required
-          >
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-          <div className={styles.selectArrow}>▼</div>
-        </div>
-
-        <div className={styles.imageUploadContainer}>
-          <div className={styles.imageLabel}>Hình ảnh:</div>
-
-          {/* Sử dụng UploadButton */}
-          <UploadButton
-            onImageChange={setSelectedFile}
-            onUrlChange={setImageUrl}
-            autoUpload={false}
-            className={styles.imageUploadArea}
-          />
-
-          {/* Hiển thị URL hình ảnh nếu có */}
-          {imageUrl && (
-            <div className={styles.imagePreviewInfo}>
-              <span>Hình ảnh đã chọn sẵn sàng để tải lên khi đăng bài</span>
+        {/* Cột trái - thông tin cơ bản */}
+        <div className={styles.formLeft}>
+          <div className={styles.formSection}>
+            <div className={styles.sectionTitle}>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M4 5h16v2H4z" fill="#279357" />
+                <path d="M4 9h16v2H4z" fill="#279357" />
+                <path d="M4 13h16v2H4z" fill="#279357" />
+                <path d="M4 17h10v2H4z" fill="#279357" />
+              </svg>
+              Thông tin bài viết
             </div>
-          )}
-        </div>
 
-        <div className={styles.anonymousOption}>
-          <label className={styles.container}>
             <input
-              type="checkbox"
-              id="anonymousPost"
-              checked={isAnonymous}
-              onChange={(e) => {
-                setIsAnonymous(e.target.checked);
-                console.log("Anonymous changed to:", e.target.checked);
-              }}
-              className={styles.anonymousCheckbox}
+              type="text"
+              placeholder="Tiêu đề bài viết"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={styles.searchInput}
             />
-            <svg viewBox="0 0 64 64" height="2em" width="2em">
-              <path
-                d="M 0 16 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 16 L 32 48 L 64 16 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 16"
-                pathLength="575.0541381835938"
-                className={styles.path}
-              ></path>
-            </svg>
-            <span className={styles.anonymousLabel}>
-              Đăng bài viết ẩn danh
-              {isAnonymous && (
-                <span className={styles.anonymousInfo}>
-                  {" "}
-                  - Tên của bạn sẽ hiển thị là "Người dùng ẩn danh"
-                </span>
-              )}
-            </span>
-          </label>
+
+            <textarea
+              placeholder="Nội dung bài viết"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className={styles.searchInput}
+            />
+          </div>
+
+          <div className={styles.formSection}>
+            <div className={styles.sectionTitle}>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 8h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3H9c-.55 0-1-.45-1-1s.45-1 1-1h3V7c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1z"
+                  fill="#279357"
+                />
+              </svg>
+              Phân loại
+            </div>
+
+            <div className={styles.categoryLabel}>Chọn chủ đề:</div>
+            <div className={styles.selectContainer}>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className={styles.categorySelect}
+                required
+              >
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              <div className={styles.selectArrow}>▼</div>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <button
-            type="submit"
-            disabled={loading}
-            className={styles.createPostButton}
-          >
-            {loading
-              ? "Đang xử lý..."
-              : editPost
-              ? "Cập nhật Bài Viết"
-              : "Đăng Bài Viết"}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className={styles.createPostButton}
-          >
-            Hủy
-          </button>
+        {/* Cột phải - hình ảnh và tùy chọn */}
+        <div className={styles.formRight}>
+          <div className={styles.formSection}>
+            <div className={styles.sectionTitle}>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"
+                  fill="#279357"
+                />
+              </svg>
+              Hình ảnh
+            </div>
+
+            <div className={styles.imageUploadContainer}>
+              {/* Sử dụng UploadButton */}
+              <UploadButton
+                onImageChange={setSelectedFile}
+                onUrlChange={setImageUrl}
+                autoUpload={false}
+                className={styles.imageUploadArea}
+              />
+
+              {/* Hiển thị URL hình ảnh nếu có */}
+              {imageUrl && (
+                <div className={styles.imagePreviewInfo}>
+                  <span>✓ Hình ảnh đã sẵn sàng để tải lên</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.formSection}>
+            <div className={styles.sectionTitle}>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"
+                  fill="#279357"
+                />
+              </svg>
+              Tùy chọn riêng tư
+            </div>
+
+            <div className={styles.anonymousOption}>
+              <label className={styles.container}>
+                <input
+                  type="checkbox"
+                  id="anonymousPost"
+                  checked={isAnonymous}
+                  onChange={(e) => {
+                    setIsAnonymous(e.target.checked);
+                  }}
+                  className={styles.anonymousCheckbox}
+                />
+                <svg viewBox="0 0 64 64" height="2em" width="2em">
+                  <path
+                    d="M 0 16 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 16 L 32 48 L 64 16 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 16"
+                    pathLength="575.0541381835938"
+                    className={styles.path}
+                  ></path>
+                </svg>
+                <span className={styles.anonymousLabel}>
+                  Đăng bài viết ẩn danh
+                  {isAnonymous && (
+                    <span className={styles.anonymousInfo}>
+                      - Tên của bạn sẽ hiển thị là "Người dùng ẩn danh"
+                    </span>
+                  )}
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Phần nút bấm ở dưới, chiếm toàn bộ chiều rộng */}
+        <div className={styles.formFull}>
+          <div className={styles.buttonContainer}>
+            <button
+              type="button"
+              onClick={onCancel}
+              className={styles.createPostButton}
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className={styles.submitPostButton}
+            >
+              {loading
+                ? "Đang xử lý..."
+                : editPost
+                ? "Cập nhật bài viết"
+                : "Đăng bài viết"}
+            </button>
+          </div>
         </div>
       </form>
     </div>

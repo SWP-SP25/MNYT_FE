@@ -1,29 +1,49 @@
 .forumContainer {
     display: flex;
     flex-direction: column;
-    padding: 2rem;
-    background-color: #f9f9f9;
+    padding: 2.5rem;
+    background-color: #f7f9f8;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    min-height: 90vh;
+    position: relative;
+}
+
+.forumContainer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: #279357;
+    border-radius: 5px 5px 0 0;
 }
 
 .forumContent {
     display: flex;
-    gap: 2rem;
+    gap: 2.5rem;
 }
 
 .sidebarLeft {
     flex: 1;
     background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 1rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    height: fit-content;
+    position: sticky;
+    top: 2rem;
 }
 
 .mainContent {
     flex: 3;
     background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 1rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    position: relative;
 }
 
 .createPostOverlay {
@@ -32,14 +52,15 @@
     left: 50%;
     transform: translate(-50%, -50%);
     background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     max-width: 90%;
-    width: 600px;
+    width: 700px;
     max-height: 90vh;
     overflow-y: auto;
+    border-top: 5px solid #279357;
 }
 
 /* Thêm overlay nền mờ */
@@ -70,7 +91,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -80,12 +102,47 @@
 
 .modalContent {
     background-color: white;
-    border-radius: 8px;
+    border-radius: 15px;
     width: 100%;
     max-width: 800px;
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
-    padding: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 2.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    border-top: 5px solid #279357;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Thêm responsive để tránh tràn màn hình trên thiết bị nhỏ */
+@media (max-width: 1200px) {
+    .forumContainer {
+        max-width: 95%;
+        padding: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .forumContent {
+        flex-direction: column;
+    }
+    
+    .sidebarLeft, .mainContent {
+        width: 100%;
+    }
+    
+    .sidebarLeft {
+        position: static;
+    }
 }

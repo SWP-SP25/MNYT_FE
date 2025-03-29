@@ -45,7 +45,13 @@ const ForumPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [showCreatePost, setShowCreatePost] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const savedPage = localStorage.getItem("forumCurrentPage");
+      return savedPage ? parseInt(savedPage, 10) : 1;
+    }
+    return 1;
+  });
   const [totalPages, setTotalPages] = useState<number>(1);
   const postsPerPage = 10; // Số bài viết mỗi trang
 
@@ -64,64 +70,80 @@ const ForumPage = () => {
   };
 
   // Hàm lấy danh sách bài viết
-  const fetchPosts = useCallback(async () => {
-    setLoading(true);
-    try {
-      let url;
+  const fetchPosts = useCallback(
+    async (page = currentPage) => {
+      setLoading(true);
+      try {
+        let url;
 
-      // Xử lý tìm kiếm một cách đơn giản hơn
-      // if (searchQuery && searchQuery.trim() !== "") {
-      //   url = `https://api-mnyt.purintech.id.vn/api/BlogPosts/search?keyword=${searchQuery}&page=${currentPage}&pageSize=${postsPerPage}`;
-      // }
-      // Lấy theo danh mục nếu không tìm kiếm
-      if (currentCategory === "all") {
-        url = `https://api-mnyt.purintech.id.vn/api/Posts/forums?page=${currentPage}&pageSize=${postsPerPage}&status=Published`;
-      } else {
-        url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${currentCategory}&page=${currentPage}&pageSize=${postsPerPage}&status=Published`;
-      }
-
-      console.log("Fetching posts from URL:", url);
-
-      const response = await axios.get(url);
-
-      if (response.data) {
-        if (response.data.data && Array.isArray(response.data.data)) {
-          // First filter by status, then by search query
-          const publishedPosts = response.data.data.filter((post: ForumPost) => post.status === "Published");
-          const filteredPosts = publishedPosts.filter((post: ForumPost) =>
-            post.title.toLowerCase().includes(searchQuery.toLowerCase())
-          );
-          setPosts(filteredPosts);
-          setTotalPages(Math.ceil(filteredPosts.length / postsPerPage));
-          setError(null);
+        // Xử lý tìm kiếm một cách đơn giản hơn
+        // if (searchQuery && searchQuery.trim() !== "") {
+        //   url = `https://api-mnyt.purintech.id.vn/api/BlogPosts/search?keyword=${searchQuery}&page=${currentPage}&pageSize=${postsPerPage}`;
+        // }
+        // Lấy theo danh mục nếu không tìm kiếm
+        if (currentCategory === "all") {
+          url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/paginated?page=${page}&pageSize=${postsPerPage}`;
         } else {
-          setPosts([]);
-          setError("Không có dữ liệu bài viết");
+          url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${currentCategory}&page=${page}&pageSize=${postsPerPage}`;
         }
-      }
-    } catch (err) {
-      console.error("Lỗi khi tải bài viết:", err);
-      setPosts([]);
 
-      if (searchQuery) {
-        setError(`Không tìm thấy bài viết với từ khóa "${searchQuery}"`);
-      } else {
-        setError("Không thể tải bài viết. Vui lòng thử lại sau.");
+        console.log("Fetching forum posts from URL:", url);
+
+        const response = await axios.get(url);
+        console.log("Fetching forum posts data:", response.data.data);
+
+        if (response.data) {
+          if (response.data.data && Array.isArray(response.data.data)) {
+            setPosts(
+              response.data.data.filter((x) =>
+                (x.title as string).includes(searchQuery)
+              )
+            );
+            setTotalPages(Math.ceil((response.data.total || 0) / postsPerPage));
+            setError(null);
+          } else if (
+            response.data.data.items &&
+            Array.isArray(response.data.data.items)
+          ) {
+            setPosts(
+              response.data.data.items.filter((x) =>
+                (x.title as string).includes(searchQuery)
+              )
+            );
+            setTotalPages(response.data.data.totalPages);
+            //setCurrentPage(response.data.data.pageIndex);
+            setError(null);
+          } else {
+            setPosts([]);
+            setError("Không có dữ liệu bài viết");
+          }
+        }
+      } catch (err) {
+        console.error("Lỗi khi tải bài viết:", err);
+        setPosts([]);
+
+        if (searchQuery) {
+          setError(`Không tìm thấy bài viết với từ khóa "${searchQuery}"`);
+        } else {
+          setError("Không thể tải bài viết. Vui lòng thử lại sau.");
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [currentCategory, searchQuery, currentPage, postsPerPage]);
+    },
+    [currentCategory, searchQuery]
+  );
 
   // Gọi API khi component mount hoặc khi category/search thay đổi
   useEffect(() => {
     fetchPosts();
-  }, [fetchPosts, currentCategory, searchQuery]);
+  }, [fetchPosts]);
 
   const handleCategoryChange = (category: string) => {
     setCurrentCategory(category);
+    setCurrentPage(1);
+    localStorage.setItem("forumCurrentPage", "1");
   };
-
   const handleCreatePost = () => {
     setShowCreatePost(true);
   };
@@ -130,8 +152,10 @@ const ForumPage = () => {
     setShowCreatePost(false);
     fetchPosts(); // Tải lại danh sách bài viết sau khi tạo mới
   };
+  console.log("My curent page", currentPage);
 
   const handlePageChange = (page: number) => {
+    console.log("new page", page);
     setCurrentPage(page);
   };
 

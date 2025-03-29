@@ -1,0 +1,226 @@
+.savedBlogsContainer {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .pageTitle {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #279357;
+    margin-bottom: 2rem;
+    position: relative;
+    padding-bottom: 1rem;
+  }
+  
+  .pageTitle::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #279357, #4cb07a);
+    border-radius: 3px;
+  }
+  
+  .loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+  }
+  
+  .loadingSpinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(39, 147, 87, 0.1);
+    border-radius: 50%;
+    border-top-color: #279357;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 1rem;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .errorMessage {
+    color: #df1d1d;
+    background-color: #fee2e2;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #ef4444;
+    margin-bottom: 1.5rem;
+  }
+  
+  .emptyState {
+    text-align: center;
+    padding: 3rem 0;
+    background-color: #f7fbf9;
+    border-radius: 12px;
+    border: 1px dashed #c1e7d2;
+    margin: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .emptyIcon {
+    color: #279357;
+    opacity: 0.4;
+    margin-bottom: 1rem;
+  }
+  
+  .browseButton {
+    background: linear-gradient(135deg, #279357, #1e7a45);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+  }
+  
+  .browseButton:hover {
+    background: linear-gradient(135deg, #1e7a45, #165e35);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(39, 147, 87, 0.2);
+  }
+  
+  .blogGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .blogCard {
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #eef5f1;
+  }
+  
+  .blogCard:hover {
+    box-shadow: 0 8px 15px rgba(39, 147, 87, 0.15);
+    transform: translateY(-4px);
+  }
+  
+  .blogImageContainer {
+    position: relative;
+    width: 100%;
+    height: 180px;
+  }
+  
+  .blogImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .categoryTag {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #279357;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  
+  .blogContent {
+    padding: 1.2rem;
+    flex-grow: 1;
+  }
+  
+  .blogTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    color: #1a1a1a;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .blogDescription {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .blogMeta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #777;
+  }
+  
+  .authorName {
+    font-weight: 500;
+  }
+  
+  .blogActions {
+    display: flex;
+    border-top: 1px solid #eef5f1;
+  }
+  
+  .viewButton, .removeButton {
+    flex: 1;
+    padding: 0.8rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+  
+  .viewButton {
+    color: #279357;
+    border-right: 1px solid #eef5f1;
+  }
+  
+  .removeButton {
+    color: #e53e3e;
+  }
+  
+  .viewButton:hover {
+    background-color: #ebf7ef;
+  }
+  
+  .removeButton:hover {
+    background-color: #fee2e2;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .savedBlogsContainer {
+      padding: 1.5rem;
+    }
+    
+    .blogGrid {
+      grid-template-columns: 1fr;
+    }
+  }

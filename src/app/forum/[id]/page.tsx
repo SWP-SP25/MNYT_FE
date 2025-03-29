@@ -182,10 +182,11 @@ const ForumDetailPage = () => {
       JSON.stringify(newLikeStatus)
     );
 
-    // Optional: Call API to save like status
+    // Sử dụng API đúng để lưu trạng thái like
     try {
+      const userId = user?.id || 1;
       await axios.post(
-        `https://api-mnyt.purintech.id.vn/api/Interactions/like/${postId}?accountId=1`
+        `https://api-mnyt.purintech.id.vn/api/Interactions/like/${postId}?accountId=${userId}`
       );
     } catch (error) {
       console.error("Error saving like status:", error);
@@ -203,10 +204,11 @@ const ForumDetailPage = () => {
       JSON.stringify(newSaveStatus)
     );
 
-    // Optional: Call API to save bookmark status
+    // Sử dụng API đúng để lưu trạng thái bookmark
     try {
+      const userId = user?.id || 1;
       await axios.post(
-        `https://api-mnyt.purintech.id.vn/api/Interactions/bookmark/${postId}?accountId=1`
+        `https://api-mnyt.purintech.id.vn/api/Interactions/bookmark/${postId}?accountId=${userId}`
       );
     } catch (error) {
       console.error("Error saving bookmark status:", error);

@@ -26,6 +26,7 @@ interface ForumPost {
   createdAt: string;
   commentCount: number;
   likes: number;
+  status: string;
 }
 
 const categories = [
@@ -74,9 +75,9 @@ const ForumPage = () => {
       // }
       // Lấy theo danh mục nếu không tìm kiếm
       if (currentCategory === "all") {
-        url = `https://api-mnyt.purintech.id.vn/api/Posts/forums?page=${currentPage}&pageSize=${postsPerPage}`;
+        url = `https://api-mnyt.purintech.id.vn/api/Posts/forums?page=${currentPage}&pageSize=${postsPerPage}&status=Published`;
       } else {
-        url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${currentCategory}&page=${currentPage}&pageSize=${postsPerPage}`;
+        url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${currentCategory}&page=${currentPage}&pageSize=${postsPerPage}&status=Published`;
       }
 
       console.log("Fetching posts from URL:", url);
@@ -85,12 +86,13 @@ const ForumPage = () => {
 
       if (response.data) {
         if (response.data.data && Array.isArray(response.data.data)) {
-          setPosts(
-            response.data.data.filter((x) =>
-              (x.title as string).includes(searchQuery)
-            )
+          // First filter by status, then by search query
+          const publishedPosts = response.data.data.filter((post: ForumPost) => post.status === "Published");
+          const filteredPosts = publishedPosts.filter((post: ForumPost) =>
+            post.title.toLowerCase().includes(searchQuery.toLowerCase())
           );
-          setTotalPages(Math.ceil((response.data.total || 0) / postsPerPage));
+          setPosts(filteredPosts);
+          setTotalPages(Math.ceil(filteredPosts.length / postsPerPage));
           setError(null);
         } else {
           setPosts([]);

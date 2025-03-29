@@ -446,8 +446,8 @@ export const TableContent = () => {
         const items: MenuProps['items'] = [
           {
             key: 'view',
-            label: 'View Blog',
-            onClick: () => window.open(`/blog/${record.id}`, '_blank')
+            label: activeTab === 'blogs' ? 'View Blog' : 'View Forum',
+            onClick: () => window.open(activeTab === 'blogs' ? `/blog/${record.id}` : `/forum/${record.id}`, '_blank')
           },
           {
             key: 'status',

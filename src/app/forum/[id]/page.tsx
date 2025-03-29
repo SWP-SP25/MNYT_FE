@@ -17,6 +17,7 @@ import {
   FaShare,
   FaBookmark,
   FaClock,
+  FaFlag,
 } from "react-icons/fa";
 import { useAuth } from "@/hooks/useAuth";
 import EditForumPost from "../CRUD/EditForumPost";
@@ -53,6 +54,7 @@ const ForumDetailPage = () => {
   const [newComment, setNewComment] = useState("");
   const { user } = useAuth();
   const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [isReported, setIsReported] = useState(false);
 
   // Load like/save status from localStorage
   useEffect(() => {
@@ -312,6 +314,22 @@ const ForumDetailPage = () => {
     }
   };
 
+  // Handle report post
+  const handleReport = async () => {
+    if (!post || isReported) return;
+
+    try {
+      await axios.patch(
+        `https://api-mnyt.purintech.id.vn/api/Posts/${postId}/change-status?accountId=1&status=Reported`
+      );
+      setIsReported(true);
+      alert("Bài viết đã được tố cáo thành công!");
+    } catch (error) {
+      console.error("Error reporting post:", error);
+      alert("Không thể tố cáo bài viết. Vui lòng thử lại sau.");
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -443,6 +461,15 @@ const ForumDetailPage = () => {
           >
             <FaBookmark />
             <span>{isSaved ? "Đã lưu" : "Lưu bài"}</span>
+          </button>
+          <button
+            onClick={handleReport}
+            className={`${styles.interactionButton} ${styles.reportButton} ${
+              isReported ? styles.reported : ""
+            }`}
+          >
+            <FaFlag />
+            <span>{isReported ? "Đã tố cáo" : "Tố cáo"}</span>
           </button>
         </div>
       </article>

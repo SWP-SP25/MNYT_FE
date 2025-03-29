@@ -9,7 +9,7 @@ import axios from "axios";
 
 const BlogPage = () => {
   // State management
-  const [currentCategory, setCurrentCategory] = useState<string>("all");
+  const [currentCategory, setCurrentCategory] = useState<string>("Tất cả");
   const [currentPage, setCurrentPage] = useState(1); // Bắt đầu với trang 1
   const [totalPages, setTotalPages] = useState(0);
   const [blogs, setBlogs] = useState([]); // State để lưu danh sách blog
@@ -21,10 +21,21 @@ const BlogPage = () => {
       const response = await axios.get(
         `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${category}&page=${currentPage}`
       );
-      setBlogs(response.data.data);
+      // Filter only published posts and ensure we have all required properties
+      const publishedBlogs = response.data.data
+        .filter((blog: any) => blog.status === "Published")
+        .map((blog: any) => ({
+          ...blog,
+          commentCount: blog.comments || 0,
+          likeCount: blog.likes || 0,
+          thumbnail: blog.thumbnail || '/default-thumbnail.jpg',
+          authorName: blog.authorName || 'Anonymous'
+        }));
+      setBlogs(publishedBlogs);
       setTotalPages(Math.ceil(response.data.total / blogsPerPage));
     } catch (error) {
       console.error("Error fetching blogs:", error);
+      setBlogs([]);
     }
   };
 

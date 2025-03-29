@@ -6,6 +6,7 @@ import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { FaRegHeart, FaRegComment } from "react-icons/fa";
+import { BlogPost, BlogResponse } from "@/types/blog";
 
 interface BlogListProps {
   category: string;
@@ -20,7 +21,7 @@ const BlogList = ({
   onPageChange,
   onPostDeleted,
 }: BlogListProps) => {
-  const [blogs, setBlogs] = useState([]);
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [totalPages, setTotalPages] = useState(0);
@@ -38,12 +39,21 @@ const BlogList = ({
     const fetchBlogs = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${category}&page=${currentPage}`
+        const response = await axios.get<BlogResponse>(
+          `https://api-mnyt.purintech.id.vn/api/Posts/blogs/by-category/paginated?category=${category}&PageNumber=${currentPage}&PageSize=10`
         );
-        console.log(response.data.data);
-        setBlogs(response.data.data);
-        setTotalPages(Math.ceil(response.data.total / 10));
+        console.log("Raw API Response:", response.data);
+        
+        if (response.data.success && response.data.data.items) {
+          const publishedBlogs = response.data.data.items.filter((post: BlogPost) => 
+            post.status === "Published" && post.typeEnum === 0
+          );
+          console.log("Published Blogs:", publishedBlogs);
+          setBlogs(publishedBlogs);
+          setTotalPages(response.data.data.totalPages);
+        } else {
+          setError("Không thể tải dữ liệu bài viết");
+        }
       } catch (error) {
         setError("Lỗi khi tải bài viết");
       } finally {
@@ -146,19 +156,6 @@ const BlogList = ({
           </div>
         </div>
       ))}
-
-      {/* Pagination Controls */}
-      <div className={styles.pagination}>
-        {Array.from({ length: totalPages }, (_, index) => (
-          <button
-            key={index}
-            onClick={() => onPageChange(index + 1)}
-            className={currentPage === index + 1 ? styles.active : ""}
-          >
-            {index + 1}
-          </button>
-        ))}
-      </div>
     </div>
   );
 };

@@ -1,59 +1,99 @@
 'use client';
 
-import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Alert, Card, Divider, Typography } from 'antd';
+import { CheckCircleFilled, HomeOutlined, FileTextOutlined } from '@ant-design/icons';
+import styles from './page.module.css';
+
+const { Title, Text } = Typography;
 
 export default function PaymentSuccess() {
+  const router = useRouter();
+  const [countdown, setCountdown] = useState(15);
+
+  useEffect(() => {
+    // Đếm ngược thời gian chuyển hướng
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    } else {
+      // Chuyển về trang chủ khi đếm ngược kết thúc
+      router.push('/');
+    }
+  }, [countdown, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 text-center">
-        <div className="flex flex-col items-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
-            <svg
-              className="w-10 h-10 text-green-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 13l4 4L19 7"
-              ></path>
-            </svg>
-          </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Payment Successful!
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Thank you for your payment. Your transaction has been completed successfully.
-          </p>
+    <div className={styles.container}>
+      <Card className={styles.card}>
+        <div className={styles.topDecoration}></div>
+
+        <div className={styles.iconWrapper}>
+          <CheckCircleFilled style={{ fontSize: 40, color: '#48c774' }} />
         </div>
 
-        <div className="mt-8 space-y-4">
-          <p className="text-sm text-gray-500">
-            You will be redirected to your dashboard in a few seconds...
-          </p>
-          
-          <div className="flex justify-center space-x-4">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Go to Dashboard
-            </Link>
-            <Link
-              href="/"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Return Home
-            </Link>
+        <Title level={2} className={styles.title}>
+          Giao dịch thành công
+        </Title>
+
+        <Text className={styles.message}>
+          Cảm ơn bạn! Giao dịch của bạn đã được hoàn tất thành công.
+          Thông tin gói membership đã được cập nhật vào tài khoản của bạn.
+        </Text>
+
+        <Alert
+          message="Thanh toán đã được xác nhận"
+          description="Gói membership của bạn đã được kích hoạt và sẵn sàng sử dụng."
+          type="success"
+          showIcon
+          style={{ marginBottom: 24, textAlign: 'left' }}
+        />
+
+        <div className={styles.details}>
+          <div className={styles.detailRow}>
+            <span className={styles.detailLabel}>Mã giao dịch:</span>
+            <span className={styles.detailValue}>#TRX-{Math.floor(Math.random() * 10000000)}</span>
+          </div>
+          <div className={styles.detailRow}>
+            <span className={styles.detailLabel}>Gói membership:</span>
+            <span className={styles.detailValue}>Gói cao cấp</span>
+          </div>
+          <div className={styles.detailRow}>
+            <span className={styles.detailLabel}>Thời hạn:</span>
+            <span className={styles.detailValue}>12 tháng</span>
+          </div>
+          <div className={styles.detailRow}>
+            <span className={styles.detailLabel}>Ngày kích hoạt:</span>
+            <span className={styles.detailValue}>{new Date().toLocaleDateString('vi-VN')}</span>
           </div>
         </div>
-      </div>
+
+        <Divider />
+
+        <div className={styles.timerText}>
+          Tự động chuyển về dashboard sau:
+        </div>
+
+        <div className={styles.timer}>
+          {countdown} giây
+        </div>
+
+        <div className={styles.buttonContainer}>
+          <Link href="/dashboard" className={styles.primaryButton}>
+            <HomeOutlined style={{ marginRight: 8 }} />
+            Đến Dashboard
+          </Link>
+
+          <Link href="/account" className={styles.secondaryButton}>
+            <FileTextOutlined style={{ marginRight: 8 }} />
+            Thông tin tài khoản
+          </Link>
+        </div>
+      </Card>
     </div>
   );
 } 

@@ -27,6 +27,7 @@ const BlogPage = () => {
       setTotalPages(Math.ceil(response.data.total / blogsPerPage));
     } catch (error) {
       console.error("Error fetching blogs:", error);
+      setBlogs([]);
     }
   };
 

@@ -436,7 +436,7 @@ const BlogDetail = () => {
         </div>
       </div>
 
-      {/* Cover Image */}
+      {/* Cover Image
       <div className={styles.coverImageContainer}>
         <Image
           src={post.coverImage || "/images/ads2.jpg"}
@@ -445,7 +445,7 @@ const BlogDetail = () => {
           height={600}
           className={styles.coverImage}
         />
-      </div>
+      </div> */}
 
       {/* Introduction */}
       <div className={styles.introduction}>

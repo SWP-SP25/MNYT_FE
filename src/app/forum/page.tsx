@@ -26,6 +26,7 @@ interface ForumPost {
   createdAt: string;
   commentCount: number;
   likes: number;
+  status: string;
 }
 
 const categories = [

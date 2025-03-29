@@ -42,7 +42,8 @@ export async function middleware(request: NextRequest) {
     // Check membership for protected routes (reminder, blog, dashboard)
     if (request.nextUrl.pathname.startsWith('/reminder') || 
         request.nextUrl.pathname.startsWith('/blog') || 
-        request.nextUrl.pathname.startsWith('/dashboard')) {
+        request.nextUrl.pathname.startsWith('/dashboard') ||
+        request.nextUrl.pathname.startsWith('/forum')) {
         
         if (!token || !userId) {
             return NextResponse.redirect(new URL('/login', request.url));
@@ -87,7 +88,8 @@ export async function middleware(request: NextRequest) {
             switch (membershipPlanId) {
                 case 1: // Basic plan
                     // Allow access to dashboard only
-                    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+                    if (request.nextUrl.pathname.startsWith('/dashboard') ||
+                        request.nextUrl.pathname.startsWith('/blog')) {
                         return NextResponse.next();
                     }
                     break;
@@ -95,7 +97,8 @@ export async function middleware(request: NextRequest) {
                 case 2: // Tiện ích plan
                     // Allow access to dashboard and reminder, but not blog
                     if (request.nextUrl.pathname.startsWith('/dashboard') || 
-                        request.nextUrl.pathname.startsWith('/reminder')) {
+                        request.nextUrl.pathname.startsWith('/reminder') ||
+                        request.nextUrl.pathname.startsWith('/blog')) {
                         return NextResponse.next();
                     }
                     break;
@@ -106,7 +109,8 @@ export async function middleware(request: NextRequest) {
                     
                 default:
                     // For any other plan type, treat as basic plan
-                    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+                    if (request.nextUrl.pathname.startsWith('/dashboard') ||
+                        request.nextUrl.pathname.startsWith('/blog')) {
                         return NextResponse.next();
                     }
                     break;
@@ -137,6 +141,7 @@ export const config = {
         '/admin/:path*',
         '/reminder/:path*',
         '/blog/:path*',
-        '/dashboard/:path*'
+        '/dashboard/:path*',
+        '/forum/:path*'
     ]
 }; 

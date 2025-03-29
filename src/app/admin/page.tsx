@@ -21,7 +21,7 @@ import {
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import { AccountListResponse } from "@/types/accountsView";
 import { MembershipSales } from "@/types/membership-sales";
-import { BlogManage } from "@/types/blogAdmin";
+import { Blogmanage } from "@/types/blogAdmin";
 import { MembershipPlans } from "@/types/membershipPlan";
 
 ChartJS.register(
@@ -90,7 +90,7 @@ interface ExtendedMembershipSales extends MembershipSales {
   startDate?: string;
 }
 
-interface ExtendedBlogManage extends BlogManage {
+interface ExtendedBlogManage extends Blogmanage {
   createDate?: string;
 }
 

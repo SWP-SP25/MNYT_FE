@@ -1,25 +1,27 @@
 export interface Blogmanage {
     success: boolean;
-    data:    Datum[];
+    data:    Blog[];
     message: string;
     errors:  null;
 }
 
-export interface Datum {
+export interface Blog {
     id:            number;
-    category:      string;
+    category:      Category;
     isAnonymous:   boolean;
     title:         string;
     typeEnum:      number;
-    description:   null | string;
+    description:   string | null;
     authorId:      number;
     authorName:    string;
     period:        number | null;
     status:        Status;
-    publishedDay:  Date | null;
-    imageId:       number | null;
-    imageUrl:      null | string;
-    createDate:    Date;
+    publishedDay:  string | null;
+    images:        Array<{
+        id: number;
+        url: string;
+    }>;
+    createDate:    string;
     likeCount:     number;
     commentCount:  number;
     bookmarkCount: number;
@@ -30,4 +32,13 @@ export enum Status {
     Published = "Published",
     Removed = "Removed",
     Reported = "Reported",
+}
+
+export enum Category {
+    All = "Tất cả",
+    Experience = "Kinh nghiệm",
+    Story = "Tâm sự",
+    HealthPregnancy = "Sức khỏe mẹ & bé",
+    Fashion = "Thời trang",
+    Nutrition = "Dinh dưỡng"
 }

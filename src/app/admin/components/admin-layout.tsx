@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Sidebar } from "./sidebar";
 import Image from "next/image";
 import Logo from "@/app/img/Logo.ico";
@@ -14,8 +14,32 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, logout } = useAuth();
   const [showAccountPopup, setShowAccountPopup] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [reportedPostsCount, setReportedPostsCount] = useState(0);
+  const [reportedPosts, setReportedPosts] = useState([]);
   const accountTarget = useRef(null);
   const notificationTarget = useRef(null);
+
+  // Fetch reported posts count
+  useEffect(() => {
+    const fetchReportedPosts = async () => {
+      try {
+        const response = await fetch('https://api-mnyt.purintech.id.vn/api/Posts/forums');
+        if (!response.ok) throw new Error('Failed to fetch reported posts');
+        const data = await response.json();
+        
+        const reported = data.data.filter((post: any) => post.status === 'Reported');
+        setReportedPostsCount(reported.length);
+        setReportedPosts(reported);
+      } catch (error) {
+        console.error('Error fetching reported posts:', error);
+      }
+    };
+
+    fetchReportedPosts();
+    // Set up polling every 30 seconds
+    const interval = setInterval(fetchReportedPosts, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Helper function to get the user name
   const getUserName = () => {
@@ -63,6 +87,11 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                       onClick={() => setShowNotifications(!showNotifications)}
                     >
                       <BsBell />
+                      {reportedPostsCount > 0 && (
+                        <span className={styles.notificationBadge}>
+                          {reportedPostsCount}
+                        </span>
+                      )}
                     </button>
                   </div>
                   <div
@@ -143,7 +172,24 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           <Popover.Header as="h3">Thông báo</Popover.Header>
           <Popover.Body>
             <div className="notifications-list">
-              <p>Không có thông báo mới</p>
+              {reportedPostsCount > 0 ? (
+                <div className="reported-posts">
+                  <h4>Bài viết bị tố cáo ({reportedPostsCount})</h4>
+                  {reportedPosts.map((post: any) => (
+                    <div key={post.id} className="reported-post-item">
+                      <Link href={`/admin/blog?status=Reported&id=${post.id}`}>
+                        <div className="post-title">{post.title}</div>
+                        <div className="post-meta">
+                          <span>Tác giả: {post.authorName}</span>
+                          <span>Ngày: {new Date(post.createDate).toLocaleDateString('vi-VN')}</span>
+                        </div>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>Không có thông báo mới</p>
+              )}
             </div>
           </Popover.Body>
         </Popover>

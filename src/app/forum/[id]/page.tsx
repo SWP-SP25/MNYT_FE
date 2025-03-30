@@ -41,6 +41,7 @@ interface ForumPost {
   likeCount: number;
   commentCount: number;
   images?: { url: string }[];
+  status?: string;
 }
 
 const ForumDetailPage = () => {
@@ -335,6 +336,12 @@ const ForumDetailPage = () => {
     }
   };
 
+  // Add this function to check if user is admin or post author
+  const canViewStatus = () => {
+    if (!user || !post) return false;
+    return user.role === 'Admin' || user.id === post.accountId.toString();
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -394,11 +401,16 @@ const ForumDetailPage = () => {
             <span className={styles.authorName}>
               {post.isAnonymous
                 ? "Người dùng ẩn danh"
-                : user?.name || post.authorName || post.accountName}
+                : user?.fullName || post.authorName || post.accountName}
             </span>
             <span className={styles.postDate}>
               <FaClock /> {formatDate(post.createDate)}
             </span>
+            {canViewStatus() && post.status && (
+              <span className={`${styles.status} ${styles[post.status.toLowerCase()]}`}>
+                {post.status}
+              </span>
+            )}
           </div>
         </div>
 

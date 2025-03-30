@@ -29,7 +29,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import axios from "axios";
-import { Blogmanage, Blog, Category } from "@/types/blogAdmin";
+import { Blogmanage, Blog, Category, Status } from "@/types/blogAdmin";
 import { useAuth } from "@/hooks/useAuth";
 import UploadButton from "@/app/components/upload-button/upload";
 
@@ -353,12 +353,23 @@ export const TableContent = () => {
   const getFilteredData = () => {
     const data = activeTab === 'forums' ? forumView?.data : blogView?.data;
 
+    if (!data) return [];
+
+    // First filter out Draft status posts from other accounts
+    const filteredData = data.filter((blog: Blog) => {
+      // Keep posts that are either:
+      // 1. Not in Draft status, OR
+      // 2. In Draft status but belong to the current user
+      return blog.status !== Status.Draft || (blog.status === Status.Draft && blog.authorId === Number(user?.id));
+    });
+
+    // Then apply search filter if there's search text
     if (!searchText) {
-      return data;
+      return filteredData;
     }
 
     const searchLower = searchText.toLowerCase();
-    return data?.filter((blog: Blog) =>
+    return filteredData.filter((blog: Blog) =>
       (blog.title?.toLowerCase() || '').includes(searchLower) ||
       (blog.authorName?.toLowerCase() || '').includes(searchLower) ||
       (blog.category?.toLowerCase() || '').includes(searchLower) ||

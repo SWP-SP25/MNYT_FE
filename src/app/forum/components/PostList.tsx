@@ -500,7 +500,7 @@ const PostList = ({
         </button>
       </div>
 
-      {!loading && !error && filteredPosts.length > 0 && (
+      {!loading && !error && posts.length > 0 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

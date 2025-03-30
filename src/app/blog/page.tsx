@@ -13,18 +13,28 @@ const BlogPage = () => {
   const [currentSort, setCurrentSort] = useState<string>("latest");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [fetchedBlogs, setFetchedBlogs] = useState([]);
   const [blogs, setBlogs] = useState([]);
   const blogsPerPage = 10;
   const [posts, setPosts] = useState([]);
 
-  const fetchBlogs = async (category: string, sort: string) => {
+  const fetchBlogs = async () => {
     try {
+      // Fetch all blog posts
       const response = await axios.get(
-        `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category?category=${category}&page=${currentPage}&sort=${sort}`
+        `https://api-mnyt.purintech.id.vn/api/Posts/blogs`
       );
 
-      setBlogs(response.data.data);
-      setTotalPages(Math.ceil(response.data.total / blogsPerPage));
+      if (response.data) {
+        setFetchedBlogs(response.data.data);
+        setBlogs(response.data.data); // Set the blogs directly from the response
+        console.log("full post", response.data.data);
+        setTotalPages(Math.ceil(response.data.data.length / blogsPerPage)); // Adjust total pages based on the length of the response
+      } else {
+        setFetchedBlogs([]);
+        setBlogs([]);
+        setTotalPages(0);
+      }
     } catch (error) {
       console.error("Error fetching blogs:", error);
       setBlogs([]);
@@ -32,8 +42,8 @@ const BlogPage = () => {
   };
 
   useEffect(() => {
-    fetchBlogs(currentCategory, currentSort);
-  }, [currentCategory, currentSort, currentPage]);
+    fetchBlogs();
+  }, [currentPage]);
 
   // Khôi phục trạng thái từ localStorage khi component mount
   useEffect(() => {
@@ -50,14 +60,25 @@ const BlogPage = () => {
 
   // Handlers
   const handleCategoryChange = useCallback((category: string) => {
+    console.log("Cate", category);
+    if (category != "all") {
+      setBlogs(fetchedBlogs.filter((x) => x.category == category));
+      setTotalPages(
+        Math.ceil(
+          fetchedBlogs.filter((x) => x.category == category).length /
+            blogsPerPage
+        )
+      ); // Adjust total pages based on the length of the response
+    } else {
+      setBlogs(fetchBlogs);
+      setTotalPages(Math.ceil(fetchedBlogs.length / blogsPerPage)); // Adjust total pages based on the length of the response
+    }
+    console.log("filter", fetchedBlogs);
+    console.log("filter", blogs);
+
     setCurrentCategory(category);
     setCurrentPage(1); // Reset về trang 1 khi đổi category
     localStorage.setItem("blogCurrentCategory", category);
-  }, []);
-
-  const handleSortChange = useCallback((sort: string) => {
-    setCurrentSort(sort);
-    localStorage.setItem("blogCurrentSort", sort);
   }, []);
 
   const handlePageChange = (page: number) => {
@@ -67,15 +88,16 @@ const BlogPage = () => {
 
   const handlePostDeleted = () => {
     // Refresh the blog list
-    fetchBlogs(currentCategory, currentSort);
+    fetchBlogs();
   };
 
   const refreshPosts = async () => {
     try {
       const response = await axios.get(
-        `https://api-mnyt.purintech.id.vn/api/Posts/forums/paginated?PageNumber=${currentPage}&PageSize=6`
+        `https://api-mnyt.purintech.id.vn/api/Posts/blogs?page=${currentPage}&pageSize=6`
       );
-      setPosts(response.data.items);
+      // Adjust this based on your actual API response structure
+      setPosts(response.data.data || response.data);
     } catch (error) {
       console.error("Lỗi khi lấy bài viết:", error);
     }
@@ -91,24 +113,25 @@ const BlogPage = () => {
         <div className={styles.filterBar}>
           <BlogFilter
             onCategoryChange={handleCategoryChange}
-            onSortChange={handleSortChange}
             currentCategory={currentCategory}
             currentSort={currentSort}
           />
         </div>
         <BlogList
+          blogs={blogs}
           category={currentCategory}
           currentPage={currentPage}
-          blogs={blogs}
           onPageChange={handlePageChange}
           onPostDeleted={handlePostDeleted}
         />
+
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
         />
       </div>
+      {/* Use the Pagination component */}
 
       {/* Sidebar */}
       <Sidebar />

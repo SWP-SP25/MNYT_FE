@@ -411,7 +411,7 @@
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  color: #279357;
+  color: #59B1C3;
   flex-shrink: 0;
 }
 
@@ -566,19 +566,4 @@
     box-shadow: none;
     padding: 0;
   }
-}
-
-.reportButton {
-  color: #ff4444;
-  transition: all 0.3s ease;
-}
-
-.reportButton:hover {
-  background-color: rgba(255, 68, 68, 0.1);
-}
-
-.reportButton.reported {
-  color: #ff4444;
-  background-color: rgba(255, 68, 68, 0.1);
-  cursor: not-allowed;
 }

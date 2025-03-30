@@ -21,6 +21,8 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "@/hooks/useAuth";
 import EditForumPost from "../CRUD/EditForumPost";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/swiper-bundle.css";
 
 interface ForumPost {
   id: number;
@@ -38,6 +40,7 @@ interface ForumPost {
   isAnonymous: boolean;
   likeCount: number;
   commentCount: number;
+  images?: { url: string }[];
 }
 
 const ForumDetailPage = () => {
@@ -399,23 +402,34 @@ const ForumDetailPage = () => {
           </div>
         </div>
 
-        {/* Hiển thị ảnh nếu có */}
-        {post.image && (
-          <div className={styles.coverImageContainer}>
-            <Image
-              src={post.image}
-              alt={post.title}
-              width={800}
-              height={400}
-              className={styles.coverImage}
-              onError={(e) => {
-                console.error("Error loading image:", e);
-                // Fallback khi ảnh lỗi
-                const imgElement = e.target as HTMLImageElement;
-                imgElement.src = "/images/default-post-image.jpg"; // Đặt ảnh mặc định
-                imgElement.style.objectFit = "contain";
-              }}
-            />
+        {/* Image Carousel */}
+        {post.images && post.images.length > 0 && (
+          <div className={styles.carouselContainer}>
+            <Swiper
+              spaceBetween={10} // Space between slides
+              slidesPerView={1} // Number of slides to show
+              pagination={{ clickable: true }} // Enable pagination
+              navigation // Enable navigation arrows
+            >
+              {post.images.map((image, index) => (
+                <SwiperSlide key={index} className={styles.imageSlide}>
+                  <Image
+                    src={image.url}
+                    alt={`Image ${index + 1}`}
+                    width={800}
+                    height={400}
+                    className={styles.coverImage}
+                    onError={(e) => {
+                      console.error("Error loading image:", e);
+                      const imgElement = e.target as HTMLImageElement;
+                      imgElement.src =
+                        "https://res.cloudinary.com/mnyt/image/upload/v1743345926/ltb8uurjnz7gvrrpqbti.png"; // Fallback image
+                      imgElement.style.objectFit = "contain";
+                    }}
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </div>
         )}
 

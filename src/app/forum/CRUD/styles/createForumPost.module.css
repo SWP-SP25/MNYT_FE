@@ -1,22 +1,20 @@
-/* Main Container and Title - Chuyển sang layout landscape */
+/* Main Container and Title */
 .componentContainer {
     background: white;
     border-radius: 16px;
     padding: 2rem;
     width: 100%;
-    box-shadow: 0 10px 25px rgba(39, 147, 87, 0.1);
-    transition: all 0.3s ease;
-    border: 1px solid #eef5f1;
-    max-width: 1100px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #f0f0f0;
+    max-width: 800px;
     margin: 0 auto;
-    max-height: 90vh;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+    /* Thêm max-height và overflow để kiểm soát chiều cao và scroll */
+    max-height: 90vh; /* Chiều cao tối đa là 90% của viewport height */
+    overflow-y: auto; /* Cho phép scroll nếu nội dung vượt quá chiều cao */
 }
 
-/* Thanh cuộn đẹp hơn với màu xanh */
+/* Điều chỉnh scrollbar cho đẹp */
 .componentContainer::-webkit-scrollbar {
     width: 8px;
 }
@@ -27,27 +25,33 @@
 }
 
 .componentContainer::-webkit-scrollbar-thumb {
-    background: #279357;
+    background: #55A6C3;
     border-radius: 10px;
 }
 
 .componentContainer::-webkit-scrollbar-thumb:hover {
-    background: #1e7a45;
+    background: #1D6571;
+}
+
+.componentContainer:hover {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
 }
 
 .componentTitle {
     font-size: 1.75rem;
     font-weight: 700;
-    color: #279357;
-    margin-bottom: 1.5rem;
+    color: #1D6571;
+    margin-bottom: 2rem;
     text-align: center;
     position: relative;
     padding-bottom: 1rem;
+    /* Đảm bảo tiêu đề luôn hiển thị khi scroll */
     position: sticky;
     top: 0;
     background: white;
     z-index: 10;
-    padding-top: 0.5rem;
+    padding-top: 1rem;
 }
 
 .componentTitle::after {
@@ -58,52 +62,33 @@
     transform: translateX(-50%);
     width: 80px;
     height: 3px;
-    background: linear-gradient(90deg, #279357, #4cb07a);
+    background: linear-gradient(90deg, #1D6571, #55A6C3);
     border-radius: 3px;
 }
 
-/* Form Layout - Chuyển sang layout landscape */
+/* Form Layout */
 .createPostForm {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-}
-
-/* Chia form thành hai cột */
-.formLeft {
-    grid-column: 1;
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
+    gap: 1.2rem; /* Giảm gap giữa các elements */
 }
 
-.formRight {
-    grid-column: 2;
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-}
-
-.formFull {
-    grid-column: 1 / span 2;
-}
-
-/* Input Fields - Cải thiện màu sắc và UI */
+/* Input Fields */
 .searchInput {
-    padding: 0.9rem 1.2rem;
-    border: 2px solid #e8f1ed;
+    padding: 0.8rem 1.2rem; /* Giảm padding để tiết kiệm không gian theo chiều dọc */
+    border: 2px solid #e5e7eb;
     border-radius: 10px;
     font-size: 1rem;
-    transition: all 0.25s ease;
-    background-color: #f9fdfb;
+    transition: all 0.2s ease;
+    background-color: #f9fafb;
     color: #333;
     font-family: inherit;
 }
 
 .searchInput:focus {
     outline: none;
-    border-color: #279357;
-    box-shadow: 0 0 0 4px rgba(39, 147, 87, 0.1);
+    border-color: #55A6C3;
+    box-shadow: 0 0 0 4px rgba(85, 166, 195, 0.15);
     background-color: white;
 }
 
@@ -113,38 +98,17 @@
 }
 
 textarea.searchInput {
-    min-height: 200px;
+    min-height: 120px; /* Giảm chiều cao tối thiểu */
     resize: vertical;
     line-height: 1.5;
 }
 
 /* Category Selector */
-.formSection {
-    background-color: #f7fbf9;
-    padding: 1.2rem;
-    border-radius: 12px;
-    border: 1px solid #e8f1ed;
-    margin-bottom: 0.5rem;
-}
-
-.sectionTitle {
-    font-weight: 600;
-    color: #279357;
-    margin-bottom: 0.8rem;
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-}
-
-.sectionTitle svg {
-    margin-right: 8px;
-}
-
 .categoryLabel {
     font-weight: 600;
-    color: #333;
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
+    color: #444;
+    margin-bottom: -0.5rem;
+    font-size: 1.05rem;
 }
 
 .selectContainer {
@@ -153,22 +117,22 @@ textarea.searchInput {
 
 .categorySelect {
     width: 100%;
-    padding: 0.9rem 1.2rem;
-    border: 2px solid #e8f1ed;
+    padding: 0.8rem 1.2rem; /* Giảm padding */
+    border: 2px solid #e5e7eb;
     border-radius: 10px;
     font-size: 1rem;
     appearance: none;
-    background-color: #f9fdfb;
+    background-color: #f9fafb;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
     color: #333;
     font-weight: 500;
 }
 
 .categorySelect:focus {
     outline: none;
-    border-color: #279357;
-    box-shadow: 0 0 0 4px rgba(39, 147, 87, 0.1);
+    border-color: #55A6C3;
+    box-shadow: 0 0 0 4px rgba(85, 166, 195, 0.15);
     background-color: white;
 }
 
@@ -178,7 +142,7 @@ textarea.searchInput {
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
-    color: #279357;
+    color: #55A6C3;
     font-size: 0.8rem;
     transition: transform 0.2s ease;
 }
@@ -188,54 +152,45 @@ textarea.searchInput {
 }
 
 /* Buttons */
-.buttonContainer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-/* Nút Đăng bài viết */
-.submitPostButton {
-    padding: 0.9rem 1.5rem;
+.createPostButton {
+    padding: 0.8rem 1.5rem; /* Giảm padding */
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-top: 0.5rem;
+    margin-right: 20px;
     letter-spacing: 0.5px;
     font-size: 1rem;
-    background: linear-gradient(135deg, #279357, #1e7a45);
-    color: white;
-    border: none;
-    box-shadow: 0 4px 10px rgba(39, 147, 87, 0.2);
 }
 
-.submitPostButton:hover {
-    background: linear-gradient(135deg, #1e7a45, #165e35);
-    box-shadow: 0 6px 15px rgba(39, 147, 87, 0.3);
+.createPostButton:first-of-type {
+    background: linear-gradient(135deg, #1D6571, #1A5B5E);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 10px rgba(29, 101, 113, 0.2);
+}
+
+.createPostButton:first-of-type:hover {
+    background: linear-gradient(135deg, #1A5B5E, #164A4D);
+    box-shadow: 0 6px 15px rgba(29, 101, 113, 0.3);
     transform: translateY(-3px);
 }
 
-.submitPostButton:active {
+.createPostButton:first-of-type:active {
     transform: translateY(-1px);
-    box-shadow: 0 2px 5px rgba(39, 147, 87, 0.2);
+    box-shadow: 0 2px 5px rgba(29, 101, 113, 0.2);
 }
 
-/* Nút Hủy */
-.createPostButton {
-    padding: 0.9rem 1.5rem;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    letter-spacing: 0.5px;
-    font-size: 1rem;
+.createPostButton:last-of-type {
     background-color: white;
     color: #555;
-    border: 2px solid #e8f1ed;
+    border: 2px solid #e5e7eb;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
-.createPostButton:hover {
+.createPostButton:last-of-type:hover {
     background-color: #f5f5f5;
     color: #333;
     border-color: #d1d5db;
@@ -245,14 +200,13 @@ textarea.searchInput {
 .error {
     color: #df1d1d;
     background-color: #fee2e2;
-    padding: 0.9rem 1rem;
+    padding: 0.8rem 1rem; /* Giảm padding */
     border-radius: 10px;
     font-size: 0.95rem;
     border-left: 4px solid #ef4444;
     font-weight: 500;
     display: flex;
     align-items: center;
-    grid-column: 1 / span 2;
 }
 
 .error::before {
@@ -261,17 +215,17 @@ textarea.searchInput {
     font-size: 1.2rem;
 }
 
-/* Image Upload Area - Cải thiện giao diện */
+/* Image Upload Area */
 .imageUploadContainer {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
-    height: 100%;
+    gap: 0.8rem; /* Giảm gap */
+    margin-bottom: 1rem; /* Giảm margin */
 }
 
 .imageLabel {
     font-weight: 600;
-    color: #333;
+    color: #444;
     font-size: 1.05rem;
 }
 
@@ -280,22 +234,21 @@ textarea.searchInput {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem;
-    background-color: #f7fbf9;
-    border: 2px dashed #279357;
+    padding: 1.5rem; /* Giảm padding */
+    background-color: #f7faff;
+    border: 2px dashed #c1d3f9;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-height: 200px;
+    min-height: 150px; /* Giảm min-height */
     text-align: center;
-    flex-grow: 1;
 }
 
 .imageUploadArea:hover {
-    background-color: #ebf7ef;
-    border-color: #279357;
+    background-color: #edf3ff;
+    border-color: #55A6C3;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(39, 147, 87, 0.1);
+    box-shadow: 0 5px 15px rgba(85, 166, 195, 0.1);
 }
 
 .uploadContent {
@@ -305,56 +258,126 @@ textarea.searchInput {
 }
 
 .uploadIcon {
-    color: #279357;
-    margin-bottom: 1rem;
+    color: #55A6C3;
+    margin-bottom: 1rem; /* Giảm margin */
     transition: transform 0.3s ease;
-    font-size: 2.5rem;
 }
 
 .imageUploadArea:hover .uploadIcon {
     transform: translateY(-5px);
 }
 
-.uploadText {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #279357;
-    margin-bottom: 0.5rem;
-}
-
 .uploadHint {
     font-size: 0.9rem;
-    color: #666;
+    color: #888;
     margin-top: 0.5rem;
     font-style: italic;
 }
 
-.imagePreviewInfo {
-    display: block;
-    padding: 0.8rem;
-    background-color: #ebf7ef;
-    border-radius: 8px;
-    color: #279357;
-    font-size: 0.9rem;
-    text-align: center;
-    font-weight: 500;
-    margin-top: 0.5rem;
+.imagePreviewContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    background-color: white;
 }
 
-/* Anonymous Checkbox - Cải thiện giao diện */
+.imagePreview {
+    width: 100%;
+    height: auto;
+    max-height: 250px; /* Giảm max-height */
+    object-fit: contain;
+    border-radius: 8px 8px 0 0;
+    background-color: #f9fafb;
+    padding: 10px;
+}
+
+.imageActions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0;
+    width: 100%;
+    justify-content: center;
+    padding: 0.8rem; /* Giảm padding */
+    background-color: #f9fafb;
+    border-top: 1px solid #eee;
+}
+
+.removeImageButton {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1rem; /* Giảm padding */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(239, 68, 68, 0.2);
+}
+
+.removeImageButton:hover {
+    background-color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+.removeImageButton:active {
+    transform: translateY(0);
+}
+
+.removeIcon {
+    font-size: 1.3rem;
+    margin-right: 0.4rem;
+}
+
+.changeImageButton {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1rem; /* Giảm padding */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2);
+}
+
+.changeImageButton:hover {
+    background-color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.changeImageButton:active {
+    transform: translateY(0);
+}
+
+.hiddenInput {
+    display: none;
+}
+
+/* Anonymous Checkbox */
 .anonymousOption {
     display: flex;
     align-items: center;
-    padding: 1rem;
-    background-color: #f7fbf9;
+    margin: 0.8rem 0; /* Giảm margin */
+    background-color: #f8fafc;
+    padding: 0.8rem 1rem; /* Giảm padding */
     border-radius: 10px;
-    border: 1px solid #e8f1ed;
+    border: 1px solid #e5e7eb;
     transition: all 0.3s ease;
 }
 
 .anonymousOption:hover {
-    background-color: #ebf7ef;
-    border-color: #c1e7d2;
+    background-color: #f0f7ff;
+    border-color: #c1d3f9;
 }
 
 .container {
@@ -375,7 +398,7 @@ textarea.searchInput {
 
 .path {
     fill: none;
-    stroke: #279357;
+    stroke: #1D6571;
     stroke-width: 6;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -390,8 +413,8 @@ textarea.searchInput {
 }
 
 .anonymousLabel {
-    font-size: 1rem;
-    color: #333;
+    font-size: 1rem; /* Giảm font-size */
+    color: #444;
     font-weight: 600;
     margin-left: 5px;
     display: flex;
@@ -400,31 +423,18 @@ textarea.searchInput {
 
 .anonymousInfo {
     font-size: 0.85rem;
-    color: #666;
+    color: #6b7280;
     font-weight: normal;
     margin-top: 0.3rem;
     font-style: italic;
 }
 
 /* Responsive Adjustments */
-@media (max-width: 992px) {
-    .createPostForm {
-        grid-template-columns: 1fr;
-    }
-    
-    .formLeft, .formRight, .formFull {
-        grid-column: 1;
-    }
-    
-    .componentContainer {
-        padding: 1.5rem;
-    }
-}
-
 @media (max-width: 768px) {
     .componentContainer {
         padding: 1.2rem;
         border-radius: 12px;
+        max-height: 85vh; /* Giảm max-height cho mobile */
     }
     
     .componentTitle {
@@ -437,12 +447,19 @@ textarea.searchInput {
         font-size: 0.95rem;
     }
     
-    .buttonContainer {
-        flex-direction: column;
+    .imagePreviewContainer {
+        max-width: 100%;
     }
     
-    .createPostButton {
+    .imageActions {
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+    
+    .removeImageButton, 
+    .changeImageButton {
         width: 100%;
+        justify-content: center;
     }
 }
 
@@ -455,13 +472,30 @@ textarea.searchInput {
     box-shadow: none !important;
 }
 
-/* Animation */
+/* Form Submit Button Animation */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(29, 101, 113, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(29, 101, 113, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(29, 101, 113, 0);
+    }
+}
+
+.createPostForm:valid .createPostButton:first-of-type:not(:disabled) {
+    animation: pulse 2s infinite;
+}
+
+/* Thêm auto-scroll khi mở form */
 @keyframes smoothScroll {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Thêm animation cho form khi xuất hiện */
 .componentContainer {
     animation: smoothScroll 0.5s ease-out forwards;
 }
-

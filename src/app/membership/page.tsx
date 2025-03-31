@@ -7,26 +7,28 @@ import { MembersipOnwers } from '@/types/membershipOwner';
 import { useAuth } from '@/hooks/useAuth';
 import { MembershipPlans } from '@/types/membershipPlan';
 import { VNpay } from '@/types/VNpay';
+import { getUserInfo } from '@/utils/getUserInfo';
 
 const Membership = () => {
     // get membership của user đã login
     const { user } = useAuth();
+    const userInfo = getUserInfo(user);
     const { response: membershipData, loading, error } = useAxios<MembersipOnwers>(
         {
-            url: user?.id ? `https://api-mnyt.purintech.id.vn/api/AccountMembership/GetActive/${user.id}` : '',
+            url: userInfo?.id ? `https://api-mnyt.purintech.id.vn/api/AccountMembership/GetActive/${userInfo.id}` : '',
             method: 'get'
         }
     );
 
-    const {response: membershipView, error: membershipError, loading: membershipLoading} = useAxios<MembershipPlans>(
+    const { response: membershipView, error: membershipError, loading: membershipLoading } = useAxios<MembershipPlans>(
         {
             url: 'https://api-mnyt.purintech.id.vn/api/MembershipPlan',
             method: 'get'
         });
 
     const handlePayment = async (planId: number) => {
-        if (!user?.id) return;
-        
+        if (!userInfo?.id) return;
+
         try {
             const response = await fetch('https://api-mnyt.purintech.id.vn/api/VnPay/CreatePayment', {
                 method: 'POST',
@@ -34,7 +36,7 @@ const Membership = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    accountId: user.id,
+                    accountId: userInfo.id,
                     membershipPlanId: planId
                 })
             });
@@ -44,7 +46,7 @@ const Membership = () => {
             }
 
             const data: VNpay = await response.json();
-            
+
             // Check if the response is successful and contains a payment URL
             if (data.success && data.data) {
                 // Redirect to the payment URL

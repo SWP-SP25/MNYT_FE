@@ -169,6 +169,51 @@ const LoginPage = () => {
             const userData = Cookies.get('user');
             if (userData) {
                 const user = JSON.parse(userData);
+
+                // Kiểm tra membership của user
+                try {
+                    const membershipResponse = await fetch(`https://api-mnyt.purintech.id.vn/api/AccountMembership/GetActive/${user.id}`);
+
+                    // Chỉ tiếp tục xử lý nếu request thành công
+                    if (membershipResponse.ok) {
+                        const membershipData = await membershipResponse.json();
+
+                        // Chỉ tạo membership mới nếu không có active membership
+                        if (membershipData && membershipData.data === null) {
+                            console.log('No active membership found, creating one...');
+                            try {
+                                const createMembershipResponse = await fetch('https://api-mnyt.purintech.id.vn/api/CashPayment', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        accountId: user.id,
+                                        membershipPlanId: 1
+                                    })
+                                });
+
+                                if (createMembershipResponse.ok) {
+                                    console.log('Membership created successfully');
+                                } else {
+                                    console.error('Failed to create membership');
+                                }
+                            } catch (createError) {
+                                // Bắt lỗi tạo membership nhưng vẫn cho phép đăng nhập
+                                console.error('Error creating membership:', createError);
+                            }
+                        } else {
+                            console.log('Active membership exists, proceeding with login');
+                        }
+                    } else {
+                        // Nếu API check membership lỗi, vẫn cho phép đăng nhập
+                        console.log('Membership check returned status:', membershipResponse.status);
+                    }
+                } catch (err) {
+                    // Bắt lỗi nhưng vẫn cho phép đăng nhập tiếp tục
+                    console.error('Error during membership check, proceeding with login:', err);
+                }
+
                 // Chuyển hướng sau 1 giây để hiển thị thông báo
                 setTimeout(() => {
                     // Nếu là Admin thì chuyển đến trang admin
@@ -262,8 +307,7 @@ const LoginPage = () => {
 
             // Tạo body request
             const requestBody = {
-                userName: username,
-                email: "",
+                userNameOrEmail: username,
                 newPassword: newPassword,
                 confirmNewPassword: confirmNewPassword
             };

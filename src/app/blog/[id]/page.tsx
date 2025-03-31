@@ -18,12 +18,8 @@ import { BlogDetail, BlogPostDetailResponse } from "@/types/blogDetail";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { uploadImage } from "@/utils/uploadImage";
-<<<<<<< Updated upstream
-
-=======
 import { useAuth } from "@/hooks/useAuth";
 import { getUserInfo } from "@/utils/getUserInfo";
->>>>>>> Stashed changes
 // Thêm interface để type checking
 interface Comment {
   id: number;
@@ -88,13 +84,10 @@ const BlogDetail = () => {
   const [tableOfContents, setTableOfContents] = useState<TableOfContentsItem[]>(
     []
   );
-<<<<<<< Updated upstream
-=======
   const [loadingInteractions, setLoadingInteractions] = useState(false);
 
   const { user } = useAuth();
   const userInfo = getUserInfo(user);
->>>>>>> Stashed changes
 
   const {
     response: blogPostDetailResponse,

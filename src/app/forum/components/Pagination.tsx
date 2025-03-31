@@ -52,6 +52,7 @@ const Pagination: FC<PaginationProps> = ({
 
   const handlePageClick = (page: number) => {
     if (page >= 1 && page <= totalPages && page !== currentPage) {
+      console.log("Pagination component clicking page:", page);
       onPageChange(page);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -81,7 +82,9 @@ const Pagination: FC<PaginationProps> = ({
                 currentPage === Number(pageNumber) ? styles.active : ""
               }`}
               onClick={() => handlePageClick(Number(pageNumber))}
-              aria-current={currentPage === pageNumber ? "page" : undefined}
+              aria-current={
+                currentPage === Number(pageNumber) ? "page" : undefined
+              }
             >
               {pageNumber}
             </button>

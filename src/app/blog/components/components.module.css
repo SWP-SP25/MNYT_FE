@@ -57,7 +57,7 @@
     color: #6B7280;
 }
 
-.pagination {
+/* .pagination {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
@@ -77,7 +77,7 @@
     background-color: #279357;
     color: white;
     border-color: #279357;
-}
+} */
 
 /* ===== BLOG CARD COMPONENT ===== */
 .blogCard {

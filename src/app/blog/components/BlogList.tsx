@@ -6,54 +6,53 @@ import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { FaRegHeart, FaRegComment } from "react-icons/fa";
-import { BlogPost, BlogResponse } from "@/types/blog";
+import Pagination from "../Pagination/Pagination";
+
+// Định nghĩa kiểu dữ liệu cho bài viết
+export interface BlogPost {
+  id: number;
+  title: string;
+  thumbnail?: string;
+  category?: string;
+  authorName?: string;
+  commentCount?: number;
+  likeCount?: number;
+}
+
+// Định nghĩa kiểu dữ liệu của phản hồi API
+export interface BlogResponse {
+  success: boolean;
+  message: string;
+  data: BlogPost[];
+}
 
 interface BlogListProps {
   category: string;
   currentPage: number;
-  onPageChange: (page: number) => void;
+  blogs: BlogPost[];
   onPostDeleted: () => void;
 }
 
 const BlogList = ({
+  blogs,
   category,
   currentPage,
-  onPageChange,
   onPostDeleted,
 }: BlogListProps) => {
-  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  // const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    // Lấy thông tin user từ cookie nếu có
     const userData = Cookies.get("user");
     if (userData) {
       const user = JSON.parse(userData);
       setIsAdmin(user.role === "Admin");
     }
   }, []);
-
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get<BlogResponse>(
-          `https://api-mnyt.purintech.id.vn/api/Posts/blogs/by-category/paginated?category=${category}&PageNumber=${currentPage}&PageSize=10`
-        );
-        console.log("My fetch blog lít", response.data.data);
-        setBlogs(response.data.data);
-        setTotalPages(Math.ceil(response.data.total / 10));
-      } catch (error) {
-        setError("Lỗi khi tải bài viết");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBlogs();
-  }, [category, currentPage]);
 
   const handleDeletePost = async (postId: number) => {
     try {
@@ -66,7 +65,7 @@ const BlogList = ({
     }
   };
 
-  if (loading) {
+  if (!blogs) {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.loadingContent}>
@@ -94,9 +93,15 @@ const BlogList = ({
     );
   }
 
+  // Tính toán chỉ mục bài viết để hiển thị theo phân trang (nếu cần)
+  const startIdx = (currentPage - 1) * 10;
+  const paginatedBlogs = blogs ? blogs.slice(startIdx, startIdx + 10) : [];
+
+  console.log("Blogs to display:", paginatedBlogs);
+
   return (
     <div className={styles.blogList}>
-      {blogs.map((post) => (
+      {paginatedBlogs.map((post) => (
         <div key={post.id} className={styles.blogCard}>
           {/* Thumbnail */}
           <div className={styles.thumbnailContainer}>
@@ -113,35 +118,31 @@ const BlogList = ({
             )}
           </div>
 
-          {/* Content */}
+          {/* Nội dung bài viết */}
           <div className={styles.cardContent}>
-            {/* Category tag */}
             <div
               className={styles.categoryTag}
               style={{
-                backgroundColor: getCategoryColor(post.category),
+                backgroundColor: getCategoryColor(post.category || ""),
               }}
             >
               {post.category ? post.category : "Dành cho mẹ bầu"}
             </div>
 
-            {/* Title */}
             <Link href={`/blog/${post.id}`}>
               <h2 className={styles.title}>{post.title}</h2>
             </Link>
 
-            {/* Author info */}
             <div className={styles.authorInfo}>
               <span className={styles.authorName}>{post.authorName}</span>
             </div>
 
-            {/* Post stats */}
             <div className={styles.postStats}>
               <span>
-                <FaRegComment /> {post.commentCount}
+                <FaRegComment /> {post.commentCount ?? 0}
               </span>
               <span>
-                <FaRegHeart /> {post.likeCount}
+                <FaRegHeart /> {post.likeCount ?? 0}
               </span>
             </div>
           </div>
@@ -151,7 +152,7 @@ const BlogList = ({
   );
 };
 
-// Helper function to get category color
+// Hàm trợ giúp để lấy màu theo category
 function getCategoryColor(category: string): string {
   const categoryColors: { [key: string]: string } = {
     "Tất cả": "#6B7280",

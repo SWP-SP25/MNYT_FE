@@ -39,6 +39,7 @@ interface Post {
   isAnonymous: boolean;
   comments: any[];
   likes: number;
+  status: string;
 }
 
 // Cập nhật kiểu dữ liệu cho props
@@ -278,8 +279,19 @@ const PostList = ({
   // Sửa đoạn lọc bài viết theo danh mục
   const filteredPosts =
     currentCategory === "all"
-      ? sortedPosts // Sử dụng sortedPosts thay vì posts
-      : sortedPosts.filter((post) => post.category === currentCategory);
+      ? sortedPosts.filter(post => 
+          // Show all posts by current user
+          post.authorId === user?.id || 
+          // For other users' posts, only show published or reported
+          (post.status.toLowerCase() === "published" || post.status.toLowerCase() === "reported")
+        )
+      : sortedPosts.filter((post) => 
+          // For current user's posts, only filter by category
+          (post.authorId === user?.id && post.category === currentCategory) ||
+          // For other users' posts, filter by both category and status
+          (post.category === currentCategory && 
+           (post.status.toLowerCase() === "published" || post.status.toLowerCase() === "reported"))
+        );
 
   // Áp dụng phân trang cho các bài viết đã lọc
   const displayedPosts = paginatePosts(filteredPosts, currentPage);
@@ -429,6 +441,15 @@ const PostList = ({
                 </div>
               </div>
 
+              {/* Only show status badge for the post author */}
+              {post.authorId === user?.id && (
+                <div className={styles.postStatus}>
+                  <span className={`${styles.statusBadge} ${styles[post.status.toLowerCase()]}`}>
+                    {post.status}
+                  </span>
+                </div>
+              )}
+
               <Link href={`/forum/${post.id}`}>
                 <h3 className={styles.postTitle}>{post.title}</h3>
               </Link>
@@ -500,7 +521,7 @@ const PostList = ({
         </button>
       </div>
 
-      {!loading && !error && filteredPosts.length > 0 && (
+      {!loading && !error && posts.length > 0 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

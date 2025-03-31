@@ -184,10 +184,7 @@ const ForumDetailPage = () => {
 
     // Optional: Call API to save like status
     try {
-<<<<<<< Updated upstream
-=======
-      const userId = userInfo?.id || 1;
->>>>>>> Stashed changes
+      const userId = user?.id || 1;
       await axios.post(
         `https://api-mnyt.purintech.id.vn/api/Interactions/like/${postId}?accountId=1`
       );
@@ -209,10 +206,7 @@ const ForumDetailPage = () => {
 
     // Optional: Call API to save bookmark status
     try {
-<<<<<<< Updated upstream
-=======
-      const userId = userInfo?.id || 1;
->>>>>>> Stashed changes
+      const userId = user?.id || 1;
       await axios.post(
         `https://api-mnyt.purintech.id.vn/api/Interactions/bookmark/${postId}?accountId=1`
       );

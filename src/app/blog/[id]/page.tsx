@@ -113,7 +113,7 @@ const BlogDetail = () => {
     }
   }, [blogPostDetailResponse]);
 
-  
+
 
   // Lưu trạng thái thích và lưu bài vào localStorage
   useEffect(() => {
@@ -129,6 +129,7 @@ const BlogDetail = () => {
 
       try {
         setLoadingInteractions(true);
+        const userId = userInfo?.id || 1;
         const userId = userInfo?.id || 1;
 
         // Sử dụng endpoint GET /api/Interactions/likes để lấy danh sách bài viết đã like

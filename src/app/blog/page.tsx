@@ -2,7 +2,6 @@
 import styles from "@/app/blog/styles/blog.module.css";
 import BlogList from "./components/BlogList";
 import BlogFilter from "./Sort & Filter/BlogFilter";
-import Sidebar from "./sidebar/Sidebar";
 import Pagination from "./Pagination/Pagination";
 import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
@@ -131,10 +130,6 @@ const BlogPage = () => {
           onPageChange={handlePageChange}
         />
       </div>
-      {/* Use the Pagination component */}
-
-      {/* Sidebar */}
-      <Sidebar />
     </div>
   );
 };

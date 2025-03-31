@@ -9,8 +9,8 @@ interface CommentSectionProps {
   comments: CommentListItem[];
 }
 
-const safeCreateDate = (dateString: string) => {
-  const date = new Date(dateString);
+const safeCreateDate = (dateString: string | Date) => {
+  const date = typeof dateString === "string" ? new Date(dateString) : dateString;
 
   if (isNaN(date.getTime())) return new Date();
 

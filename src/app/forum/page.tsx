@@ -1,6 +1,5 @@
 "use client";
 import styles from "@/app/forum/styles/forum.module.css";
-import CreateBlogPost from "./CRUD/CreateForumPost";
 import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import PostList from "./components/PostList";
@@ -11,6 +10,7 @@ import ActiveUsers from "./components/ActiveUsers";
 import { useAuth } from "@/hooks/useAuth";
 import EditForumPost from "./CRUD/EditForumPost";
 import Pagination from "./Pagination/Pagination";
+import CreateForumPost from "./CRUD/CreateForumPost";
 
 // Interface cho dữ liệu bài viết
 interface ForumPost {
@@ -48,13 +48,14 @@ const ForumPage = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   
   // Lấy trang từ localStorage chỉ lần đầu load
-  const [currentPage, setCurrentPage] = useState<number>(() => {
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  
+  // Save current page to localStorage when it changes
+  useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedPage = localStorage.getItem("forumCurrentPage");
-      return savedPage ? parseInt(savedPage, 10) : 1;
+      localStorage.setItem("forumCurrentPage", currentPage.toString());
     }
-    return 1;
-  });
+  }, [currentPage]);
   
   const [totalPages, setTotalPages] = useState<number>(1);
   const postsPerPage = 10;
@@ -70,55 +71,47 @@ const ForumPage = () => {
   };
 
   // Đơn giản hóa fetchPosts để tránh re-render không cần thiết
-  const fetchPosts = useCallback(async () => {
-    if (loading) return; // Ngăn chặn fetch nhiều lần khi đang loading
-    
+  const fetchPosts = async () => {
     setLoading(true);
+    console.log("Page number fetch", currentPage);
     try {
-      let url = "";
+      let url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/paginated?pageNumber=${currentPage}&pageSize=${postsPerPage}`;
       
-      if (currentCategory === "all") {
-        url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/paginated?pageNumber=${currentPage}&pageSize=${postsPerPage}`;
-      } else {
+      if (currentCategory !== "all") {
         url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category/paginated?category=${currentCategory}&pageNumber=${currentPage}&pageSize=${postsPerPage}`;
       }
-      
-      console.log(`Fetching forum posts for page ${currentPage}, category ${currentCategory}`);
-      
+
+      if (searchQuery) {
+        url += `&search=${encodeURIComponent(searchQuery)}`;
+      }
+
       const response = await axios.get(url);
-      
-      if (response.data && response.data.success) {
-        const { data } = response.data;
-        setPosts(data.items || []);
-        setTotalPages(Math.max(data.totalPages || 1, 1));
+      if (response.data?.success) {
+        console.log("response forum 2", response.data.data);
+        setPosts(response.data.data.items || []);
+        setTotalPages(Math.max(response.data.data.totalPages || 1, 1));
         setError(null);
-      } else {
-        setPosts([]);
-        setError("Không có dữ liệu bài viết");
-        setTotalPages(1);
       }
     } catch (err) {
-      console.error("Lỗi khi tải bài viết:", err);
-      setPosts([]);
+      console.error("Error fetching posts:", err);
       setError("Không thể tải bài viết. Vui lòng thử lại sau.");
-      setTotalPages(1);
     } finally {
       setLoading(false);
     }
-  }, [currentCategory, currentPage, postsPerPage, loading]);
+  };
 
   // Đơn giản hóa useEffect - chỉ fetch khi các giá trị quan trọng thay đổi
-  useEffect(() => {
-    // Đặt loading = false ban đầu để cho phép fetch lần đầu
-    setLoading(false);
+  // useEffect(() => {
+  //   // Đặt loading = false ban đầu để cho phép fetch lần đầu
+  //   setLoading(false);
     
-    // Sử dụng setTimeout để ngăn tải liên tục
-    const timer = setTimeout(() => {
-      fetchPosts();
-    }, 100);
+  //   // Sử dụng setTimeout để ngăn tải liên tục
+  //   const timer = setTimeout(() => {
+  //     fetchPosts();
+  //   }, 100);
     
-    return () => clearTimeout(timer);
-  }, [currentCategory, currentPage, searchQuery, fetchPosts]);
+  //   return () => clearTimeout(timer);
+  // }, [currentCategory, currentPage, searchQuery, fetchPosts]);
 
   // Category change handler
   const handleCategoryChange = (category: string) => {
@@ -129,11 +122,12 @@ const ForumPage = () => {
   // Post creation handlers
   const handleCreatePost = () => {
     setShowCreatePost(true);
+    fetchPosts();
   };
 
   const handlePostCreated = () => {
     setShowCreatePost(false);
-    setLoading(false); // Cho phép fetch lại
+    fetchPosts();
   };
 
   // Page change handler
@@ -141,7 +135,6 @@ const ForumPage = () => {
     if (page === currentPage) return; // Ngăn chặn re-render không cần thiết
     console.log("Changing to page:", page);
     setCurrentPage(page);
-    localStorage.setItem("forumCurrentPage", page.toString());
   };
 
   // Edit post handler
@@ -181,7 +174,7 @@ const ForumPage = () => {
           {/* Form tạo bài viết */}
           {showCreatePost && (
             <div className={styles.createPostOverlay}>
-              <CreateBlogPost
+              <CreateForumPost
                 currentUser={user}
                 onPostCreated={handlePostCreated}
                 onCancel={() => setShowCreatePost(false)}
@@ -193,19 +186,22 @@ const ForumPage = () => {
           <PostList
             posts={posts}
             loading={loading}
-            error={error}
-            currentCategory={currentCategory}
-            onRefresh={handleRefresh}
+            fetchPosts={fetchPosts}
+            category={currentCategory}
+            searchQuery={searchQuery}
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
           />
           
           {/* Component phân trang */}
-          {!loading && !error && posts.length > 0 && (
+          {/* {!loading && !error && posts.length > 0 && (
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={handlePageChange}
             />
-          )}
+          )} */}
 
           {/* Modal chỉnh sửa bài viết */}
           {isEditModalOpen && currentEditPostId && (

@@ -7,27 +7,10 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { FaRegHeart, FaRegComment } from "react-icons/fa";
 import Pagination from "../Pagination/Pagination";
-
-// Định nghĩa kiểu dữ liệu cho bài viết
-export interface BlogPost {
-  id: number;
-  title: string;
-  thumbnail?: string;
-  category?: string;
-  authorName?: string;
-  commentCount?: number;
-  likeCount?: number;
-}
-
-// Định nghĩa kiểu dữ liệu của phản hồi API
-export interface BlogResponse {
-  success: boolean;
-  message: string;
-  data: BlogPost[];
-}
+import { BlogPost, BlogResponse, Category } from "@/types/blog";
 
 interface BlogListProps {
-  category: string;
+  category: Category;
   currentPage: number;
   blogs: BlogPost[];
   onPostDeleted: () => void;
@@ -39,14 +22,12 @@ const BlogList = ({
   currentPage,
   onPostDeleted,
 }: BlogListProps) => {
-  // const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Lấy thông tin user từ cookie nếu có
     const userData = Cookies.get("user");
     if (userData) {
       const user = JSON.parse(userData);
@@ -93,7 +74,6 @@ const BlogList = ({
     );
   }
 
-  // Tính toán chỉ mục bài viết để hiển thị theo phân trang (nếu cần)
   const startIdx = (currentPage - 1) * 10;
   const paginatedBlogs = blogs ? blogs.slice(startIdx, startIdx + 10) : [];
 
@@ -105,13 +85,17 @@ const BlogList = ({
         <div key={post.id} className={styles.blogCard}>
           {/* Thumbnail */}
           <div className={styles.thumbnailContainer}>
-            {post.thumbnail ? (
+            {post.images[0] ? (
               <Image
-                src={post.thumbnail}
+                src={post.images[0].url}
                 alt={post.title}
                 width={300}
                 height={200}
                 className={styles.thumbnail}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/images/missing-picture.jpg";
+                }}
               />
             ) : (
               <div className={styles.placeholderThumbnail}>No image</div>
@@ -123,10 +107,10 @@ const BlogList = ({
             <div
               className={styles.categoryTag}
               style={{
-                backgroundColor: getCategoryColor(post.category || ""),
+                backgroundColor: getCategoryColor(post.category),
               }}
             >
-              {post.category ? post.category : "Dành cho mẹ bầu"}
+              {post.category}
             </div>
 
             <Link href={`/blog/${post.id}`}>
@@ -152,15 +136,15 @@ const BlogList = ({
   );
 };
 
-// Hàm trợ giúp để lấy màu theo category
-function getCategoryColor(category: string): string {
-  const categoryColors: { [key: string]: string } = {
-    "Tất cả": "#6B7280",
-    "Kinh nghiệm": "#3B82F6",
-    "Tâm sự": "#EC4899",
-    "Sức khỏe mẹ & bé": "#10B981",
-    "Thời trang": "#F59E0B",
-    "Dinh dưỡng": "#8B5CF6",
+// Helper function to get category color
+function getCategoryColor(category: Category): string {
+  const categoryColors: { [key in Category]: string } = {
+    [Category.All]: "#6B7280",
+    [Category.Experience]: "#3B82F6",
+    [Category.Story]: "#EC4899",
+    [Category.HealthPregnancy]: "#10B981",
+    [Category.Fashion]: "#F59E0B",
+    [Category.Nutrition]: "#8B5CF6",
   };
   return categoryColors[category] || "#6B7280";
 }

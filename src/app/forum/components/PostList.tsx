@@ -119,24 +119,9 @@ const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages
         });
         
         setPostStats(statsMap);
-        console.log(`Cập nhật thống kê bài viết:`, statsMap);
       }
     } catch (error) {
       console.error("Error fetching post stats:", error);
-    }
-  };
-
-  // Force refresh từ server
-  const forceRefresh = async () => {
-    try {
-      // Gọi fetchPosts với force refresh
-      fetchPosts();
-      // Gọi fetchPostStats với force refresh
-      await fetchPostStats(true);
-      // Thông báo cho người dùng
-      alert("Đã cập nhật dữ liệu mới nhất từ máy chủ!");
-    } catch (error) {
-      console.error("Error during force refresh:", error);
     }
   };
 
@@ -315,10 +300,9 @@ const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages
 
   // Simplify the filtering logic
   const filteredPosts = category == "all"
-    ? sortedPosts
-    : sortedPosts.filter((post) => post.category === category);
+    ? paginatePosts(sortedPosts,currentPage,10)
+    : paginatePosts(sortedPosts.filter((post) => post.category === category),currentPage,10) ;
 
-    console.log("filteredPosts forum",filteredPosts)
   // Don't apply status filtering at this level since the API should handle that
   // This ensures any posts returned from the API will be shown
 

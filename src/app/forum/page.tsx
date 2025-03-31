@@ -1,6 +1,6 @@
 "use client";
 import styles from "@/app/forum/styles/forum.module.css";
-import { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import PostList from "./components/PostList";
 import CategorySidebar from "./components/CategorySidebar";
@@ -9,8 +9,9 @@ import ForumSearch from "./components/ForumSearch";
 import ActiveUsers from "./components/ActiveUsers";
 import { useAuth } from "@/hooks/useAuth";
 import EditForumPost from "./CRUD/EditForumPost";
-import Pagination from "./Pagination/Pagination";
 import CreateForumPost from "./CRUD/CreateForumPost";
+import { getUserInfo } from "@/utils/getUserInfo";
+import { notification } from "antd";
 
 // Interface cho dữ liệu bài viết
 interface ForumPost {
@@ -42,10 +43,14 @@ const categories = [
 const ForumPage = () => {
   const [currentCategory, setCurrentCategory] = useState<string>("all");
   const [posts, setPosts] = useState<any[]>([]);
+  const [fetchedPosts, setFetchedPosts] = useState([]);
+  const postsPerPage = 10;
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreatePost, setShowCreatePost] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const { user } = useAuth();
+  const userInfo = getUserInfo(user);
   
   // Lấy trang từ localStorage chỉ lần đầu load
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -58,9 +63,8 @@ const ForumPage = () => {
   }, [currentPage]);
   
   const [totalPages, setTotalPages] = useState<number>(1);
-  const postsPerPage = 10;
 
-  const { user } = useAuth();
+
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentEditPostId, setCurrentEditPostId] = useState<number | null>(null);
@@ -71,47 +75,64 @@ const ForumPage = () => {
   };
 
   // Đơn giản hóa fetchPosts để tránh re-render không cần thiết
-  const fetchPosts = async () => {
-    setLoading(true);
-    console.log("Page number fetch", currentPage);
-    try {
-      let url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/paginated?pageNumber=${currentPage}&pageSize=${postsPerPage}`;
+  // const fetchPosts = async () => {
+  //   setLoading(true);
+  //   console.log("Page number fetch", currentPage);
+  //   try {
+  //     let url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/paginated?pageNumber=${currentPage}&pageSize=${postsPerPage}`;
       
-      if (currentCategory !== "all") {
-        url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category/paginated?category=${currentCategory}&pageNumber=${currentPage}&pageSize=${postsPerPage}`;
-      }
+  //     if (currentCategory !== "all") {
+  //       url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category/paginated?category=${currentCategory}&pageNumber=${currentPage}&pageSize=${postsPerPage}`;
+  //     }
 
-      if (searchQuery) {
-        url += `&search=${encodeURIComponent(searchQuery)}`;
-      }
+  //     if (searchQuery) {
+  //       url += `&search=${encodeURIComponent(searchQuery)}`;
+  //     }
 
-      const response = await axios.get(url);
-      if (response.data?.success) {
-        console.log("response forum 2", response.data.data);
-        setPosts(response.data.data.items || []);
-        setTotalPages(Math.max(response.data.data.totalPages || 1, 1));
-        setError(null);
+  //     const response = await axios.get(url);
+  //     if (response.data?.success) {
+  //       console.log("response forum 2", response.data.data);
+  //       setPosts(response.data.data.items || []);
+  //       setTotalPages(Math.max(response.data.data.totalPages || 1, 1));
+  //       setError(null);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error fetching posts:", err);
+  //     setError("Không thể tải bài viết. Vui lòng thử lại sau.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const fetchPosts = async () => {
+    try {
+      // Fetch all blog posts
+      const response = await axios.get(
+        `https://api-mnyt.purintech.id.vn/api/Posts/forums`
+      );
+
+      if (response.data) {
+        // Filter blogs to only show published posts or posts by current user
+        const filteredPosts = response.data.data.filter((post: any) => 
+          post.status === "Published" || 
+          (userInfo && post.accountId === userInfo.id)
+        );
+        
+        setFetchedPosts(filteredPosts);
+        setPosts(filteredPosts);
+        setTotalPages(Math.ceil(filteredPosts.length / postsPerPage));
+      } else {
+        setFetchedPosts([]);
+        setPosts([]);
+        setTotalPages(0);
       }
-    } catch (err) {
-      console.error("Error fetching posts:", err);
-      setError("Không thể tải bài viết. Vui lòng thử lại sau.");
-    } finally {
-      setLoading(false);
+      setLoading(false)
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      setPosts([]);
+      setLoading(false)
     }
   };
-
-  // Đơn giản hóa useEffect - chỉ fetch khi các giá trị quan trọng thay đổi
-  // useEffect(() => {
-  //   // Đặt loading = false ban đầu để cho phép fetch lần đầu
-  //   setLoading(false);
-    
-  //   // Sử dụng setTimeout để ngăn tải liên tục
-  //   const timer = setTimeout(() => {
-  //     fetchPosts();
-  //   }, 100);
-    
-  //   return () => clearTimeout(timer);
-  // }, [currentCategory, currentPage, searchQuery, fetchPosts]);
 
   // Category change handler
   const handleCategoryChange = (category: string) => {
@@ -122,10 +143,19 @@ const ForumPage = () => {
   // Post creation handlers
   const handleCreatePost = () => {
     setShowCreatePost(true);
+
     fetchPosts();
   };
 
+  const Context = React.createContext({ name: 'Default' });
+  
+  const [api, contextHolder] = notification.useNotification();
   const handlePostCreated = () => {
+    api.info({
+      message: `Đăng bài thành công, bài viết đang được phê duyệt`,
+      description: <Context.Consumer>{({ name }) => `Hello, ${name}!`}</Context.Consumer>,
+      placement:'topRight'
+    });
     setShowCreatePost(false);
     fetchPosts();
   };
@@ -151,6 +181,7 @@ const ForumPage = () => {
   return (
     <div className={styles.forumContainer}>
       {/* Header của forum */}
+      {contextHolder}
       <ForumHeader onCreatePost={handleCreatePost} />
 
       {/* Phần tìm kiếm */}

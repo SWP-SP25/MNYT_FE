@@ -4,7 +4,7 @@ import { Card, Row, Col, Button, Space, Radio, Modal } from 'antd';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { useRouter } from 'next/navigation';
-import { UpdateForm } from './form-update';
+import { UpdateForm, UpdateFormProps } from './form-update';
 import { motion } from 'framer-motion';
 import useAxios from '@/hooks/useFetchAxios';
 import { FetusStandard } from '@/types/fetusStandard';
@@ -14,6 +14,7 @@ import { BlogResponse } from '@/types/blog';
 import styles from './maincontent.module.css';
 import { useAuth } from "@/hooks/useAuth";
 import axios from 'axios';
+import { getUserInfo } from '@/utils/getUserInfo';
 //Tùy chỉnh các hiệu ứng chuyển động cho các phần tử trong giao diện bằng cách sử dụng thư viện framer-motion
 //Định nghĩa hiệu ứng "Fade In Up" cho các phần tử
 const fadeInUp = {
@@ -40,34 +41,62 @@ export const MainContent: React.FC = () => {
     const [isPreviewVisible, setIsPreviewVisible] = useState(false);
     const chartRef = useRef<HTMLDivElement>(null);
     const { user } = useAuth(); // Lấy thông tin user từ useAuth
+    const userInfo = getUserInfo(user);
+    const [activeTwin, setActiveTwin] = useState<number>(0); // 0: first twin, 1: second twin
+    const [isTwinPregnancy, setIsTwinPregnancy] = useState<boolean>(false);
 
-    // Lấy dữ liệu chuẩn từ API
-    const { response: fetalLengthStandard, error: fetalLengthError, loading: fetalLengthLoading } = useAxios<FetusStandard[]>({
-        url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/length/singleton',
-        method: 'get'
-    });
 
-    const { response: fetalHeadStandard, error: fetalHeadError, loading: fetalHeadLoading } = useAxios<FetusStandard[]>({
-        url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/HC/singleton',
-        method: 'get'
-    });
+    // Khai báo state cho dữ liệu chuẩn
+    const [fetalLengthStandard, setFetalLengthStandard] = useState<FetusStandard[]>([]);
+    const [fetalHeadStandard, setFetalHeadStandard] = useState<FetusStandard[]>([]);
+    const [fetalWeightStandard, setFetalWeightStandard] = useState<FetusStandard[]>([]);
 
-    const { response: fetalWeightStandard, error: fetalWeightError, loading: fetalWeightLoading } = useAxios<FetusStandard[]>({
-        url: 'https://api-mnyt.purintech.id.vn/api/PregnancyStandard/weight/singleton',
-        method: 'get'
-    });
+    // useEffect để gọi API khi isTwinPregnancy thay đổi
+    useEffect(() => {
+        const pregnancyType = isTwinPregnancy ? 'twins' : 'singleton';
+
+        const fetchData = async () => {
+            try {
+                const lengthResponse = await axios.get(`https://api-mnyt.purintech.id.vn/api/PregnancyStandard/length/${pregnancyType}`);
+                setFetalLengthStandard(lengthResponse.data);
+                // console.log("Fetched fetalLengthStandard:", lengthResponse.data);
+
+                const headResponse = await axios.get(`https://api-mnyt.purintech.id.vn/api/PregnancyStandard/HC/${pregnancyType}`);
+                setFetalHeadStandard(headResponse.data);
+                // console.log("Fetched fetalHeadStandard:", headResponse.data);
+
+                const weightResponse = await axios.get(`https://api-mnyt.purintech.id.vn/api/PregnancyStandard/weight/${pregnancyType}`);
+                setFetalWeightStandard(weightResponse.data);
+                // console.log("Fetched fetalWeightStandard:", weightResponse.data);
+            } catch (error) {
+                console.error("Error fetching fetal standards:", error);
+            }
+        };
+
+        fetchData();
+    }, [isTwinPregnancy]); // Chỉ gọi API khi isTwinPregnancy thay đổi
 
     // Lấy dữ liệu pregnancy theo user ID
     const { response: pregnancyData, error: pregnancyError, loading: pregnancyLoading } = useAxios<any>({
-        url: `https://api-mnyt.purintech.id.vn/api/Pregnancy/accountId/${user?.id}`,
+        url: `https://api-mnyt.purintech.id.vn/api/Pregnancy/accountId/${userInfo?.id}`,
         method: 'get',
-        dependencies: [user?.id]
+        // dependencies: [userInfo?.id]
     });
 
     // Lấy active pregnancy từ danh sách pregnancies
-    const activePregnancy = pregnancyData?.find(pregnancy => pregnancy.status === 'active' || pregnancy.status === 'Active');
-    console.log("activePregnancy", activePregnancy);
-    console.log("Active pregnancy id after find", activePregnancy?.id);
+    const activePregnancy = pregnancyData?.find((pregnancy: any) => pregnancy.status === 'active' || pregnancy.status === 'Active');
+    // console.log("activePregnancy", activePregnancy);
+    // console.log("Active pregnancy id after find", activePregnancy?.id);
+
+    // Kiểm tra nếu là thai kỳ sinh đôi
+    useEffect(() => {
+        if (activePregnancy) {
+            // Check if pregnancy type is "twins"
+            setIsTwinPregnancy(activePregnancy.type === "twins");
+            // console.log("Is twin pregnancy:", activePregnancy.type === "twins");
+        }
+    }, [activePregnancy]);
+
     // Lấy danh sách fetus dựa trên pregnancy ID
     const [fetusData, setFetusData] = useState<any[]>([]);
     const [fetusRecordData, setFetusRecordData] = useState<any[]>([]);
@@ -82,27 +111,33 @@ export const MainContent: React.FC = () => {
                 });
         }
     }, [activePregnancy]);
-    console.log("fetusData", fetusData);
-    console.log("fetusData[0] id", fetusData[0]?.id);
+    // console.log("fetusData", fetusData);
+    // console.log("fetusData[0] id", fetusData[0]?.id);
     useEffect(() => {
-        if (fetusData) {
-            axios.get(`https://api-mnyt.purintech.id.vn/api/FetusRecord/FetusId/${fetusData[0]?.id}`)
-                .then(response => {
-                    setFetusRecordData(response.data);
-                })
-                .catch(error => {
-                    console.error('Error fetching fetus record data:', error);
-                });
+        if (fetusData && fetusData.length > 0) {
+            // Nếu là sinh đôi thì lấy theo twin được chọn, nếu không thì luôn lấy [0]
+            const selectedFetusIndex = isTwinPregnancy ? activeTwin : 0;
+            const selectedFetusId = fetusData[selectedFetusIndex]?.id;
+
+            if (selectedFetusId) {
+                axios.get(`https://api-mnyt.purintech.id.vn/api/FetusRecord/FetusId/${selectedFetusId}`)
+                    .then(response => {
+                        setFetusRecordData(response.data);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching fetus record data:', error);
+                    });
+            }
         }
-    }, [fetusData]);
-    console.log("fetusRecordData", fetusRecordData);
+    }, [fetusData, activeTwin, isTwinPregnancy]);
+    // console.log("fetusRecordData", fetusRecordData);
 
     // Sắp xếp fetus record theo period tăng dần
-    const sortedFetusRecords = fetusRecordData?.sort((a, b) => a.inputPeriod - b.inputPeriod) || [];
-    console.log("sortedFetusRecords", sortedFetusRecords);
+    const sortedFetusRecords = fetusRecordData?.sort((a, b) => a.period - b.period) || [];
+    // console.log("sortedFetusRecords", sortedFetusRecords);
     // Add blog data fetching
     const { response: blogData, error: blogError, loading: blogLoading } = useAxios<BlogResponse>({
-        url: 'https://api-mnyt.purintech.id.vn/api/BlogPosts/all',
+        url: 'https://api-mnyt.purintech.id.vn/api/Posts/blogs',
         method: 'get'
     });
     console.log("Blog Data từ API:", blogData); // Kiểm tra toàn bộ dữ liệu
@@ -129,10 +164,11 @@ export const MainContent: React.FC = () => {
 
             // Lọc bài viết theo tuần thai hiện tại
             const filteredPosts = blogData.data
-                .filter(post => post.period === currentPeriod)
+                .filter((post: any) => post.period === currentPeriod)
                 .slice(0, 1); // Lấy bài viết đầu tiên nếu có nhiều bài
 
-            console.log(`Found ${filteredPosts.length} blog posts for period ${currentPeriod}`);
+            // console.log(`Found ${filteredPosts.length} blog posts for period ${currentPeriod}`);
+            const imageUrl = filteredPosts[0]?.images[0]?.url;
 
             // Trả về bài viết đầu tiên hoặc null nếu không tìm thấy
             return filteredPosts[0] || null;
@@ -140,8 +176,8 @@ export const MainContent: React.FC = () => {
             console.error("Error in previewBlogPost:", error);
             return null;
         }
-    };
 
+    };
     // Data cho biểu đồ chiều dài
     const generateLengthData = () => {
         const FetusStandard: any[] = [];
@@ -175,6 +211,10 @@ export const MainContent: React.FC = () => {
                         week: record.inputPeriod,
                         length: record.length
                     });
+                    console.log("record.period", record.period);
+                    console.log("record.date", record.date);
+                    console.log("record.inputPeriod", record.inputPeriod);
+
 
                     // Cập nhật tuần và giá trị mới nhất
                     if (record.inputPeriod > lastActualWeek) {
@@ -779,16 +819,30 @@ export const MainContent: React.FC = () => {
                                     </Button>
                                 </Space>
                             </Space>
-                            <Radio.Group
-                                value={activeChart}
-                                onChange={(e) => setActiveChart(e.target.value)}
-                                optionType="button"
-                                buttonStyle="solid"
-                            >
-                                <Radio.Button value="length">Chiều dài</Radio.Button>
-                                <Radio.Button value="head">Đường kính đầu</Radio.Button>
-                                <Radio.Button value="weight">Cân nặng</Radio.Button>
-                            </Radio.Group>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Radio.Group
+                                    value={activeChart}
+                                    onChange={(e) => setActiveChart(e.target.value)}
+                                    optionType="button"
+                                    buttonStyle="solid"
+                                >
+                                    <Radio.Button value="length">Chiều dài</Radio.Button>
+                                    <Radio.Button value="head">Đường kính đầu</Radio.Button>
+                                    <Radio.Button value="weight">Cân nặng</Radio.Button>
+                                </Radio.Group>
+
+                                {isTwinPregnancy && (
+                                    <Radio.Group
+                                        value={activeTwin}
+                                        onChange={(e) => setActiveTwin(e.target.value)}
+                                        optionType="button"
+                                        buttonStyle="solid"
+                                    >
+                                        <Radio.Button value={0}>Thai nhi 1</Radio.Button>
+                                        <Radio.Button value={1}>Thai nhi 2</Radio.Button>
+                                    </Radio.Group>
+                                )}
+                            </div>
                         </Space>
                     }
                     style={{ marginBottom: '20px' }}
@@ -810,7 +864,8 @@ export const MainContent: React.FC = () => {
                         ) : (
                             (() => {
                                 const post = previewBlogPost();
-
+                                const imageUrl = previewBlogPost()?.images[0]?.url;
+                                console.log("imageUrl", imageUrl);
                                 // Xác định tuần thai hiện tại để hiển thị trong thông báo
                                 let currentPeriod = 0;
                                 if (sortedFetusRecords?.length > 0) {
@@ -821,14 +876,14 @@ export const MainContent: React.FC = () => {
                                 return post ? (
                                     <Card
                                         hoverable
-                                        onClick={() => router.push('/blog')}
+                                        onClick={() => router.push(`/blog/${post.id}`)}
                                         className={styles.blogCard}
                                         bodyStyle={{ padding: 0 }}
                                         cover={
                                             <div className={styles.imageContainer}>
                                                 <img
                                                     alt="blog cover"
-                                                    src="https://res.cloudinary.com/drvn1tizc/image/upload/v1742278926/dinhduong-16903446267511906346206_eahhse.jpg"
+                                                    src={imageUrl || "https://res.cloudinary.com/drvn1tizc/image/upload/v1742278926/dinhduong-16903446267511906346206_eahhse.jpg"}
                                                     className={styles.coverImage}
                                                 />
                                                 <div className={styles.contentOverlay}>
@@ -874,21 +929,24 @@ export const MainContent: React.FC = () => {
                             <h3>Trạng Thái Phát Triển</h3>
                             <p>{getStatusColor().status}</p>
                             <p style={{ fontSize: '14px' }}>{getStatusColor().detail}</p>
-                            <a href="#" style={{ color: 'white' }}>Xem Chi Tiết →</a>
                         </Card>
                     </motion.div>
                 </Col>
             </Row>
 
             <Modal
-                title="Cập nhật chỉ số thai nhi"
+                title={`Cập nhật chỉ số thai nhi${isTwinPregnancy ? " (Sinh đôi)" : ""}`}
                 open={isModalVisible}
                 onCancel={() => setIsModalVisible(false)}
                 footer={null}
                 width={800}
                 destroyOnClose
             >
-                <UpdateForm onClose={() => setIsModalVisible(false)} />
+                <UpdateForm
+                    onClose={() => setIsModalVisible(false)}
+                    isTwins={isTwinPregnancy}
+                    activeTwin={activeTwin}
+                />
             </Modal>
 
             <Modal

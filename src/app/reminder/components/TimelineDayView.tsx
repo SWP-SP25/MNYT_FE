@@ -32,44 +32,39 @@ const TimelineDayView: React.FC<TimelineDayViewProps> = ({
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Điều chỉnh chiều cao để khớp với FullCalendar
-    useEffect(() => {
-        const adjustHeight = () => {
-            const calendarEl = document.getElementById('mainCalendar');
-            if (calendarEl && containerRef.current) {
-                // Lấy chiều cao chính xác của calendar
-                const calendarHeight = calendarEl.offsetHeight;
-
-                // Điều chỉnh chiều cao cho container
-                containerRef.current.style.height = `${calendarHeight}px`;
-            }
-        };
-
-        // Điều chỉnh ngay khi component mount và khi window resize
-        adjustHeight();
-        window.addEventListener('resize', adjustHeight);
-
-        // Điều chỉnh lại sau một chút để đảm bảo FullCalendar đã render xong
-        const timer = setTimeout(adjustHeight, 100);
-
-        return () => {
-            window.removeEventListener('resize', adjustHeight);
-            clearTimeout(timer);
-        };
-    }, [date]); // Chạy lại khi date thay đổi
-
     // Đảm bảo reminders luôn là một mảng
     const safeReminders = reminders || [];
 
     // Nhóm reminder theo giờ
     const remindersByHour: Record<number, any[]> = {};
     safeReminders.forEach(reminder => {
-        if (reminder && reminder.time) {  // Kiểm tra reminder và reminder.time có tồn tại không
-            const hour = parseInt(reminder.time.split(':')[0]);
-            if (!remindersByHour[hour]) {
-                remindersByHour[hour] = [];
+        if (reminder) {
+            // Đảm bảo sử dụng time từ reminder, KHÔNG thay đổi giá trị gốc
+            const timeString = reminder.time;
+
+            // Xử lý theo giờ (lấy phần số giờ đầu tiên) chỉ để phân nhóm hiển thị
+            let hourValue = -1; // Giá trị mặc định nếu không phân tích được giờ
+
+            if (timeString && typeof timeString === 'string') {
+                const timeParts = timeString.split(':');
+                if (timeParts.length >= 2) {
+                    hourValue = parseInt(timeParts[0], 10);
+                }
             }
-            remindersByHour[hour].push(reminder);
+
+            // Nếu giờ không hợp lệ, đặt vào nhóm giờ mặc định (9h) CHỈ để hiển thị
+            // KHÔNG thay đổi giá trị time trong reminder
+            if (typeof hourValue !== 'number' || isNaN(hourValue) || hourValue < 0 || hourValue > 23) {
+                hourValue = 9; // Sử dụng 9h CHỈ cho mục đích nhóm hiển thị
+            }
+
+            // Tạo mảng cho giờ nếu chưa có
+            if (!remindersByHour[hourValue]) {
+                remindersByHour[hourValue] = [];
+            }
+
+            // Thêm reminder gốc (không thay đổi) vào mảng theo giờ
+            remindersByHour[hourValue].push(reminder);
         }
     });
 
@@ -308,8 +303,6 @@ const TimelineDayView: React.FC<TimelineDayViewProps> = ({
         // Reset các state khi date thay đổi
         setExpandedHours([]);
         setExpandedReminderId(null);
-
-        // ... Các phần code khác trong useEffect hiện tại
     }, [date]);
 
     return (
@@ -347,6 +340,20 @@ const TimelineDayView: React.FC<TimelineDayViewProps> = ({
             </Box>
 
             <Box className={styles.timelineScrollContainer} sx={{ p: 1, flex: 1, overflowY: 'auto' }}>
+                {/* Hiển thị các reminder không có giờ hoặc giờ không hợp lệ */}
+                {remindersByHour[-1] && remindersByHour[-1].length > 0 && (
+                    <Box className={styles.timeSlotContainer}>
+                        <Box className={styles.timeLabel} sx={{ color: '#f44336' }}>
+                            Không rõ giờ
+                        </Box>
+                        <Box className={styles.remindersList}>
+                            {remindersByHour[-1].map(reminder => (
+                                <ReminderItemComponent reminder={reminder} key={reminder.id} />
+                            ))}
+                        </Box>
+                    </Box>
+                )}
+
                 {timeSlots.map(hour => {
                     const hourReminders = remindersByHour[hour] || [];
                     const hasReminders = hourReminders.length > 0;

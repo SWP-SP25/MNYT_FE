@@ -49,3 +49,15 @@
 .formGroupHalf {
     flex: 1;
 }
+
+.twinSelector {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #fffbe6;
+    border-radius: 5px;
+    border-left: 4px solid #faad14;
+}
+
+.twinSelector .sectionTitle {
+    color: #d48806;
+}

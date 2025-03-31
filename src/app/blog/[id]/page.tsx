@@ -19,7 +19,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { uploadImage } from "@/utils/uploadImage";
 import { useAuth } from "@/hooks/useAuth";
-
+import { getUserInfo } from "@/utils/getUserInfo";
 // Thêm interface để type checking
 interface Comment {
   id: number;
@@ -87,6 +87,7 @@ const BlogDetail = () => {
   const [loadingInteractions, setLoadingInteractions] = useState(false);
 
   const { user } = useAuth();
+  const userInfo = getUserInfo(user);
 
   const {
     response: blogPostDetailResponse,
@@ -509,9 +510,8 @@ const BlogDetail = () => {
       {/* Interaction Bar */}
       <div className={styles.interactionBar}>
         <button
-          className={`${styles.interactionButton} ${
-            isLiked ? styles.active : ""
-          }`}
+          className={`${styles.interactionButton} ${isLiked ? styles.active : ""
+            }`}
           onClick={handleLike}
         >
           {isLiked ? <FaHeart /> : <FaRegHeart />}
@@ -523,9 +523,8 @@ const BlogDetail = () => {
           <span>Chia sẻ</span>
         </button>
         <button
-          className={`${styles.interactionButton} ${
-            isSaved ? styles.active : ""
-          }`}
+          className={`${styles.interactionButton} ${isSaved ? styles.active : ""
+            }`}
           onClick={handleSave}
         >
           <FaBookmark />

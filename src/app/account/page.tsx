@@ -5,7 +5,7 @@ import styles from './page.module.css';
 import componentStyles from './components.module.css';
 import { useAuth } from '@/hooks/useAuth';
 import axios from 'axios';
-
+import { getUserInfo } from '@/utils/getUserInfo';
 // Định nghĩa interface cho dữ liệu người dùng
 interface UserData {
     id: number;
@@ -26,6 +26,7 @@ export default function AccountInfoPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { user } = useAuth();
+    const userInfo = getUserInfo(user);
 
     // Form data state
     const [formData, setFormData] = useState({
@@ -38,7 +39,7 @@ export default function AccountInfoPage() {
     useEffect(() => {
         // Fetch user data when component mounts
         if (user) {
-            fetchUserData(user?.id);
+            fetchUserData(userInfo?.id?.toString() || '');
         }
     }, [user]);
 
@@ -159,7 +160,7 @@ export default function AccountInfoPage() {
                 <div className={styles.errorContainer}>
                     <p>{error}</p>
                     <button
-                        onClick={() => user && fetchUserData(user?.id)}
+                        onClick={() => userInfo && fetchUserData(userInfo?.id?.toString())}
                         className={`${componentStyles.button} ${componentStyles.primaryButton}`}
                         style={{ marginTop: '10px' }}
                     >

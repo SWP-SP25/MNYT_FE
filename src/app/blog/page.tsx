@@ -31,11 +31,11 @@ const BlogPage = () => {
 
       if (response.data) {
         // Filter blogs to only show published posts or posts by current user
-        const filteredBlogs = response.data.data.filter((blog: any) => 
-          blog.status === "Published" || 
+        const filteredBlogs = response.data.data.filter((blog: any) =>
+          blog.status === "Published" ||
           (userInfo && blog.accountId === userInfo.id)
         );
-        
+
         setFetchedBlogs(filteredBlogs);
         setBlogs(filteredBlogs);
         setTotalPages(Math.ceil(filteredBlogs.length / blogsPerPage));
@@ -75,7 +75,7 @@ const BlogPage = () => {
       setTotalPages(
         Math.ceil(
           fetchedBlogs.filter((x) => x.category == category).length /
-            blogsPerPage
+          blogsPerPage
         )
       ); // Adjust total pages based on the length of the response
     } else {
@@ -143,7 +143,6 @@ const BlogPage = () => {
       {/* Use the Pagination component */}
 
       {/* Sidebar */}
-      <Sidebar />
     </div>
   );
 };

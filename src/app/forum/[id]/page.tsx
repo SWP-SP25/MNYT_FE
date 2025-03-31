@@ -23,7 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 import EditForumPost from "../CRUD/EditForumPost";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/swiper-bundle.css";
-
+import { getUserInfo } from "@/utils/getUserInfo";
 interface ForumPost {
   id: number;
   title: string;
@@ -59,7 +59,7 @@ const ForumDetailPage = () => {
   const { user } = useAuth();
   const [debugInfo, setDebugInfo] = useState<any>(null);
   const [isReported, setIsReported] = useState(false);
-
+  const userInfo = getUserInfo(user);
   // Load like/save status from localStorage
   useEffect(() => {
     const likedStatus = localStorage.getItem(`forum-liked-${postId}`);
@@ -138,7 +138,7 @@ const ForumDetailPage = () => {
 
       commentsData = commentsResponse.data.data.items;
 
-      commentsData = commentsData.map((comment) => ({
+      commentsData = commentsData.map((comment: any) => ({
         ...comment,
         content: comment.content || "",
       }));
@@ -188,7 +188,7 @@ const ForumDetailPage = () => {
 
     // Sử dụng API đúng để lưu trạng thái like
     try {
-      const userId = user?.id || 1;
+      const userId = userInfo?.id || 1;
       await axios.post(
         `https://api-mnyt.purintech.id.vn/api/Interactions/like/${postId}?accountId=${userId}`
       );
@@ -210,7 +210,7 @@ const ForumDetailPage = () => {
 
     // Sử dụng API đúng để lưu trạng thái bookmark
     try {
-      const userId = user?.id || 1;
+      const userId = userInfo?.id || 1;
       await axios.post(
         `https://api-mnyt.purintech.id.vn/api/Interactions/bookmark/${postId}?accountId=${userId}`
       );
@@ -249,12 +249,12 @@ const ForumDetailPage = () => {
     e.preventDefault();
     if (!newComment.trim() || !post) return;
 
-    const userId = user?.id || 1;
+    const userId = userInfo?.id || 1;
 
     const newCommentItem: CommentListItem = {
       id: Date.now(),
       accountId: userId,
-      accountUserName: user?.name || "Người dùng",
+      accountUserName: userInfo?.userName || "Người dùng",
       blogPostId: Number(postId),
       replyId: null,
       content: newComment,
@@ -284,8 +284,7 @@ const ForumDetailPage = () => {
     } catch (error: any) {
       console.error("Error posting comment:", error);
       alert(
-        `Không thể đăng bình luận: ${
-          error.response?.data?.message || error.message || "Lỗi không xác định"
+        `Không thể đăng bình luận: ${error.response?.data?.message || error.message || "Lỗi không xác định"
         }`
       );
     }
@@ -401,7 +400,7 @@ const ForumDetailPage = () => {
             <span className={styles.authorName}>
               {post.isAnonymous
                 ? "Người dùng ẩn danh"
-                : user?.fullName || post.authorName || post.accountName}
+                : userInfo?.fullName || post.authorName || post.accountName}
             </span>
             <span className={styles.postDate}>
               <FaClock /> {formatDate(post.createDate)}
@@ -450,7 +449,7 @@ const ForumDetailPage = () => {
           <div className={styles.description}>
             {/* Sử dụng dangerouslySetInnerHTML nếu content có cấu trúc HTML */}
             {post.description.includes("<") &&
-            post.description.includes(">") ? (
+              post.description.includes(">") ? (
               <div dangerouslySetInnerHTML={{ __html: post.description }} />
             ) : (
               // Nếu là plain text, hiển thị từng đoạn văn
@@ -466,9 +465,8 @@ const ForumDetailPage = () => {
         <div className={styles.interactionBar}>
           <button
             onClick={handleLike}
-            className={`${styles.interactionButton} ${
-              liked ? styles.active : ""
-            }`}
+            className={`${styles.interactionButton} ${liked ? styles.active : ""
+              }`}
           >
             {liked ? <FaHeart /> : <FaRegHeart />}
             <span>{post.likeCount}</span>
@@ -483,18 +481,16 @@ const ForumDetailPage = () => {
           </button>
           <button
             onClick={handleSave}
-            className={`${styles.interactionButton} ${
-              isSaved ? styles.active : ""
-            }`}
+            className={`${styles.interactionButton} ${isSaved ? styles.active : ""
+              }`}
           >
             <FaBookmark />
             <span>{isSaved ? "Đã lưu" : "Lưu bài"}</span>
           </button>
           <button
             onClick={handleReport}
-            className={`${styles.interactionButton} ${styles.reportButton} ${
-              isReported ? styles.reported : ""
-            }`}
+            className={`${styles.interactionButton} ${styles.reportButton} ${isReported ? styles.reported : ""
+              }`}
           >
             <FaFlag />
             <span>{isReported ? "Đã tố cáo" : "Tố cáo"}</span>
@@ -520,18 +516,18 @@ const ForumDetailPage = () => {
           comments={
             Array.isArray(comments)
               ? comments.map((comment) => {
-                  // Kiểm tra nếu comment bởi user hiện tại
-                  const isCurrentUser = user && comment.accountId === user.id;
+                // Kiểm tra nếu comment bởi user hiện tại
+                const isCurrentUser = user && comment.accountId === userInfo?.id;
 
-                  return {
-                    ...comment,
-                    accountUserName: isCurrentUser
-                      ? user?.name || user?.userName || "Bạn"
-                      : comment.accountUserName || "Người dùng",
-                    // Giữ nguyên trường createDate
-                    createDate: comment.createDate,
-                  };
-                })
+                return {
+                  ...comment,
+                  accountUserName: isCurrentUser
+                    ? userInfo?.fullName || userInfo?.userName || "Bạn"
+                    : comment.accountUserName || "Người dùng",
+                  // Giữ nguyên trường createDate
+                  createDate: comment.createDate,
+                };
+              })
               : []
           }
         />

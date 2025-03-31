@@ -12,7 +12,7 @@ import DeletePostModal from "../CRUD/DeleteForumPost";
 import { useAuth } from "@/hooks/useAuth";
 import CreateForumPost from "../CRUD/CreateForumPost";
 import deleteStyles from "../CRUD/styles/deleteForumPost.module.css";
-
+import { getUserInfo } from "@/utils/getUserInfo";
 // Thêm interface cho dữ liệu tài khoản
 interface Account {
   id: number;
@@ -86,6 +86,7 @@ const PostList = ({
 
   // Lấy thông tin người dùng hiện tại
   const { user } = useAuth();
+  const userInfo = getUserInfo(user);
 
   // Thêm state để theo dõi trạng thái chỉnh sửa và bài viết đang chỉnh sửa
   const [isEditing, setIsEditing] = useState(false);
@@ -332,7 +333,7 @@ const PostList = ({
     try {
       setIsDeleting(true);
       await axios.delete(
-        `https://api-mnyt.purintech.id.vn/api/Posts/${selectedPost.id}?accountId=${user?.id}`
+        `https://api-mnyt.purintech.id.vn/api/Posts/${selectedPost.id}?accountId=${userInfo?.id}`
       );
       setIsDeleteModalOpen(false);
       // Cập nhật danh sách bài viết
@@ -404,7 +405,7 @@ const PostList = ({
             post.isAnonymous === true
               ? "Người dùng ẩn danh"
               : post.accountName ||
-                getAuthorName(post.authorId, post.isAnonymous);
+              getAuthorName(post.authorId, post.isAnonymous);
 
           // Avatar placeholder
           const avatarLetter = post.isAnonymous
@@ -475,7 +476,7 @@ const PostList = ({
                 </div>
 
                 {/* Thêm các nút chỉnh sửa và xóa */}
-                {post.authorId === user?.id && (
+                {post.authorId === userInfo?.id && (
                   <div className={styles.postActions}>
                     <button
                       onClick={() => handleEditPost(post.id, post)}
@@ -557,7 +558,7 @@ const PostList = ({
           onConfirm={handleDeleteConfirm}
           postTitle={selectedPost.title}
           postId={selectedPost.id}
-          currentUserId={user.id}
+          currentUserId={userInfo?.id}
         />
       )}
     </div>

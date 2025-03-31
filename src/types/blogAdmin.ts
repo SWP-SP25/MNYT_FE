@@ -35,10 +35,10 @@ export enum Status {
 }
 
 export enum Category {
-    All = "Tất cả",
-    Experience = "Kinh nghiệm",
-    Story = "Tâm sự",
-    HealthPregnancy = "Sức khỏe mẹ & bé",
-    Fashion = "Thời trang",
-    Nutrition = "Dinh dưỡng"
+    all = "Tất cả",
+    experience = "Kinh nghiệm",
+    story = "Tâm sự",
+    health = "Sức khỏe mẹ & bé",
+    fashion = "Thời trang",
+    nutrition = "Dinh dưỡng"
 }

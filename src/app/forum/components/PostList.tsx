@@ -6,14 +6,15 @@ import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import axios from "axios";
-import Pagination from "./Pagination";
 import { useRouter, usePathname } from "next/navigation";
-import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import { FaTrashAlt } from "react-icons/fa";
 import DeletePostModal from "../CRUD/DeleteForumPost";
 import { useAuth } from "@/hooks/useAuth";
 import CreateForumPost from "../CRUD/CreateForumPost";
 import deleteStyles from "../CRUD/styles/deleteForumPost.module.css";
 import { getUserInfo } from "@/utils/getUserInfo";
+import Pagination from "../Pagination/Pagination";
+
 // Thêm interface cho dữ liệu tài khoản
 interface Account {
   id: number;
@@ -44,33 +45,28 @@ interface Post {
 
 // Cập nhật kiểu dữ liệu cho props
 interface PostListProps {
-  posts: Post[];
+  category: string;
+  searchQuery: string;
+  fetchPosts: () => void;
+  posts:  Post[];
   loading: boolean;
-  error: string | null;
-  currentCategory: string;
-  currentPage: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
-  onRefresh: () => void;
+  currentPage: number;
+  setCurrentPage: (page:number) => void;
 }
 
-const PostList = ({
-  posts,
-  loading,
-  error,
-  currentCategory,
-  currentPage,
-  totalPages,
-  onPageChange,
-  onRefresh,
-}: PostListProps) => {
+const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages, currentPage, setCurrentPage }: PostListProps) => {
   const router = useRouter();
   const pathname = usePathname();
 
   // Thêm state để lưu trữ danh sách tài khoản
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [accountsLoading, setAccountsLoading] = useState<boolean>(true);
-  const [localPosts, setLocalPosts] = useState<Post[]>(posts);
+  
+  const [error, setError] = useState<string | null>(null);
+  //const [currentPage, setCurrentPage] = useState(1);
+  const { user } = useAuth();
+  const postsPerPage = 10;
 
   // Reference to track if we're already checking for updates
   const isCheckingRef = useRef(false);
@@ -86,19 +82,47 @@ const PostList = ({
   const [showEditForm, setShowEditForm] = useState(false);
 
   // Lấy thông tin người dùng hiện tại
-  const { user } = useAuth();
   const userInfo = getUserInfo(user);
 
   // Thêm state để theo dõi trạng thái chỉnh sửa và bài viết đang chỉnh sửa
   const [isEditing, setIsEditing] = useState(false);
   const [editPost, setEditPost] = useState<Post | null>(null);
 
-  // Cập nhật localPosts khi posts prop thay đổi
-  useEffect(() => {
-    setLocalPosts(posts);
-  }, [posts]);
+  // const fetchPosts = async () => {
+  //   setLoading(true);
+  //   console.log("Page number fetch", currentPage);
+  //   try {
+  //     let url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/paginated?pageNumber=${currentPage}&pageSize=${postsPerPage}`;
+      
+  //     if (category !== "all") {
+  //       url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category/paginated?category=${category}&pageNumber=${currentPage}&pageSize=${postsPerPage}`;
+  //     }
 
-  // Effect để kiểm tra và cập nhật các bài viết có like/comment đã thay đổi
+  //     if (searchQuery) {
+  //       url += `&search=${encodeURIComponent(searchQuery)}`;
+  //     }
+
+  //     const response = await axios.get(url);
+  //     if (response.data?.success) {
+  //       console.log("response forum 2", response.data.data);
+  //       setPosts(response.data.data.items || []);
+  //       setTotalPages(Math.max(response.data.data.totalPages || 1, 1));
+  //       setError(null);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error fetching posts:", err);
+  //     setError("Không thể tải bài viết. Vui lòng thử lại sau.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  useEffect(() => {
+    
+
+    fetchPosts();
+  }, [category, searchQuery, currentPage]);
+
+  // Thêm effect để kiểm tra và cập nhật các bài viết có like/comment đã thay đổi
   // FIXED: Removed localPosts from dependency array and added check to prevent infinite loop
   useEffect(() => {
     // Kiểm tra localStorage để xem có bài viết nào được like/comment gần đây không
@@ -109,7 +133,7 @@ const PostList = ({
       isCheckingRef.current = true;
 
       try {
-        const currentPosts = [...localPosts];
+        const currentPosts = [...posts];
         let hasUpdates = false;
 
         // Kiểm tra các bài viết có trạng thái like được lưu trong localStorage
@@ -133,7 +157,7 @@ const PostList = ({
         });
 
         if (hasUpdates) {
-          setLocalPosts(currentPosts);
+          setPosts(currentPosts);
         }
       } finally {
         isCheckingRef.current = false;
@@ -156,36 +180,36 @@ const PostList = ({
     };
   }, []); // FIXED: Removed localPosts from dependency array
 
-  // Thêm effect để chạy checkForUpdates khi posts thay đổi
-  useEffect(() => {
-    // Manually check for localStorage updates when posts change
-    const checkLocalStorageUpdates = () => {
-      const updatedPosts = [...posts];
-      let hasUpdates = false;
+  //Thêm effect để chạy checkForUpdates khi posts thay đổi
+  // useEffect(() => {
+  //   // Manually check for localStorage updates when posts change
+  //   const checkLocalStorageUpdates = () => {
+  //     const updatedPosts = [...posts];
+  //     let hasUpdates = false;
 
-      updatedPosts.forEach((post, index) => {
-        const likeStatus = localStorage.getItem(`forum-liked-${post.id}`);
-        if (likeStatus) {
-          const isLiked = JSON.parse(likeStatus);
-          if (isLiked && updatedPosts[index].likes !== post.likes + 1) {
-            updatedPosts[index] = {
-              ...post,
-              likes: post.likes + 1,
-            };
-            hasUpdates = true;
-          }
-        }
-      });
+  //     updatedPosts.forEach((post, index) => {
+  //       const likeStatus = localStorage.getItem(`forum-liked-${post.id}`);
+  //       if (likeStatus) {
+  //         const isLiked = JSON.parse(likeStatus);
+  //         if (isLiked && updatedPosts[index].likes !== post.likes + 1) {
+  //           updatedPosts[index] = {
+  //             ...post,
+  //             likes: post.likes + 1,
+  //           };
+  //           hasUpdates = true;
+  //         }
+  //       }
+  //     });
 
-      if (hasUpdates) {
-        setLocalPosts(updatedPosts);
-      } else {
-        setLocalPosts(posts);
-      }
-    };
+  //     if (hasUpdates) {
+  //       setPosts(updatedPosts);
+  //     } else {
+  //       setPosts(posts);
+  //     }
+  //   };
 
-    checkLocalStorageUpdates();
-  }, [posts]);
+  //   checkLocalStorageUpdates();
+  // }, [posts]);
 
   // Tải danh sách tài khoản khi component được khởi tạo
   useEffect(() => {
@@ -207,14 +231,7 @@ const PostList = ({
     fetchAccounts();
   }, []);
 
-  // Thêm effect để lắng nghe khi quay lại từ trang chi tiết bài viết
-  useEffect(() => {
-    if (pathname === "/forum") {
-      console.log("Back to forum page, refreshing data...");
-      // Gọi hàm refresh để lấy dữ liệu mới nhất
-      onRefresh();
-    }
-  }, [pathname, onRefresh]);
+  
 
   // Hàm lấy tên người dùng dựa trên authorId
   const getAuthorName = (authorId: number, isAnonymous: boolean) => {
@@ -236,7 +253,7 @@ const PostList = ({
   // console.log("Accounts loaded:", accounts);
 
   // Sắp xếp bài viết theo thời gian tạo (mới nhất lên đầu)
-  const sortedPosts = [...localPosts].sort((a, b) => {
+  const sortedPosts = [...posts].sort((a, b) => {
     return new Date(b.createDate).getTime() - new Date(a.createDate).getTime();
   });
 
@@ -277,25 +294,17 @@ const PostList = ({
     }
   };
 
-  // Sửa đoạn lọc bài viết theo danh mục
-  const filteredPosts =
-    currentCategory === "all"
-      ? sortedPosts.filter(post => 
-          // Show all posts by current user
-          post.authorId === user?.id || 
-          // For other users' posts, only show published or reported
-          (post.status.toLowerCase() === "published" || post.status.toLowerCase() === "reported")
-        )
-      : sortedPosts.filter((post) => 
-          // For current user's posts, only filter by category
-          (post.authorId === user?.id && post.category === currentCategory) ||
-          // For other users' posts, filter by both category and status
-          (post.category === currentCategory && 
-           (post.status.toLowerCase() === "published" || post.status.toLowerCase() === "reported"))
-        );
+  // Simplify the filtering logic
+  const filteredPosts = category == "all"
+    ? sortedPosts
+    : sortedPosts.filter((post) => post.category === category);
+
+    console.log("filteredPosts forum",filteredPosts)
+  // Don't apply status filtering at this level since the API should handle that
+  // This ensures any posts returned from the API will be shown
 
   // Áp dụng phân trang cho các bài viết đã lọc
-  const displayedPosts = paginatePosts(filteredPosts, currentPage);
+  //const displayedPosts = paginatePosts(filteredPosts, currentPage);
 
   // Hàm để lấy số lượt like thực tế của bài viết (kết hợp từ API và localStorage)
   const getPostLikeCount = (post: Post) => {
@@ -321,7 +330,7 @@ const PostList = ({
   const handleEditComplete = () => {
     setIsEditing(false);
     setEditPost(null);
-    onRefresh();
+    fetchPosts();
   };
 
   // Hàm xử lý khi hủy chỉnh sửa
@@ -347,7 +356,7 @@ const PostList = ({
       );
       setIsDeleteModalOpen(false);
       // Cập nhật danh sách bài viết
-      onRefresh();
+      fetchPosts();
       // Thông báo xóa thành công
       alert("Bài viết đã được xóa thành công");
     } catch (error) {
@@ -373,7 +382,7 @@ const PostList = ({
       <div className={styles.errorState}>
         <h3>Đã xảy ra lỗi</h3>
         <p>{error}</p>
-        <button onClick={onRefresh} className={styles.createPostButton}>
+        <button onClick={setPosts} className={styles.createPostButton}>
           Thử lại
         </button>
       </div>
@@ -384,10 +393,10 @@ const PostList = ({
     return (
       <div className={styles.emptyState}>
         <h3>
-          Không có bài viết nào trong danh mục {categoryNames[currentCategory]}
+          Không có bài viết nào trong danh mục {categoryNames[category]}
         </h3>
         <p>Hãy là người đầu tiên chia sẻ kinh nghiệm của bạn!</p>
-        <button onClick={onRefresh} className={styles.createPostButton}>
+        <button onClick={setPosts} className={styles.createPostButton}>
           Làm mới
         </button>
       </div>
@@ -397,18 +406,11 @@ const PostList = ({
   return (
     <div className={styles.postListContainer}>
       <h2 className={styles.categoryTitle}>
-        {categoryNames[currentCategory] || "Tất cả bài viết"}
+        {categoryNames[category] || "Tất cả bài viết"}
       </h2>
 
       <div className={styles.postList}>
-        {displayedPosts.map((post: Post, id: number) => {
-          console.log("Rendering post:", post);
-          console.log("Post info:", {
-            id: post.id,
-            authorId: post.authorId,
-            accountName: post.accountName,
-            isAnonymous: post.isAnonymous,
-          });
+        {filteredPosts.map((post: Post, id: number) => {
 
           // Xác định tên tác giả dựa trên isAnonymous
           const authorName =
@@ -516,17 +518,11 @@ const PostList = ({
         })}
       </div>
 
-      <div className={styles.refreshButtonContainer}>
-        <button onClick={onRefresh} className={styles.refreshButton}>
-          🔄 Làm mới dữ liệu
-        </button>
-      </div>
-
-      {!loading && !error && posts.length > 0 && (
+      {posts.length > 0 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={onPageChange}
+          onPageChange={setCurrentPage}
         />
       )}
 

@@ -1059,4 +1059,274 @@
 .draft::before {
   background-color: #6c757d;
 }
+
+/* Comment Section Styles */
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.commentItem {
+  display: flex;
+  gap: 1rem;
+  padding: 1.2rem;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  border-left: 4px solid #279357;
+}
+
+.commentItem:hover {
+  background-color: #f0f7f3;
+  transform: translateX(3px);
+  box-shadow: 0 3px 12px rgba(39, 147, 87, 0.1);
+}
+
+.commentAvatar {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.commentContent {
+  flex: 1;
+  position: relative;
+}
+
+.commentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.commentAuthor {
+  font-weight: 600;
+  color: #279357;
+  font-size: 1rem;
+}
+
+.commentDate {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.commentText {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #444;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.commentImage {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  margin-top: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.commentImage:hover {
+  opacity: 0.9;
+  transform: scale(1.01);
+}
+
+.commentActions {
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.deleteCommentButton {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.8rem;
+  background-color: #fee2e2;
+  color: #e53e3e;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deleteCommentButton:hover {
+  background-color: #fecaca;
+  transform: translateY(-2px);
+}
+
+.deleteCommentButton:active {
+  transform: translateY(0);
+}
+
+.deleteIcon {
+  font-size: 1.2rem;
+  font-weight: bold;
+  line-height: 0.8;
+}
+
+/* No comments message */
+.noComments {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-style: italic;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  border: 1px dashed #ddd;
+}
+
+/* Comment Form Styles */
+.commentForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #ebf7ef;
+}
+
+.commentForm textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.commentForm textarea:focus {
+  outline: none;
+  border-color: #279357;
+  box-shadow: 0 0 0 2px rgba(39, 147, 87, 0.2);
+}
+
+.commentForm button[type="submit"] {
+  padding: 0.8rem 1.5rem;
+  background-color: #279357;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-end;
+}
+
+.commentForm button[type="submit"]:hover {
+  background-color: #1c7040;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(39, 147, 87, 0.2);
+}
+
+.commentForm button[type="submit"]:active {
+  transform: translateY(0);
+}
+
+.commentImageUpload {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.imagePreviewContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.imagePreview {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: contain;
+  border: 1px solid #ddd;
+}
+
+.imageUploadActions {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.removeImageButton {
+  padding: 0.4rem 0.8rem;
+  background-color: #fed7d7;
+  color: #e53e3e;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.removeImageButton:hover {
+  background-color: #feb2b2;
+}
+
+.uploadImageButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.uploadImageButton:hover {
+  background-color: #cbd5e0;
+  transform: translateY(-1px);
+}
+
+.uploadImageButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Response for mobile */
+@media (max-width: 640px) {
+  .commentItem {
+    padding: 1rem;
+    gap: 0.8rem;
+  }
+  
+  .commentAvatar {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  
+  .commentAuthor {
+    font-size: 0.9rem;
+  }
+  
+  .commentText {
+    font-size: 0.9rem;
+  }
+  
+  .commentForm {
+    padding: 1rem;
+  }
+}
   

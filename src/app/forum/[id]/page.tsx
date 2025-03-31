@@ -8,7 +8,6 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale/vi";
 import styles from "./postDetail.module.css";
-import CommentSection from "../components/CommentSection";
 import { CommentListItem } from "@/types/commentList";
 import {
   FaRegHeart,
@@ -20,10 +19,10 @@ import {
   FaFlag,
 } from "react-icons/fa";
 import { useAuth } from "@/hooks/useAuth";
-import EditForumPost from "../CRUD/EditForumPost";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/swiper-bundle.css";
 import { getUserInfo } from "@/utils/getUserInfo";
+
 interface ForumPost {
   id: number;
   title: string;
@@ -44,6 +43,77 @@ interface ForumPost {
   status?: string;
 }
 
+// Define interfaces for component props
+interface CommentItemProps {
+  comment: CommentListItem;
+  formatDate: (date: string | Date) => string;
+  currentUserId?: number | string;
+  onDeleteComment: (id: number) => void;
+}
+
+// Update CommentItem component to support images and delete function
+const CommentItem = ({ comment, formatDate, currentUserId, onDeleteComment }: CommentItemProps) => {
+  // Check if this comment belongs to the current user
+  const isOwnComment = currentUserId && comment.accountId.toString() === currentUserId.toString();
+  
+  console.log("CommentItem",comment)
+  return (
+    <div className={styles.commentItem}>
+      <div className={styles.commentAvatar}>
+        {comment.accountUserName ? comment.accountUserName.charAt(0).toUpperCase() : "?"}
+      </div>
+      <div className={styles.commentContent}>
+        <div className={styles.commentHeader}>
+          <span className={styles.commentAuthor}>{comment.accountUserName || "Người dùng"}</span>
+          <span className={styles.commentDate}>{formatDate(comment.createDate)}</span>
+        </div>
+        <div className={styles.commentText}>{comment.content}</div>
+        
+        {/* Show delete button only for the user's own comments */}
+        {isOwnComment && (
+          <div className={styles.commentActions}>
+            <button 
+              onClick={() => onDeleteComment(comment.id)} 
+              className={styles.deleteCommentButton}
+              title="Xóa bình luận"
+            >
+              <span className={styles.deleteIcon}>×</span> Xóa
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+interface CommentSectionProps {
+  comments: CommentListItem[];
+  formatDate: (date: string | Date) => string;
+  currentUserId?: number | string;
+  onDeleteComment: (id: number) => void;
+}
+
+// Comment Section Component
+const CommentSection = ({ comments, formatDate, currentUserId, onDeleteComment }: CommentSectionProps) => {
+  if (!Array.isArray(comments) || comments.length === 0) {
+    return <div className={styles.noComments}>Chưa có bình luận nào.</div>;
+  }
+
+  return (
+    <div className={styles.commentsList}>
+      {comments.map((comment) => (
+        <CommentItem 
+          key={comment.id} 
+          comment={comment} 
+          formatDate={formatDate} 
+          currentUserId={currentUserId}
+          onDeleteComment={onDeleteComment}
+        />
+      ))}
+    </div>
+  );
+};
+
 const ForumDetailPage = () => {
   const params = useParams();
   const router = useRouter();
@@ -57,17 +127,24 @@ const ForumDetailPage = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [newComment, setNewComment] = useState("");
   const { user } = useAuth();
-  const [debugInfo, setDebugInfo] = useState<any>(null);
   const [isReported, setIsReported] = useState(false);
   const userInfo = getUserInfo(user);
-  // Load like/save status from localStorage
-  useEffect(() => {
-    const likedStatus = localStorage.getItem(`forum-liked-${postId}`);
-    const savedStatus = localStorage.getItem(`forum-saved-${postId}`);
 
-    if (likedStatus) setLiked(JSON.parse(likedStatus));
+  console.log("commentsDatacommentsData",comments)
+  // Load like/save status from localStorage and API
+  useEffect(() => {
+    const savedStatus = localStorage.getItem(`forum-saved-${postId}`);
     if (savedStatus) setIsSaved(JSON.parse(savedStatus));
-  }, [postId]);
+    
+    // If user is logged in, check like status from API
+    if (userInfo?.id) {
+      checkIfPostLiked(userInfo.id);
+    } else {
+      // Fallback to localStorage if user not logged in
+      const likedStatus = localStorage.getItem(`forum-liked-${postId}`);
+      if (likedStatus) setLiked(JSON.parse(likedStatus));
+    }
+  }, [postId, userInfo?.id]);
 
   // Fetch post data
   const fetchPostData = async () => {
@@ -79,9 +156,7 @@ const ForumDetailPage = () => {
       console.log("Fetching post details from URL:", url);
 
       const response = await axios.get(url);
-      console.log("API response:", response);
-      console.log("Post data:", response.data);
-
+      
       if (response.data) {
         let postData;
 
@@ -95,14 +170,14 @@ const ForumDetailPage = () => {
           ...postData,
           title: postData.title || "Bài viết không có tiêu đề",
           content: postData.content || "",
-          image:
-            postData.image || postData.imageUrl || postData.coverImage || "",
+          image: postData.image || postData.imageUrl || postData.coverImage || "",
           likeCount: postData.likeCount || 0,
           commentCount: postData.commentCount || 0,
         };
 
-        console.log("Formatted post data:", formattedPostData);
         setPost(formattedPostData);
+        
+        // Fetch comments separately
         fetchComments();
       } else {
         throw new Error("Invalid response structure");
@@ -119,53 +194,75 @@ const ForumDetailPage = () => {
     fetchPostData();
   }, [postId]);
 
-  // Function to handle post update
-  const handlePostUpdated = () => {
-    fetchPostData(); // Re-fetch the post data
-  };
-
-  // Fetch comments for this post
+  // Fetch comments for this post - Thử lại nhiều endpoints khác nhau
   const fetchComments = async () => {
+    if (!postId) return;
+    
     try {
-      console.log("Fetching comments for post ID:", postId);
-
-      const commentsUrl = `https://api-mnyt.purintech.id.vn/api/Comments/post/${postId}`;
-      const commentsResponse = await axios.get(commentsUrl);
-
-      console.log("Comments response:", commentsResponse);
-
+      const possibleEndpoints = [
+        `https://api-mnyt.purintech.id.vn/api/Comments/post/${postId}/all`,
+      ];
+      
       let commentsData = [];
-
-      commentsData = commentsResponse.data.data.items;
-
-      commentsData = commentsData.map((comment: any) => ({
-        ...comment,
-        content: comment.content || "",
-      }));
-
-      console.log("Processed comments data:", commentsData);
-
-      if (commentsData.length > 0) {
+      let success = false;
+      
+      for (const endpoint of possibleEndpoints) {
+        try {
+          console.log(`Trying to fetch comments from: ${endpoint}`);
+          const response = await axios.get(endpoint);
+          
+          if (response.data && response.data.success) {
+            // Xử lý trường hợp dữ liệu nằm trong data.items
+            if (response.data.data && response.data.data.items) {
+              commentsData = response.data.data.items;
+            } 
+            // Xử lý trường hợp dữ liệu nằm trực tiếp trong data
+            else if (response.data.data) {
+              commentsData = response.data.data;
+            }
+            
+            if (Array.isArray(commentsData) && commentsData.length > 0) {
+              success = true;
+              break; // Tìm thấy endpoint hoạt động, dừng vòng lặp
+            }
+          }
+        } catch (endpointError) {
+          console.log(`Endpoint ${endpoint} failed:`, endpointError);
+          // Tiếp tục thử endpoint tiếp theo
+        }
+      }
+      
+      if (success) {
+        // Xử lý dữ liệu bình luận
+        commentsData = commentsData.map((comment: any) => ({
+          ...comment,
+          content: comment.content || "",
+        }));
+        
         setComments(commentsData);
-        // Lưu trữ bình luận vào localStorage
-        localStorage.setItem(
-          `forum-comments-${postId}`,
-          JSON.stringify(commentsData)
-        );
+        localStorage.setItem(`forum-comments-${postId}`, JSON.stringify(commentsData));
+        console.log("Comments loaded successfully:", commentsData);
       } else {
-        console.log("No comments found for this post");
+        // Không tìm thấy endpoint nào, thử lấy từ localStorage
+        console.log("No working endpoint found, using localStorage");
+        const cachedComments = localStorage.getItem(`forum-comments-${postId}`);
+        if (cachedComments) {
+          setComments(JSON.parse(cachedComments));
+        } else {
+          setComments([]);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      // Thử lấy từ localStorage nếu có lỗi
+      const cachedComments = localStorage.getItem(`forum-comments-${postId}`);
+      if (cachedComments) {
+        setComments(JSON.parse(cachedComments));
+      } else {
         setComments([]);
       }
-    } catch (commentError) {
-      console.error("Error fetching comments:", commentError);
-      setComments([]);
     }
   };
-
-  // Load comments from localStorage on initial render
-  useEffect(() => {
-    fetchComments();
-  }, [postId]);
 
   // Handle like post
   const handleLike = async () => {
@@ -174,26 +271,63 @@ const ForumDetailPage = () => {
     const newLikeStatus = !liked;
     setLiked(newLikeStatus);
 
-    // Update post like count
+    // Temporarily update UI for immediate feedback
     setPost({
       ...post,
-      likeCount: post.likeCount + (newLikeStatus ? 1 : -1),
+      likeCount: Math.max(0, post.likeCount + (newLikeStatus ? 1 : -1)),
     });
 
     // Save to localStorage
-    localStorage.setItem(
-      `forum-liked-${postId}`,
-      JSON.stringify(newLikeStatus)
-    );
+    localStorage.setItem(`forum-liked-${postId}`, JSON.stringify(newLikeStatus));
 
-    // Sử dụng API đúng để lưu trạng thái like
     try {
       const userId = userInfo?.id || 1;
-      await axios.post(
-        `https://api-mnyt.purintech.id.vn/api/Interactions/like/${postId}?accountId=${userId}`
-      );
+      
+      if (newLikeStatus) {
+        // If liking, use POST request
+        await axios.post(
+          `https://api-mnyt.purintech.id.vn/api/Interactions/like/${postId}?accountId=${userId}`
+        );
+      } else {
+        // If unliking, use DELETE request
+        await axios.delete(
+          `https://api-mnyt.purintech.id.vn/api/Interactions/like/${postId}?accountId=${userId}`
+        );
+      }
+      
+      // Refetch post details to get the updated like count
+      setTimeout(async () => {
+        try {
+          const response = await axios.get(
+            `https://api-mnyt.purintech.id.vn/api/Posts/${postId}`
+          );
+          
+          if (response.data) {
+            let postData;
+            if (response.data.data) {
+              postData = response.data.data;
+            } else {
+              postData = response.data;
+            }
+            
+            // Update only the likeCount from the fresh data
+            setPost(prevPost => ({
+              ...prevPost!,
+              likeCount: postData.likeCount || 0
+            }));
+          }
+        } catch (fetchError) {
+          console.error("Error fetching updated post data:", fetchError);
+        }
+      }, 500);
     } catch (error) {
-      console.error("Error saving like status:", error);
+      console.error("Error updating like status:", error);
+      // Revert UI change if API call fails
+      setLiked(!newLikeStatus);
+      setPost({
+        ...post,
+        likeCount: post.likeCount
+      });
     }
   };
 
@@ -203,10 +337,7 @@ const ForumDetailPage = () => {
     setIsSaved(newSaveStatus);
 
     // Save to localStorage
-    localStorage.setItem(
-      `forum-saved-${postId}`,
-      JSON.stringify(newSaveStatus)
-    );
+    localStorage.setItem(`forum-saved-${postId}`, JSON.stringify(newSaveStatus));
 
     // Sử dụng API đúng để lưu trạng thái bookmark
     try {
@@ -228,65 +359,60 @@ const ForumDetailPage = () => {
           text: "Chia sẻ bài viết từ diễn đàn Mầm Non Yêu Thương",
           url: window.location.href,
         })
-        .catch((err) => {
-          // Fallback for browsers that don't support Web Share API
+        .catch(() => {
+          // Fallback
           navigator.clipboard
             .writeText(window.location.href)
             .then(() => alert("Đã sao chép link vào clipboard"))
-            .catch((err) => console.error("Không thể sao chép link:", err));
+            .catch((clipErr) => console.error("Không thể sao chép link:", clipErr));
         });
     } else {
-      // Fallback for browsers that don't support Web Share API
+      // Fallback
       navigator.clipboard
         .writeText(window.location.href)
         .then(() => alert("Đã sao chép link vào clipboard"))
-        .catch((err) => console.error("Không thể sao chép link:", err));
+        .catch((clipErr) => console.error("Không thể sao chép link:", clipErr));
     }
   };
 
-  // Handle submit comment - Sửa lại để sử dụng API endpoint đúng
+  // Update the handleSubmitComment function
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || !post) return;
 
     const userId = userInfo?.id || 1;
-
-    const newCommentItem: CommentListItem = {
-      id: Date.now(),
-      accountId: userId,
-      accountUserName: userInfo?.userName || "Người dùng",
-      blogPostId: Number(postId),
-      replyId: null,
-      content: newComment,
-      createDate: new Date(),
-    };
+    // Lưu vị trí hiện tại của trang
+    const currentPosition = window.scrollY;
 
     try {
-      const response = await axios.post(
+      // Post comment
+      await axios.post(
         `https://api-mnyt.purintech.id.vn/api/Comments?accountId=${userId}`,
         {
           blogPostId: Number(postId),
+          forumPostId: Number(postId),
           content: newComment,
+          type: "forum"
         }
       );
 
-      // Thêm bình luận mới vào danh sách hiện tại
-      setComments((prevComments) => {
-        const updatedComments = [...prevComments, newCommentItem];
-        localStorage.setItem(
-          `forum-comments-${postId}`,
-          JSON.stringify(updatedComments)
-        );
-        return updatedComments;
-      });
+      // Fetch new data instead of reloading page
+      await fetchPostData();
 
+      // Reset form
       setNewComment("");
+      
+      // Khôi phục vị trí cuộn sau khi cập nhật
+      setTimeout(() => {
+        window.scrollTo({
+          top: currentPosition,
+          behavior: "auto"
+        });
+      }, 100);
+      
     } catch (error: any) {
       console.error("Error posting comment:", error);
-      alert(
-        `Không thể đăng bình luận: ${error.response?.data?.message || error.message || "Lỗi không xác định"
-        }`
-      );
+      alert(`Không thể đăng bình luận: ${error.response?.data?.message || error.message || "Lỗi không xác định"}`);
     }
   };
 
@@ -294,19 +420,23 @@ const ForumDetailPage = () => {
   const formatDate = (dateString: string | Date) => {
     try {
       // Chuyển đổi thành đối tượng Date nếu là chuỗi
-      const date =
-        typeof dateString === "string" ? new Date(dateString) : dateString;
+      const date = typeof dateString === "string" ? new Date(dateString) : dateString;
 
       // Kiểm tra nếu là ngày không hợp lệ
       if (isNaN(date.getTime())) {
         return "Vừa xong";
       }
 
+      // Thêm 7 giờ cho múi giờ Việt Nam (UTC+7)
+      const vietnamDate = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+      
       // Lấy thời gian hiện tại
       const now = new Date();
+      // Cũng điều chỉnh thời gian hiện tại theo múi giờ Việt Nam
+      const vietnamNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
 
       // Nếu thời gian trong tương lai (lỗi), sử dụng thời gian hiện tại
-      const compareDate = date > now ? new Date(now.getTime() - 60000) : date; // Giảm 1 phút để hiển thị "1 phút trước"
+      const compareDate = vietnamDate > vietnamNow ? new Date(vietnamNow.getTime() - 60000) : vietnamDate; // Giảm 1 phút để hiển thị "1 phút trước"
 
       // Dùng formatDistanceToNow với cờ addSuffix để thêm "cách đây" và "nữa"
       return formatDistanceToNow(compareDate, {
@@ -341,6 +471,97 @@ const ForumDetailPage = () => {
     return user.role === 'Admin' || user.id === post.accountId.toString();
   };
 
+  // 1. Thêm hàm kiểm tra URL hợp lệ
+  const isValidURL = (url: string): boolean => {
+    if (!url) return false;
+    
+    try {
+      // Kiểm tra xem URL có hợp lệ không
+      new URL(url);
+      return true;
+    } catch (e) {
+      // Nếu url là đường dẫn tương đối không bắt đầu bằng / thì thêm vào
+      if (!url.startsWith('/') && !url.startsWith('http')) {
+        return false;
+      }
+      return url.startsWith('/');
+    }
+  };
+
+  // 2. Thêm fallback image URL hợp lệ
+  const FALLBACK_IMAGE = 'https://res.cloudinary.com/mnyt/image/upload/v1743345926/ltb8uurjnz7gvrrpqbti.png';
+
+  // Add this function to check if the current post is liked
+  const checkIfPostLiked = async (userId) => {
+    try {
+      const response = await axios.get(
+        `https://api-mnyt.purintech.id.vn/api/Interactions/likes?accountId=${userId}`
+      );
+      
+      if (response.data && response.data.success && response.data.data) {
+        // The response likely contains a list of post IDs the user has liked
+        const likedPosts = response.data.data;
+        
+        // Check if current post ID is in the list of liked posts
+        // This assumes the API returns an array of objects with postId property
+        // Adjust according to the actual response structure
+        const isLiked = likedPosts.some(item => 
+          item.postId === Number(postId) || 
+          item.forumPostId === Number(postId) || 
+          item.id === Number(postId)
+        );
+        
+        // Update the liked state
+        setLiked(isLiked);
+        
+        // Also save to localStorage for cache
+        localStorage.setItem(`forum-liked-${postId}`, JSON.stringify(isLiked));
+        
+        return isLiked;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error checking if post is liked:", error);
+      return false;
+    }
+  };
+
+  // Handle delete comment
+  const handleDeleteComment = async (commentId: number) => {
+    if (!commentId || !userInfo?.id) return;
+
+    const userId = userInfo.id;
+    
+    // Confirm deletion
+    if (!window.confirm('Bạn có chắc chắn muốn xóa bình luận này không?')) {
+      return;
+    }
+
+    try {
+      // Call API to delete the comment
+      await axios.delete(
+        `https://api-mnyt.purintech.id.vn/api/Comments/${commentId}?accountId=${userId}`
+      );
+
+      // Update UI by removing the deleted comment
+      setComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
+      
+      // Update comment count in post
+      if (post) {
+        setPost({
+          ...post,
+          commentCount: Math.max(0, (post.commentCount || 0) - 1)
+        });
+      }
+      
+      // Show success message
+      alert('Đã xóa bình luận thành công');
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      alert('Không thể xóa bình luận. Vui lòng thử lại sau.');
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -364,25 +585,6 @@ const ForumDetailPage = () => {
       <Link href="/forum" className={styles.backLink}>
         ← Quay lại diễn đàn
       </Link>
-
-      {/* Debug info chỉ hiển thị trong development */}
-      {/* {process.env.NODE_ENV === "development" && debugInfo && (
-        <div
-          style={{
-            margin: "10px 0",
-            padding: "10px",
-            background: "#f5f5f5",
-            border: "1px solid #ddd",
-          }}
-        >
-          <details>
-            <summary>Debug Info</summary>
-            <pre style={{ overflow: "auto", maxHeight: "200px" }}>
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
-          </details>
-        </div>
-      )} */}
 
       <article className={styles.postContent}>
         <div className={styles.category} style={{ backgroundColor: "green" }}>
@@ -417,45 +619,63 @@ const ForumDetailPage = () => {
         {post.images && post.images.length > 0 && (
           <div className={styles.carouselContainer}>
             <Swiper
-              spaceBetween={10} // Space between slides
-              slidesPerView={1} // Number of slides to show
-              pagination={{ clickable: true }} // Enable pagination
-              navigation // Enable navigation arrows
+              spaceBetween={10}
+              slidesPerView={1}
+              pagination={{ clickable: true }}
+              navigation
             >
-              {post.images.map((image, index) => (
-                <SwiperSlide key={index} className={styles.imageSlide}>
-                  <Image
-                    src={image.url}
-                    alt={`Image ${index + 1}`}
-                    width={800}
-                    height={400}
-                    className={styles.coverImage}
-                    onError={(e) => {
-                      console.error("Error loading image:", e);
-                      const imgElement = e.target as HTMLImageElement;
-                      imgElement.src =
-                        "https://res.cloudinary.com/mnyt/image/upload/v1743345926/ltb8uurjnz7gvrrpqbti.png"; // Fallback image
-                      imgElement.style.objectFit = "contain";
-                    }}
-                  />
-                </SwiperSlide>
-              ))}
+              {post.images.map((image, index) => {
+                // Kiểm tra URL hợp lệ
+                const imageUrl = isValidURL(image.url) ? image.url : FALLBACK_IMAGE;
+                
+                return (
+                  <SwiperSlide key={index} className={styles.imageSlide}>
+                    <Image
+                      src={imageUrl}
+                      alt={`Image ${index + 1}`}
+                      width={800}
+                      height={400}
+                      className={styles.coverImage}
+                      onError={(e) => {
+                        console.error("Error loading image:", e);
+                        const imgElement = e.target as HTMLImageElement;
+                        imgElement.src = FALLBACK_IMAGE;
+                        imgElement.style.objectFit = "contain";
+                      }}
+                    />
+                  </SwiperSlide>
+                );
+              })}
             </Swiper>
+          </div>
+        )}
+
+        {/* Nếu post.image tồn tại và cần hiển thị */}
+        {post.image && isValidURL(post.image) && (
+          <div className={styles.singleImageContainer}>
+            <Image
+              src={post.image}
+              alt={post.title}
+              width={800}
+              height={400}
+              className={styles.postImage}
+              onError={(e) => {
+                console.error("Error loading image:", e);
+                const imgElement = e.target as HTMLImageElement;
+                imgElement.src = FALLBACK_IMAGE;
+                imgElement.style.objectFit = "contain";
+              }}
+            />
           </div>
         )}
 
         {/* Hiển thị nội dung */}
         {post.description ? (
           <div className={styles.description}>
-            {/* Sử dụng dangerouslySetInnerHTML nếu content có cấu trúc HTML */}
-            {post.description.includes("<") &&
-              post.description.includes(">") ? (
+            {post.description.includes("<") && post.description.includes(">") ? (
               <div dangerouslySetInnerHTML={{ __html: post.description }} />
             ) : (
-              // Nếu là plain text, hiển thị từng đoạn văn
-              post.description
-                .split("\n")
-                .map((paragraph, idx) => <p key={idx}>{paragraph}</p>)
+              post.description.split("\n").map((paragraph, idx) => <p key={idx}>{paragraph}</p>)
             )}
           </div>
         ) : (
@@ -465,11 +685,10 @@ const ForumDetailPage = () => {
         <div className={styles.interactionBar}>
           <button
             onClick={handleLike}
-            className={`${styles.interactionButton} ${liked ? styles.active : ""
-              }`}
+            className={`${styles.interactionButton} ${liked ? styles.active : ""}`}
           >
             {liked ? <FaHeart /> : <FaRegHeart />}
-            <span>{post.likeCount}</span>
+            <span>{Math.max(0, post.likeCount)}</span>
           </button>
           <button className={styles.interactionButton}>
             <FaRegComment />
@@ -481,16 +700,14 @@ const ForumDetailPage = () => {
           </button>
           <button
             onClick={handleSave}
-            className={`${styles.interactionButton} ${isSaved ? styles.active : ""
-              }`}
+            className={`${styles.interactionButton} ${isSaved ? styles.active : ""}`}
           >
             <FaBookmark />
             <span>{isSaved ? "Đã lưu" : "Lưu bài"}</span>
           </button>
           <button
             onClick={handleReport}
-            className={`${styles.interactionButton} ${styles.reportButton} ${isReported ? styles.reported : ""
-              }`}
+            className={`${styles.interactionButton} ${styles.reportButton} ${isReported ? styles.reported : ""}`}
           >
             <FaFlag />
             <span>{isReported ? "Đã tố cáo" : "Tố cáo"}</span>
@@ -508,28 +725,16 @@ const ForumDetailPage = () => {
             placeholder="Viết bình luận của bạn..."
             rows={3}
           />
+          
           <button type="submit">Đăng bình luận</button>
         </form>
 
-        {/* Hiển thị phần comment với tên người dùng hiện tại */}
-        <CommentSection
-          comments={
-            Array.isArray(comments)
-              ? comments.map((comment) => {
-                // Kiểm tra nếu comment bởi user hiện tại
-                const isCurrentUser = user && comment.accountId === userInfo?.id;
-
-                return {
-                  ...comment,
-                  accountUserName: isCurrentUser
-                    ? userInfo?.fullName || userInfo?.userName || "Bạn"
-                    : comment.accountUserName || "Người dùng",
-                  // Giữ nguyên trường createDate
-                  createDate: comment.createDate,
-                };
-              })
-              : []
-          }
+        {/* Use updated CommentSection */}
+        <CommentSection 
+          comments={Array.isArray(comments) ? comments : []} 
+          formatDate={formatDate} 
+          currentUserId={userInfo?.id}
+          onDeleteComment={handleDeleteComment}
         />
       </div>
     </div>

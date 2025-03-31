@@ -6,11 +6,27 @@ import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { FaRegHeart, FaRegComment } from "react-icons/fa";
-import Pagination from "../Pagination/Pagination";
-import { BlogPost, BlogResponse, Category } from "@/types/blog";
+
+// Định nghĩa kiểu dữ liệu cho bài viết
+export interface BlogPost {
+  id: number;
+  title: string;
+  thumbnail?: string;
+  category?: string;
+  authorName?: string;
+  commentCount?: number;
+  likeCount?: number;
+}
+
+// Định nghĩa kiểu dữ liệu của phản hồi API
+export interface BlogResponse {
+  success: boolean;
+  message: string;
+  data: BlogPost[];
+}
 
 interface BlogListProps {
-  category: Category;
+  category: string;
   currentPage: number;
   blogs: BlogPost[];
   onPostDeleted: () => void;
@@ -137,14 +153,14 @@ const BlogList = ({
 };
 
 // Helper function to get category color
-function getCategoryColor(category: Category): string {
-  const categoryColors: { [key in Category]: string } = {
-    [Category.All]: "#6B7280",
-    [Category.Experience]: "#3B82F6",
-    [Category.Story]: "#EC4899",
-    [Category.HealthPregnancy]: "#10B981",
-    [Category.Fashion]: "#F59E0B",
-    [Category.Nutrition]: "#8B5CF6",
+function getCategoryColor(category: string): string {
+  const categoryColors: { [key: string]: string } = {
+    "Tất cả": "#6B7280",
+    "Kinh nghiệm": "#3B82F6",
+    "Tâm sự": "#EC4899",
+    "Sức khỏe mẹ & bé": "#10B981",
+    "Thời trang": "#F59E0B",
+    "Dinh dưỡng": "#8B5CF6",
   };
   return categoryColors[category] || "#6B7280";
 }

@@ -1,14 +1,17 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Space, Select, Row, Col, message, Spin, DatePicker } from 'antd';
+import { Form, Input, Button, Space, Select, Row, Col, message, Spin, DatePicker, Radio } from 'antd';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { useAuth } from '@/hooks/useAuth';
 import styles from './form-update.module.css'; // Đổi thành CSS Module
 import dayjs from 'dayjs'; // Sử dụng dayjs để xử lý ngày tháng với DatePicker
+import { getUserInfo } from '@/utils/getUserInfo';
 
-interface UpdateFormProps {
+export interface UpdateFormProps {
     onClose?: () => void;
+    isTwins?: boolean;
+    activeTwin?: number;
 }
 
 const fadeInUp = {
@@ -17,15 +20,18 @@ const fadeInUp = {
     transition: { duration: 0.5 }
 };
 
-export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
+export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, isTwins = false, activeTwin = 0 }) => {
     const [form] = Form.useForm();
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [fetusId, setFetusId] = useState<number | null>(null);
+    const [secondFetusId, setSecondFetusId] = useState<number | null>(null);
+    const [selectedTwin, setSelectedTwin] = useState<number>(activeTwin);
     const [existingRecordId, setExistingRecordId] = useState<number | null>(null);
     const [existingRecordData, setExistingRecordData] = useState<any>(null);
     const [selectedPeriod, setSelectedPeriod] = useState<number | null>(null);
     const [periodOptions, setPeriodOptions] = useState<number[]>([]);
+    const userInfo = getUserInfo(user);
 
     // Lấy danh sách các tuần thai có thể nhập
     useEffect(() => {
@@ -41,12 +47,12 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
     // Lấy fetusId khi component mount
     useEffect(() => {
         const fetchFetusId = async () => {
-            if (!user?.id) return;
+            if (!userInfo?.id) return;
 
             try {
                 setLoading(true);
                 // Lấy pregnancy đang active
-                const pregnancyResponse = await axios.get(`https://api-mnyt.purintech.id.vn/api/Pregnancy/accountId/${user.id}`);
+                const pregnancyResponse = await axios.get(`https://api-mnyt.purintech.id.vn/api/Pregnancy/accountId/${userInfo?.id}`);
                 const activePregnancy = pregnancyResponse.data.find((p: any) =>
                     p.status === 'active' || p.status === 'Active'
                 );
@@ -56,12 +62,25 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
                     return;
                 }
 
-                // Lấy fetus đầu tiên của pregnancy
+                // Lấy tất cả fetus của pregnancy
                 const fetusResponse = await axios.get(`https://api-mnyt.purintech.id.vn/api/Fetus/pregnancyId/${activePregnancy.id}`);
                 if (fetusResponse.data && fetusResponse.data.length > 0) {
+                    // Lấy fetus đầu tiên luôn
                     const firstFetus = fetusResponse.data[0];
                     setFetusId(firstFetus.id);
-                    console.log('Fetched fetus ID:', firstFetus.id);
+                    console.log('Fetched first fetus ID:', firstFetus.id);
+
+                    // Nếu là sinh đôi và có fetus thứ hai, lấy fetus thứ hai
+                    if (isTwins && fetusResponse.data.length > 1) {
+                        const secondFetus = fetusResponse.data[1];
+                        setSecondFetusId(secondFetus.id);
+                        console.log('Fetched second fetus ID:', secondFetus.id);
+                    }
+
+                    // Nếu có activeTwin và đây là thai kỳ sinh đôi, cập nhật selectedTwin
+                    if (isTwins) {
+                        setSelectedTwin(activeTwin);
+                    }
                 } else {
                     message.error('Không tìm thấy thông tin thai nhi');
                 }
@@ -74,16 +93,19 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
         };
 
         fetchFetusId();
-    }, [user?.id]);
+    }, [userInfo?.id, isTwins, activeTwin]);
 
     // Kiểm tra xem tuần thai đã có dữ liệu chưa
     const checkExistingRecord = async (period: number) => {
-        if (!fetusId) return;
+        // Xác định fetusId dựa trên twin đang chọn
+        const currentFetusId = selectedTwin === 0 ? fetusId : secondFetusId;
+
+        if (!currentFetusId) return;
 
         try {
             setLoading(true);
             // Lấy tất cả fetus records
-            const recordsResponse = await axios.get(`https://api-mnyt.purintech.id.vn/api/FetusRecord/fetusId/${fetusId}`);
+            const recordsResponse = await axios.get(`https://api-mnyt.purintech.id.vn/api/FetusRecord/fetusId/${currentFetusId}`);
 
             // Tìm record với inputPeriod trùng khớp
             const existingRecord = recordsResponse.data.find((record: any) =>
@@ -145,7 +167,10 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
     };
 
     const onFinish = async (values: any) => {
-        if (!fetusId) {
+        // Xác định fetusId dựa trên twin đang chọn
+        const currentFetusId = selectedTwin === 0 ? fetusId : secondFetusId;
+
+        if (!currentFetusId) {
             message.error('Không tìm thấy thông tin thai nhi');
             return;
         }
@@ -164,7 +189,7 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
                 length: parseInt(values.length.toString()) || 0,
                 hc: parseInt(values.hc.toString()) || 0,
                 date: formattedDate, // Sử dụng ngày đã format
-                fetusId: fetusId
+                fetusId: currentFetusId
             };
 
             console.log('Converted values to send:', numericValues);
@@ -186,7 +211,7 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
                     length: numericValues.length,
                     hc: numericValues.hc,
                     date: numericValues.date,
-                    fetusId: fetusId
+                    fetusId: currentFetusId
                 };
 
                 console.log('Sending PUT request with data:', updateData);
@@ -224,6 +249,15 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
         }
     };
 
+    // Xử lý khi chuyển đổi thai nhi
+    const handleTwinChange = (value: number) => {
+        setSelectedTwin(value);
+        if (selectedPeriod) {
+            // Khi chuyển twin, kiểm tra lại dữ liệu cho tuần đã chọn
+            checkExistingRecord(selectedPeriod);
+        }
+    };
+
     return (
         <motion.div
             initial="initial"
@@ -233,6 +267,22 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose }) => {
         >
             <Spin spinning={loading} tip="Đang xử lý...">
                 <div className={styles.formContent}>
+                    {isTwins && (
+                        <div className={styles.twinSelector}>
+                            <p className={styles.sectionTitle}>Chọn thai nhi cần cập nhật</p>
+                            <Radio.Group
+                                value={selectedTwin}
+                                onChange={(e) => handleTwinChange(e.target.value)}
+                                optionType="button"
+                                buttonStyle="solid"
+                                style={{ marginBottom: '20px' }}
+                            >
+                                <Radio.Button value={0}>Thai nhi 1</Radio.Button>
+                                <Radio.Button value={1}>Thai nhi 2</Radio.Button>
+                            </Radio.Group>
+                        </div>
+                    )}
+
                     <Form
                         form={form}
                         layout="vertical"

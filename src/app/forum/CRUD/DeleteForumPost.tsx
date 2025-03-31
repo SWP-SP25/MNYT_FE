@@ -9,7 +9,7 @@ interface DeletePostModalProps {
   onConfirm: () => void;
   postTitle: string;
   postId: string;
-  currentUserId: string;
+  currentUserId: number;
   onDelete: () => void;
 }
 

@@ -14,6 +14,7 @@ export interface CalculatedReminder {
     title: string;
     description: string;
     date: string;
+    time?: string;
     type: 'system' | 'user';
     period: number;
     status?: 'pending' | 'done' | 'skip';

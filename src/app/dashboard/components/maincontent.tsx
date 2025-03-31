@@ -4,7 +4,7 @@ import { Card, Row, Col, Button, Space, Radio, Modal } from 'antd';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { useRouter } from 'next/navigation';
-import { UpdateForm } from './form-update';
+import { UpdateForm, UpdateFormProps } from './form-update';
 import { motion } from 'framer-motion';
 import useAxios from '@/hooks/useFetchAxios';
 import { FetusStandard } from '@/types/fetusStandard';
@@ -14,6 +14,7 @@ import { BlogResponse } from '@/types/blog';
 import styles from './maincontent.module.css';
 import { useAuth } from "@/hooks/useAuth";
 import axios from 'axios';
+import { getUserInfo } from '@/utils/getUserInfo';
 //Tùy chỉnh các hiệu ứng chuyển động cho các phần tử trong giao diện bằng cách sử dụng thư viện framer-motion
 //Định nghĩa hiệu ứng "Fade In Up" cho các phần tử
 const fadeInUp = {
@@ -40,6 +41,9 @@ export const MainContent: React.FC = () => {
     const [isPreviewVisible, setIsPreviewVisible] = useState(false);
     const chartRef = useRef<HTMLDivElement>(null);
     const { user } = useAuth(); // Lấy thông tin user từ useAuth
+    const userInfo = getUserInfo(user);
+    const [activeTwin, setActiveTwin] = useState<number>(0); // 0: first twin, 1: second twin
+    const [isTwinPregnancy, setIsTwinPregnancy] = useState<boolean>(false);
 
     // Lấy dữ liệu chuẩn từ API
     const { response: fetalLengthStandard, error: fetalLengthError, loading: fetalLengthLoading } = useAxios<FetusStandard[]>({
@@ -59,15 +63,25 @@ export const MainContent: React.FC = () => {
 
     // Lấy dữ liệu pregnancy theo user ID
     const { response: pregnancyData, error: pregnancyError, loading: pregnancyLoading } = useAxios<any>({
-        url: `https://api-mnyt.purintech.id.vn/api/Pregnancy/accountId/${user?.id}`,
+        url: `https://api-mnyt.purintech.id.vn/api/Pregnancy/accountId/${userInfo?.id}`,
         method: 'get',
-        dependencies: [user?.id]
+        dependencies: [userInfo?.id]
     });
 
     // Lấy active pregnancy từ danh sách pregnancies
     const activePregnancy = pregnancyData?.find(pregnancy => pregnancy.status === 'active' || pregnancy.status === 'Active');
     console.log("activePregnancy", activePregnancy);
     console.log("Active pregnancy id after find", activePregnancy?.id);
+
+    // Kiểm tra nếu là thai kỳ sinh đôi
+    useEffect(() => {
+        if (activePregnancy) {
+            // Check if pregnancy type is "twins"
+            setIsTwinPregnancy(activePregnancy.type === "twins");
+            console.log("Is twin pregnancy:", activePregnancy.type === "twins");
+        }
+    }, [activePregnancy]);
+
     // Lấy danh sách fetus dựa trên pregnancy ID
     const [fetusData, setFetusData] = useState<any[]>([]);
     const [fetusRecordData, setFetusRecordData] = useState<any[]>([]);
@@ -85,16 +99,22 @@ export const MainContent: React.FC = () => {
     console.log("fetusData", fetusData);
     console.log("fetusData[0] id", fetusData[0]?.id);
     useEffect(() => {
-        if (fetusData) {
-            axios.get(`https://api-mnyt.purintech.id.vn/api/FetusRecord/FetusId/${fetusData[0]?.id}`)
-                .then(response => {
-                    setFetusRecordData(response.data);
-                })
-                .catch(error => {
-                    console.error('Error fetching fetus record data:', error);
-                });
+        if (fetusData && fetusData.length > 0) {
+            // Nếu là sinh đôi thì lấy theo twin được chọn, nếu không thì luôn lấy [0]
+            const selectedFetusIndex = isTwinPregnancy ? activeTwin : 0;
+            const selectedFetusId = fetusData[selectedFetusIndex]?.id;
+
+            if (selectedFetusId) {
+                axios.get(`https://api-mnyt.purintech.id.vn/api/FetusRecord/FetusId/${selectedFetusId}`)
+                    .then(response => {
+                        setFetusRecordData(response.data);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching fetus record data:', error);
+                    });
+            }
         }
-    }, [fetusData]);
+    }, [fetusData, activeTwin, isTwinPregnancy]);
     console.log("fetusRecordData", fetusRecordData);
 
     // Sắp xếp fetus record theo period tăng dần
@@ -779,16 +799,30 @@ export const MainContent: React.FC = () => {
                                     </Button>
                                 </Space>
                             </Space>
-                            <Radio.Group
-                                value={activeChart}
-                                onChange={(e) => setActiveChart(e.target.value)}
-                                optionType="button"
-                                buttonStyle="solid"
-                            >
-                                <Radio.Button value="length">Chiều dài</Radio.Button>
-                                <Radio.Button value="head">Đường kính đầu</Radio.Button>
-                                <Radio.Button value="weight">Cân nặng</Radio.Button>
-                            </Radio.Group>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Radio.Group
+                                    value={activeChart}
+                                    onChange={(e) => setActiveChart(e.target.value)}
+                                    optionType="button"
+                                    buttonStyle="solid"
+                                >
+                                    <Radio.Button value="length">Chiều dài</Radio.Button>
+                                    <Radio.Button value="head">Đường kính đầu</Radio.Button>
+                                    <Radio.Button value="weight">Cân nặng</Radio.Button>
+                                </Radio.Group>
+
+                                {isTwinPregnancy && (
+                                    <Radio.Group
+                                        value={activeTwin}
+                                        onChange={(e) => setActiveTwin(e.target.value)}
+                                        optionType="button"
+                                        buttonStyle="solid"
+                                    >
+                                        <Radio.Button value={0}>Thai nhi 1</Radio.Button>
+                                        <Radio.Button value={1}>Thai nhi 2</Radio.Button>
+                                    </Radio.Group>
+                                )}
+                            </div>
                         </Space>
                     }
                     style={{ marginBottom: '20px' }}
@@ -881,14 +915,18 @@ export const MainContent: React.FC = () => {
             </Row>
 
             <Modal
-                title="Cập nhật chỉ số thai nhi"
+                title={`Cập nhật chỉ số thai nhi${isTwinPregnancy ? " (Sinh đôi)" : ""}`}
                 open={isModalVisible}
                 onCancel={() => setIsModalVisible(false)}
                 footer={null}
                 width={800}
                 destroyOnClose
             >
-                <UpdateForm onClose={() => setIsModalVisible(false)} />
+                <UpdateForm
+                    onClose={() => setIsModalVisible(false)}
+                    isTwins={isTwinPregnancy}
+                    activeTwin={activeTwin}
+                />
             </Modal>
 
             <Modal

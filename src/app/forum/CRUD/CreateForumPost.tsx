@@ -141,7 +141,7 @@ const CreateForumPost = ({
 
       // Kiểm tra lại authentication khi submit form
       if (!currentUser) {
-        router.push("/login");
+        router.push("/authenticate");
         return;
       }
 
@@ -196,8 +196,8 @@ const CreateForumPost = ({
           authorName: isAnonymous
             ? null
             : currentUser
-            ? currentUser.name
-            : null,
+              ? currentUser.name
+              : null,
           // Các trường khác cần thiết cho API
 
           publishedDay: new Date().toISOString().split("T")[0], // Format: YYYY-MM-DD
@@ -359,8 +359,8 @@ const CreateForumPost = ({
             {loading
               ? "Đang xử lý..."
               : editPost
-              ? "Cập nhật Bài Viết"
-              : "Đăng Bài Viết"}
+                ? "Cập nhật Bài Viết"
+                : "Đăng Bài Viết"}
           </button>
           <button
             type="button"

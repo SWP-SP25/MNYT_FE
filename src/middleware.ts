@@ -40,13 +40,13 @@ export async function middleware(request: NextRequest) {
     }
 
     // Check membership for protected routes (reminder, blog, dashboard)
-    if (request.nextUrl.pathname.startsWith('/reminder') || 
-        request.nextUrl.pathname.startsWith('/blog') || 
+    if (request.nextUrl.pathname.startsWith('/reminder') ||
+        request.nextUrl.pathname.startsWith('/blog') ||
         request.nextUrl.pathname.startsWith('/dashboard') ||
         request.nextUrl.pathname.startsWith('/forum')) {
-        
+
         if (!token || !userId) {
-            return NextResponse.redirect(new URL('/login', request.url));
+            return NextResponse.redirect(new URL('/authenticate', request.url));
         }
 
         try {
@@ -65,12 +65,12 @@ export async function middleware(request: NextRequest) {
             }
 
             const membershipData = await membershipResponse.json();
-            
+
             // If no active membership or membership is expired
-            if (!membershipData.success || !membershipData.data || 
+            if (!membershipData.success || !membershipData.data ||
                 new Date(membershipData.data.endDate) < new Date() ||
                 membershipData.data.status !== 'Active') {
-                
+
                 // Redirect to membership error page with no membership message
                 const response = NextResponse.redirect(new URL('/membership-error?type=no-membership', request.url));
                 response.cookies.set('redirectUrl', request.nextUrl.pathname, {
@@ -84,7 +84,7 @@ export async function middleware(request: NextRequest) {
 
             // Check membership plan type
             const membershipPlanId = membershipData.data.membershipPlanId;
-            
+
             switch (membershipPlanId) {
                 case 1: // Basic plan
                     // Allow access to dashboard only
@@ -93,20 +93,20 @@ export async function middleware(request: NextRequest) {
                         return NextResponse.next();
                     }
                     break;
-                    
+
                 case 2: // Tiện ích plan
                     // Allow access to dashboard and reminder, but not blog
-                    if (request.nextUrl.pathname.startsWith('/dashboard') || 
+                    if (request.nextUrl.pathname.startsWith('/dashboard') ||
                         request.nextUrl.pathname.startsWith('/reminder') ||
                         request.nextUrl.pathname.startsWith('/blog')) {
                         return NextResponse.next();
                     }
                     break;
-                    
+
                 case 5: // Cao cấp plan
                     // Allow access to all protected routes
                     return NextResponse.next();
-                    
+
                 default:
                     // For any other plan type, treat as basic plan
                     if (request.nextUrl.pathname.startsWith('/dashboard') ||
@@ -115,7 +115,7 @@ export async function middleware(request: NextRequest) {
                     }
                     break;
             }
-            
+
             // If we reach here, the user doesn't have permission for the requested route
             const response = NextResponse.redirect(new URL('/membership-error?type=basic-plan', request.url));
             response.cookies.set('redirectUrl', request.nextUrl.pathname, {

@@ -164,33 +164,6 @@ const BlogDetail = () => {
 
     fetchInteractionStatus();
   }, [id, user]);
-
-  // Thêm vào useEffect
-  useEffect(() => {
-    // Giả lập dữ liệu related posts
-    const dummyRelatedPosts: RelatedPost[] = [
-      {
-        id: 2,
-        title: "Chế độ dinh dưỡng cho bé 6-12 tháng tuổi",
-        coverImage: "/images/tdd.jpg",
-        category: {
-          name: "Dinh dưỡng",
-          color: "#279357",
-        },
-      },
-      {
-        id: 3,
-        title: "10 món ăn vặt lành mạnh cho mẹ bầu",
-        coverImage: "/images/10.jpg",
-        category: {
-          name: "Dinh dưỡng",
-          color: "#279357",
-        },
-      },
-    ];
-    setRelatedPosts(dummyRelatedPosts);
-  }, []);
-
   // Thêm function để generate TOC từ content
   const generateTableOfContents = (content: string) => {
     const parser = new DOMParser();

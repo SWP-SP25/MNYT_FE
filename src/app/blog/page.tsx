@@ -36,11 +36,11 @@ const BlogPage = () => {
         );
 
         setFetchedBlogs(filteredBlogs);
-        setBlogs(filteredBlogs);
+        // setBlogs(filteredBlogs);
         setTotalPages(Math.ceil(filteredBlogs.length / blogsPerPage));
       } else {
         setFetchedBlogs([]);
-        setBlogs([]);
+        // setBlogs([]);
         setTotalPages(0);
       }
     } catch (error) {
@@ -51,7 +51,7 @@ const BlogPage = () => {
 
   useEffect(() => {
     fetchBlogs();
-  }, [currentPage, userInfo]); // Add userInfo as dependency to refetch when user changes
+  }, []); // Add userInfo as dependency to refetch when user changes
 
   // Khôi phục trạng thái từ localStorage khi component mount
   useEffect(() => {
@@ -67,9 +67,9 @@ const BlogPage = () => {
   }, []);
 
   // Handlers
-  const handleCategoryChange = useCallback((category: string) => {
+  const handleCategoryChange = (category: string) => {
     console.log("Cate", category);
-    if (category != "all") {
+    if (category != "All") {
       setBlogs(fetchedBlogs.filter((x) => x.category == category));
       setTotalPages(
         Math.ceil(
@@ -78,16 +78,16 @@ const BlogPage = () => {
         )
       ); // Adjust total pages based on the length of the response
     } else {
-      setBlogs(fetchBlogs);
+      setBlogs(fetchedBlogs);
       setTotalPages(Math.ceil(fetchedBlogs.length / blogsPerPage)); // Adjust total pages based on the length of the response
     }
     console.log("filter", fetchedBlogs);
-    console.log("filter", blogs);
+    console.log("filter", fetchedBlogs.filter((x) => x.category == category));
 
     setCurrentCategory(category);
     setCurrentPage(1); // Reset về trang 1 khi đổi category
     localStorage.setItem("blogCurrentCategory", category);
-  }, []);
+  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

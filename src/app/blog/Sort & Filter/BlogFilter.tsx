@@ -10,12 +10,12 @@ interface BlogFilterProps {
 
 const BlogFilter = ({ onCategoryChange, currentCategory }: BlogFilterProps) => {
   const categories = [
-    { id: "all", name: "Tất cả" },
-    { id: "experience", name: "Kinh nghiệm" },
-    { id: "sharing", name: "Tâm sự" },
-    { id: "health", name: "Sức khỏe mẹ & bé" },
-    { id: "fashion", name: "Thời trang" },
-    { id: "nutrition", name: "Dinh dưỡng" },
+    { id: "All", name: "Tất cả" },
+    { id: "Experience", name: "Kinh nghiệm" },
+    { id: "Sharing", name: "Tâm sự" },
+    { id: "Health", name: "Sức khỏe mẹ & bé" },
+    { id: "Fashion", name: "Thời trang" },
+    { id: "Nutrition", name: "Dinh dưỡng" },
   ];
 
   const handleCategoryClick = (categoryId: string) => {

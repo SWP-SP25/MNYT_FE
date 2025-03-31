@@ -8,4 +8,5 @@ export interface CommentListItem {
     createDate: string | Date;
     imageUrl?: string;
     forumPostId?: number;
-}
+    images?: { url: string }[];
+} 

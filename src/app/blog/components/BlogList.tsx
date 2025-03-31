@@ -6,7 +6,6 @@ import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { FaRegHeart, FaRegComment } from "react-icons/fa";
-import Pagination from "../Pagination/Pagination";
 
 // Định nghĩa kiểu dữ liệu cho bài viết
 export interface BlogPost {

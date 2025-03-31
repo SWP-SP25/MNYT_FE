@@ -1,5 +1,5 @@
 import { FC } from "react";
-import styles from "./components.module.css";
+import styles from "./pagination.module.css";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 
 interface PaginationProps {
@@ -16,8 +16,8 @@ const Pagination: FC<PaginationProps> = ({
   // Tính toán range của các trang sẽ hiển thị
   const getPageNumbers = () => {
     const delta = 2; // Số trang hiển thị bên cạnh trang hiện tại
-    const range = [];
-    const rangeWithDots = [];
+    const range: number[] = [];
+    const rangeWithDots: (number | string)[] = [];
 
     // Luôn hiển thị trang 1
     range.push(1);
@@ -52,7 +52,7 @@ const Pagination: FC<PaginationProps> = ({
 
   const handlePageClick = (page: number) => {
     if (page >= 1 && page <= totalPages && page !== currentPage) {
-      console.log("Pagination component clicking page:", page);
+      console.log("Pagination clicking page:", page);
       onPageChange(page);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }

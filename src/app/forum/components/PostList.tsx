@@ -6,9 +6,8 @@ import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import axios from "axios";
-import Pagination from "./Pagination";
 import { useRouter, usePathname } from "next/navigation";
-import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import { FaTrashAlt } from "react-icons/fa";
 import DeletePostModal from "../CRUD/DeleteForumPost";
 import { useAuth } from "@/hooks/useAuth";
 import CreateForumPost from "../CRUD/CreateForumPost";
@@ -48,9 +47,9 @@ interface PostListProps {
   loading: boolean;
   error: string | null;
   currentCategory: string;
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
   onRefresh: () => void;
 }
 
@@ -59,9 +58,9 @@ const PostList = ({
   loading,
   error,
   currentCategory,
-  currentPage,
-  totalPages,
-  onPageChange,
+  currentPage = 1,
+  totalPages = 1,
+  onPageChange = () => {},
   onRefresh,
 }: PostListProps) => {
   const router = useRouter();
@@ -276,22 +275,13 @@ const PostList = ({
     }
   };
 
-  // Sửa đoạn lọc bài viết theo danh mục
-  const filteredPosts =
-    currentCategory === "all"
-      ? sortedPosts.filter(post => 
-          // Show all posts by current user
-          post.authorId === user?.id || 
-          // For other users' posts, only show published or reported
-          (post.status.toLowerCase() === "published" || post.status.toLowerCase() === "reported")
-        )
-      : sortedPosts.filter((post) => 
-          // For current user's posts, only filter by category
-          (post.authorId === user?.id && post.category === currentCategory) ||
-          // For other users' posts, filter by both category and status
-          (post.category === currentCategory && 
-           (post.status.toLowerCase() === "published" || post.status.toLowerCase() === "reported"))
-        );
+  // Simplify the filtering logic
+  const filteredPosts = currentCategory === "all"
+    ? sortedPosts
+    : sortedPosts.filter((post) => post.category === currentCategory);
+
+  // Don't apply status filtering at this level since the API should handle that
+  // This ensures any posts returned from the API will be shown
 
   // Áp dụng phân trang cho các bài viết đã lọc
   const displayedPosts = paginatePosts(filteredPosts, currentPage);
@@ -520,14 +510,6 @@ const PostList = ({
           🔄 Làm mới dữ liệu
         </button>
       </div>
-
-      {!loading && !error && posts.length > 0 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-        />
-      )}
 
       {/* Edit Post Modal */}
       {isEditing && editPost && (

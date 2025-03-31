@@ -10,6 +10,7 @@ import ForumSearch from "./components/ForumSearch";
 import ActiveUsers from "./components/ActiveUsers";
 import { useAuth } from "@/hooks/useAuth";
 import EditForumPost from "./CRUD/EditForumPost";
+import Pagination from "./Pagination/Pagination";
 
 // Interface cho dữ liệu bài viết
 interface ForumPost {
@@ -45,6 +46,8 @@ const ForumPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [showCreatePost, setShowCreatePost] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  
+  // Lấy trang từ localStorage chỉ lần đầu load
   const [currentPage, setCurrentPage] = useState<number>(() => {
     if (typeof window !== "undefined") {
       const savedPage = localStorage.getItem("forumCurrentPage");
@@ -52,86 +55,104 @@ const ForumPage = () => {
     }
     return 1;
   });
+  
   const [totalPages, setTotalPages] = useState<number>(1);
-  const postsPerPage = 10; // Số bài viết mỗi trang
+  const postsPerPage = 10;
 
   const { user } = useAuth();
 
-  // Thêm state để quản lý hiển thị modal chỉnh sửa
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [currentEditPostId, setCurrentEditPostId] = useState<number | null>(
-    null
-  );
+  const [currentEditPostId, setCurrentEditPostId] = useState<number | null>(null);
 
-  // Hàm xử lý tìm kiếm
+  // Search handler
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1); // Reset về trang 1 khi tìm kiếm
   };
 
-  // Hàm lấy danh sách bài viết
-  const fetchPosts = useCallback(
-    async (page = currentPage) => {
-      setLoading(true);
-      try {
-        const url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/paginated?pageNumber=${page}&pageSize=${postsPerPage}`;
-        console.log("Fetching forum posts from URL:", url);
-
-        const response = await axios.get(url);
-        console.log("Fetching forum posts data:", response.data);
-
-        if (response.data.success) {
-          const { data } = response.data;
-          setPosts(data.items); // Set posts from the response
-          setTotalPages(data.totalPages); // Set total pages from the response
-          setError(null);
-        } else {
-          setPosts([]);
-          setError("Không có dữ liệu bài viết");
-        }
-      } catch (err) {
-        console.error("Lỗi khi tải bài viết:", err);
-        setPosts([]);
-        setError("Không thể tải bài viết. Vui lòng thử lại sau.");
-      } finally {
-        setLoading(false);
+  // Đơn giản hóa fetchPosts để tránh re-render không cần thiết
+  const fetchPosts = useCallback(async () => {
+    if (loading) return; // Ngăn chặn fetch nhiều lần khi đang loading
+    
+    setLoading(true);
+    try {
+      let url = "";
+      
+      if (currentCategory === "all") {
+        url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/paginated?pageNumber=${currentPage}&pageSize=${postsPerPage}`;
+      } else {
+        url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category/paginated?category=${currentCategory}&pageNumber=${currentPage}&pageSize=${postsPerPage}`;
       }
-    },
-    [currentCategory, searchQuery]
-  );
+      
+      console.log(`Fetching forum posts for page ${currentPage}, category ${currentCategory}`);
+      
+      const response = await axios.get(url);
+      
+      if (response.data && response.data.success) {
+        const { data } = response.data;
+        setPosts(data.items || []);
+        setTotalPages(Math.max(data.totalPages || 1, 1));
+        setError(null);
+      } else {
+        setPosts([]);
+        setError("Không có dữ liệu bài viết");
+        setTotalPages(1);
+      }
+    } catch (err) {
+      console.error("Lỗi khi tải bài viết:", err);
+      setPosts([]);
+      setError("Không thể tải bài viết. Vui lòng thử lại sau.");
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentCategory, currentPage, postsPerPage, loading]);
 
-  // Gọi API khi component mount hoặc khi category/search thay đổi
+  // Đơn giản hóa useEffect - chỉ fetch khi các giá trị quan trọng thay đổi
   useEffect(() => {
-    console.log("Effect running with page:", currentPage);
-    fetchPosts(currentPage);
-  }, [currentPage, currentCategory, searchQuery]);
+    // Đặt loading = false ban đầu để cho phép fetch lần đầu
+    setLoading(false);
+    
+    // Sử dụng setTimeout để ngăn tải liên tục
+    const timer = setTimeout(() => {
+      fetchPosts();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [currentCategory, currentPage, searchQuery, fetchPosts]);
 
+  // Category change handler
   const handleCategoryChange = (category: string) => {
+    if (category === currentCategory) return; // Ngăn chặn re-render không cần thiết
     setCurrentCategory(category);
-    setCurrentPage(1);
-    localStorage.setItem("forumCurrentPage", "1");
   };
+  
+  // Post creation handlers
   const handleCreatePost = () => {
     setShowCreatePost(true);
   };
 
   const handlePostCreated = () => {
     setShowCreatePost(false);
-    fetchPosts(); // Tải lại danh sách bài viết sau khi tạo mới
+    setLoading(false); // Cho phép fetch lại
   };
-  console.log("My curent page", currentPage);
 
+  // Page change handler
   const handlePageChange = (page: number) => {
+    if (page === currentPage) return; // Ngăn chặn re-render không cần thiết
     console.log("Changing to page:", page);
     setCurrentPage(page);
     localStorage.setItem("forumCurrentPage", page.toString());
-    fetchPosts(page); // Fetch posts for the new page
   };
 
-  // Hàm mở modal chỉnh sửa thay vì chuyển trang
+  // Edit post handler
   const handleEditPost = (postId: number) => {
     setCurrentEditPostId(postId);
     setIsEditModalOpen(true);
+  };
+
+  // Refresh khi có yêu cầu refresh
+  const handleRefresh = () => {
+    setLoading(false); // Cho phép fetch lại
   };
 
   return (
@@ -150,10 +171,6 @@ const ForumPage = () => {
             currentCategory={currentCategory}
             onCategoryChange={handleCategoryChange}
           />
-
-          {/* Chủ đề phổ biến - Tạm ẩn để hiển thị sau
-          <PopularTopics />
-          */}
 
           {/* Thành viên năng nổ */}
           <ActiveUsers />
@@ -178,11 +195,17 @@ const ForumPage = () => {
             loading={loading}
             error={error}
             currentCategory={currentCategory}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            onRefresh={fetchPosts}
+            onRefresh={handleRefresh}
           />
+          
+          {/* Component phân trang */}
+          {!loading && !error && posts.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
 
           {/* Modal chỉnh sửa bài viết */}
           {isEditModalOpen && currentEditPostId && (
@@ -193,7 +216,7 @@ const ForumPage = () => {
                   currentUser={user}
                   onPostUpdated={() => {
                     setIsEditModalOpen(false);
-                    fetchPosts(); // Hàm lấy lại danh sách bài viết sau khi cập nhật
+                    setLoading(false); // Cho phép fetch lại
                   }}
                   onCancel={() => setIsEditModalOpen(false)}
                 />

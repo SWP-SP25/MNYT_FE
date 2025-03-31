@@ -129,7 +129,7 @@ const ForumDetailPage = () => {
     try {
       console.log("Fetching comments for post ID:", postId);
 
-      const commentsUrl = `https://api-mnyt.purintech.id.vn/api/Comments/post/${postId}`;
+      const commentsUrl = `https://api-mnyt.purintech.id.vn/api/Comments/forums/${postId}`;
       const commentsResponse = await axios.get(commentsUrl);
 
       console.log("Comments response:", commentsResponse);

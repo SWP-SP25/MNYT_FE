@@ -1,27 +1,27 @@
 "use client";
 import styles from "../styles/blog.module.css";
+import { Category } from "@/types/blog";
 
-const CategoryMenu = () => {
-  const categories = [
-    { id: "all", name: "Tất cả" },
-    { id: "experience", name: "Kinh nghiệm" },
-    { id: "sharing", name: "Tâm sự" },
-    { id: "health", name: "Sức khỏe mẹ & bé" },
-    { id: "fashion", name: "Thời trang" },
-    { id: "nutrition", name: "Dinh dưỡng" },
-  ];
+interface CategoryMenuProps {
+  selectedCategory: Category;
+  onCategorySelect: (category: Category) => void;
+}
+
+const CategoryMenu = ({ selectedCategory, onCategorySelect }: CategoryMenuProps) => {
+  const categories = Object.values(Category);
 
   return (
     <div className={styles.filterSortContainer}>
       <div className={styles.categories}>
         {categories.map((category) => (
           <button
-            key={category.id}
+            key={category}
             className={`${styles.categoryButton} ${
-              category.id === "all" ? styles.active : ""
+              category === selectedCategory ? styles.active : ""
             }`}
+            onClick={() => onCategorySelect(category)}
           >
-            {category.name}
+            {category}
           </button>
         ))}
       </div>

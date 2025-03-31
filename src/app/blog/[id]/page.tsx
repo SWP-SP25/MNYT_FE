@@ -11,7 +11,7 @@ import {
   FaClock,
 } from "react-icons/fa";
 import useAxios from "@/hooks/useFetchAxios";
-import { BlogDetail, BlogPostDetailResponse } from "@/types/blogDetail";
+import { BlogPostDetailResponse } from "@/types/blog";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { uploadImage } from "@/utils/uploadImage";
@@ -91,7 +91,7 @@ const BlogDetail = () => {
     url: `https://api-mnyt.purintech.id.vn/api/Posts/${id}`,
     method: "get",
   });
-
+  console.log("BlogPostDetailResponse", blogPostDetailResponse);
   useEffect(() => {
     if (blogPostDetailResponse) {
       setPost(blogPostDetailResponse.data);
@@ -397,16 +397,16 @@ const BlogDetail = () => {
         </div>
       </div>
 
-      {/* Cover Image
+      {/* Cover Image */}
       <div className={styles.coverImageContainer}>
         <Image
-          src={post.coverImage || "/images/ads2.jpg"}
+          src={post.images[0].url || "/images/ads2.jpg"}
           alt={post.title}
           width={1200}
           height={600}
           className={styles.coverImage}
         />
-      </div> */}
+      </div>
 
       {/* Introduction */}
       <div className={styles.introduction}>

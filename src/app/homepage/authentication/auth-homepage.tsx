@@ -170,7 +170,7 @@ const AuthenticatedHomePage = () => {
             // Tạo payload với dữ liệu hiện tại và chỉ cập nhật status thành inActive
             const updatePayload = {
                 ...activePregnancyData,
-                status: "inActive"  // Chỉ thay đổi status, giữ nguyên isDeleted
+                status: "inactive"  // Chỉ thay đổi status, giữ nguyên isDeleted
             };
 
             console.log('Update payload before sending to API:', JSON.stringify(updatePayload, null, 2));
@@ -313,7 +313,7 @@ const AuthenticatedHomePage = () => {
                             <div className={styles.blogContent}>
                                 <h3>Dinh Dưỡng Trong Thai Kỳ</h3>
                                 <p>Những thực phẩm cần thiết cho mẹ bầu...</p>
-                                <Link href="/blog/nutrition" className={styles.readMore}>
+                                <Link href="/blog" className={styles.readMore}>
                                     Đọc thêm →
                                 </Link>
                             </div>

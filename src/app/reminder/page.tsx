@@ -108,7 +108,7 @@ export default function ReminderPage() {
                 const color = REMINDER_TAGS.find(t => t.value === tag)?.color || '#ff9800';
 
                 return {
-                    id: apiReminder.id.toString(),
+                    id: apiReminder.id,
                     title: apiReminder.title || `Lịch khám thai tuần ${apiReminder.period}`,
                     description: apiReminder.description || `Khám thai định kỳ tuần ${apiReminder.period}`,
                     date: date,

@@ -24,7 +24,7 @@ const AppFooter = () => {
                                 Mầm Non Yêu Thương
                             </h2>
                             <p className="footer-slogan">
-                                Đồng hành cùng mẹ trong hành trình thai kỳ và chăm sóc em bé
+                                Đồng hành cùng mẹ trong hành trình mang thai diệu kỳ
                             </p>
                         </div>
                     </Col>
@@ -35,16 +35,28 @@ const AppFooter = () => {
                             <ul>
                                 <li>
                                     <AuthRequired>
-                                        <span className="shortcut-link">Nhắc nhở</span>
+                                        <span className="shortcut-link">
+                                            <Link href="/reminder" passHref legacyBehavior>
+                                                Nhắc nhở
+                                            </Link>
+                                        </span>
                                     </AuthRequired>
                                 </li>
                                 <li>
                                     <AuthRequired>
-                                        <span className="shortcut-link">Theo dõi</span>
+                                        <span className="shortcut-link">
+                                            <Link href="/dashboard" passHref legacyBehavior>
+                                                Theo dõi
+                                            </Link>
+                                        </span>
                                     </AuthRequired>
                                 </li>
                                 <li>
-                                    <span className="shortcut-link">Blog</span>
+                                    <span className="shortcut-link">
+                                        <Link href="/blog" passHref legacyBehavior>
+                                            Blog
+                                        </Link>
+                                    </span>
                                 </li>
                             </ul>
                         </div>
@@ -57,10 +69,10 @@ const AppFooter = () => {
                                 <FaPhone /> 0123 456 789
                             </a>
                             <a href="mailto:contact@mamnonyeuthuong.com">
-                                <FaEnvelope /> contact@mamnonyeuthuong.com
+                                <FaEnvelope /> mamnonyeuthuong@gmail.com
                             </a>
                             <p>
-                                <FaMapMarkerAlt /> 123 Đường ABC, Quận XYZ, TP.HCM
+                                <FaMapMarkerAlt />102 Đặng Văn Bi, Bình Thọ, Thủ Đức
                             </p>
                         </div>
                     </Col>
@@ -69,16 +81,32 @@ const AppFooter = () => {
                         <div className="footer-section">
                             <h3>Tiện ích</h3>
                             <AuthRequired>
-                                <div className="shortcut-link">Nhắc nhở lịch khám</div>
+                                <div className="shortcut-link">
+                                    <Link href="/reminder" passHref legacyBehavior>
+                                        Nhắc nhở lịch khám
+                                    </Link>
+                                </div>
                             </AuthRequired>
                             <AuthRequired>
-                                <div className="shortcut-link">Theo dõi thai kỳ</div>
+                                <div className="shortcut-link">
+                                    <Link href="/dashboard" passHref legacyBehavior>
+                                        Theo dõi thai kỳ
+                                    </Link>
+                                </div>
                             </AuthRequired>
                             <AuthRequired>
-                                <div className="shortcut-link">Dinh dưỡng cho mẹ</div>
+                                <div className="shortcut-link">
+                                    <Link href="/blog" passHref legacyBehavior>
+                                        Dinh dưỡng cho mẹ
+                                    </Link>
+                                </div>
                             </AuthRequired>
                             <AuthRequired>
-                                <div className="shortcut-link">Cộng đồng mẹ bầu</div>
+                                <div className="shortcut-link">
+                                    <Link href="/forum" passHref legacyBehavior>
+                                        Cộng đồng mẹ bầu
+                                    </Link>
+                                </div>
                             </AuthRequired>
                         </div>
                     </Col>
@@ -87,13 +115,13 @@ const AppFooter = () => {
                         <div className="footer-section">
                             <h3>Kết Nối</h3>
                             <div className="social-links">
-                                <a href="https://www.facebook.com/tran.quang.thuan.24692/?locale=vi_VN"
+                                <a href="https://www.facebook.com/BProtectedVietnam"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label="Facebook">
                                     <FaFacebook size={20} />
                                 </a>
-                                <a href="https://www.instagram.com/phoenixzmusic/"
+                                <a href="https://www.instagram.com/mevabekute/?locale=slot%2Bsitus%E3%80%90777ONE.IN%E3%80%91.ibqh&hl=en"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label="Instagram">

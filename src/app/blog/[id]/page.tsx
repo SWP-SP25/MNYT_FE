@@ -10,9 +10,6 @@ import {
   FaBookmark,
   FaClock,
 } from "react-icons/fa";
-import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale/vi";
-import { blogService } from "@/app/services/api";
 import useAxios from "@/hooks/useFetchAxios";
 import { BlogPostDetailResponse } from "@/types/blog";
 import axios from "axios";
@@ -80,10 +77,7 @@ const BlogDetail = () => {
   const [post, setPost] = useState<BlogDetail | null>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
-  const [tableOfContents, setTableOfContents] = useState<TableOfContentsItem[]>(
-    []
-  );
+  
   const [loadingInteractions, setLoadingInteractions] = useState(false);
 
   const { user } = useAuth();
@@ -164,18 +158,11 @@ const BlogDetail = () => {
 
     fetchInteractionStatus();
   }, [id, user]);
-  // Thêm function để generate TOC từ content
-  const generateTableOfContents = (content: string) => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(content, "text/html");
-    const headings = doc.querySelectorAll("h2, h3");
 
-    return Array.from(headings).map((heading, index) => ({
-      id: `section-${index}`,
-      title: heading.textContent || "",
-      level: parseInt(heading.tagName[1]),
-    }));
-  };
+  // Thêm vào useEffect
+  useEffect(() => {
+    // Remove related posts generation
+  }, []);
 
   if (loading) return <div>Đang tải...</div>;
   if (error) return <div>{error}</div>;
@@ -426,52 +413,11 @@ const BlogDetail = () => {
         <p>{post.description}</p>
       </div>
 
-      {/* Table of Contents */}
-      <div className={styles.tableOfContents}>
-        <h3>Mục lục</h3>
-        <ul>
-          {tableOfContents.map((item) => (
-            <li
-              key={item.id}
-              className={`${styles.tocItem} ${styles[`level${item.level}`]}`}
-            >
-              <a href={`#${item.id}`}>{item.title}</a>
-            </li>
-          ))}
-        </ul>
-      </div>
-
       {/* Content */}
       <div
         className={styles.content}
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
-
-      {/* Author Bio Box */}
-      <div className={styles.authorBioBox}>
-        <div className={styles.authorBioHeader}>
-          <div className={styles.authorBioInfo}>
-            <h3>{post.authorName}</h3>
-            {post.author && post.author.bio ? (
-              <p className={styles.authorBioText}>{post.author.bio}</p>
-            ) : (
-              <p className={styles.authorBioText}>
-                Thông tin tác giả không có sẵn.
-              </p>
-            )}
-          </div>
-        </div>
-        <div className={styles.authorStats}>
-          <div className={styles.statItem}>
-            <span className={styles.statNumber}>15</span>
-            <span className={styles.statLabel}>Bài viết</span>
-          </div>
-          <div className={styles.statItem}>
-            <span className={styles.statNumber}>2.5K</span>
-            <span className={styles.statLabel}>Người theo dõi</span>
-          </div>
-        </div>
-      </div>
 
       {/* Tags */}
       <div className={styles.tags}>
@@ -503,37 +449,6 @@ const BlogDetail = () => {
           <FaBookmark />
           <span>{isSaved ? "Đã lưu" : "Lưu bài"}</span>
         </button>
-      </div>
-
-      {/* Related Posts */}
-      <div className={styles.relatedPosts}>
-        <h3>Bài viết liên quan</h3>
-        <div className={styles.relatedPostsGrid}>
-          {relatedPosts.map((post) => (
-            <div
-              key={post.id}
-              className={styles.relatedPostCard}
-              onClick={() => router.push(`/blog/${post.id}`)}
-            >
-              <Image
-                src={post.coverImage || "/images/default-cover.jpg"}
-                alt={post.title}
-                width={300}
-                height={200}
-                className={styles.relatedPostImage}
-              />
-              <div className={styles.relatedPostInfo}>
-                <span
-                  className={styles.relatedPostCategory}
-                  style={{ backgroundColor: post.category.color }}
-                >
-                  {post.category.name}
-                </span>
-                <h4>{post.title}</h4>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

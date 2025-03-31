@@ -442,6 +442,34 @@
   word-break: break-word;
 }
 
+/* Comment Image */
+.commentImageContainer {
+  margin-top: 0.8rem;
+  max-width: 100%;
+}
+
+.commentImage {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.commentImage:hover {
+  transform: scale(1.01);
+}
+
+/* Image Upload */
+.imageUploadContainer {
+  margin-bottom: 1rem;
+}
+
+.uploadButton {
+  width: 100%;
+}
+
 .commentActions {
   display: flex;
   gap: 1rem;

@@ -22,6 +22,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/swiper-bundle.css";
 import { getUserInfo } from "@/utils/getUserInfo";
+import { uploadImage } from "@/utils/uploadImage";
+import UploadButton from "@/app/components/upload-button/upload";
 
 interface ForumPost {
   id: number;
@@ -56,7 +58,20 @@ const CommentItem = ({ comment, formatDate, currentUserId, onDeleteComment }: Co
   // Check if this comment belongs to the current user
   const isOwnComment = currentUserId && comment.accountId.toString() === currentUserId.toString();
   
-  console.log("CommentItem",comment)
+  // Xác định URL của ảnh
+  const getImageUrl = () => {
+    if (comment.imageUrl && comment.imageUrl.length > 0) {
+      return comment.imageUrl;
+    } else if (comment.images && Array.isArray(comment.images) && comment.images.length > 0 && comment.images[0].url) {
+      return comment.images[0].url;
+    }
+    return '';
+  };
+  
+  // Kiểm tra xem có ảnh hợp lệ không
+  const imageUrl = getImageUrl();
+  const hasValidImage = imageUrl.length > 0;
+  
   return (
     <div className={styles.commentItem}>
       <div className={styles.commentAvatar}>
@@ -68,6 +83,23 @@ const CommentItem = ({ comment, formatDate, currentUserId, onDeleteComment }: Co
           <span className={styles.commentDate}>{formatDate(comment.createDate)}</span>
         </div>
         <div className={styles.commentText}>{comment.content}</div>
+        
+        {/* Display image if available */}
+        {hasValidImage && (
+          <div className={styles.commentImageContainer}>
+            <img 
+              src={imageUrl} 
+              alt="Hình ảnh đính kèm" 
+              className={styles.commentImage}
+              onError={(e) => {
+                console.error("Error loading image:", e);
+                const imgElement = e.target as HTMLImageElement;
+                imgElement.src = "https://res.cloudinary.com/mnyt/image/upload/v1743447060/jojsjksd8kfe91kasqnb.png";
+                imgElement.style.objectFit = "contain";
+              }} 
+            />
+          </div>
+        )}
         
         {/* Show delete button only for the user's own comments */}
         {isOwnComment && (
@@ -126,6 +158,7 @@ const ForumDetailPage = () => {
   const [liked, setLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const { user } = useAuth();
   const [isReported, setIsReported] = useState(false);
   const userInfo = getUserInfo(user);
@@ -375,16 +408,29 @@ const ForumDetailPage = () => {
     }
   };
 
+  // Reset form after successful comment submission
+  const resetForm = () => {
+    setNewComment("");
+    setSelectedImage(null);
+    // No need to reset imageUrl since state was removed
+  };
+
   // Update the handleSubmitComment function
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim() || !post) return;
+    if ((!newComment.trim() && !selectedImage) || !post) return;
 
     const userId = userInfo?.id || 1;
     // Lưu vị trí hiện tại của trang
     const currentPosition = window.scrollY;
 
     try {
+      // Upload image if selected
+      let uploadedImageUrl = null;
+      if (selectedImage) {
+        uploadedImageUrl = await uploadImage(selectedImage);
+      }
+
       // Post comment
       await axios.post(
         `https://api-mnyt.purintech.id.vn/api/Comments?accountId=${userId}`,
@@ -392,17 +438,22 @@ const ForumDetailPage = () => {
           blogPostId: Number(postId),
           forumPostId: Number(postId),
           content: newComment,
-          type: "forum"
+          // Gửi cả hai trường để đảm bảo tương thích với API
+          image: uploadedImageUrl,
+          imageUrl: uploadedImageUrl,
+          images: uploadedImageUrl ? [
+            {
+              "type": "forum",
+              "url": uploadedImageUrl
+            }
+          ] : [],
         }
       );
 
-      // Fetch new data instead of reloading page
       await fetchPostData();
-
-      // Reset form
-      setNewComment("");
       
-      // Khôi phục vị trí cuộn sau khi cập nhật
+      resetForm();
+      
       setTimeout(() => {
         window.scrollTo({
           top: currentPosition,
@@ -436,7 +487,7 @@ const ForumDetailPage = () => {
       const vietnamNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
 
       // Nếu thời gian trong tương lai (lỗi), sử dụng thời gian hiện tại
-      const compareDate = vietnamDate > vietnamNow ? new Date(vietnamNow.getTime() - 60000) : vietnamDate; // Giảm 1 phút để hiển thị "1 phút trước"
+      const compareDate = vietnamDate > vietnamNow ? new Date(vietnamNow.getTime() - 60000) : vietnamDate;
 
       // Dùng formatDistanceToNow với cờ addSuffix để thêm "cách đây" và "nữa"
       return formatDistanceToNow(compareDate, {
@@ -540,7 +591,13 @@ const ForumDetailPage = () => {
     try {
       // Call API to delete the comment
       await axios.delete(
-        `https://api-mnyt.purintech.id.vn/api/Comments/${commentId}?accountId=${userId}`
+        `https://api-mnyt.purintech.id.vn/api/Comments/${commentId}?accountId=${userId}`,
+        {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        }
       );
 
       // Update UI by removing the deleted comment
@@ -553,6 +610,35 @@ const ForumDetailPage = () => {
           commentCount: Math.max(0, (post.commentCount || 0) - 1)
         });
       }
+
+      // Force server to update comment count in all views
+      try {
+        // Gọi một API bất kỳ để buộc server cập nhật
+        await axios.get(
+          `https://api-mnyt.purintech.id.vn/api/Posts/${postId}?t=${new Date().getTime()}`,
+          {
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            }
+          }
+        );
+        
+        // Gọi trực tiếp API forums để cập nhật danh sách bài viết
+        await axios.get(
+          `https://api-mnyt.purintech.id.vn/api/Posts/forums?t=${new Date().getTime()}`,
+          {
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            }
+          }
+        );
+      } catch (refreshError) {
+        console.error("Lỗi khi làm mới dữ liệu:", refreshError);
+      }
       
       // Show success message
       alert('Đã xóa bình luận thành công');
@@ -560,6 +646,16 @@ const ForumDetailPage = () => {
       console.error("Error deleting comment:", error);
       alert('Không thể xóa bình luận. Vui lòng thử lại sau.');
     }
+  };
+
+  // Handle image selection
+  const handleImageChange = (file: File | null) => {
+    setSelectedImage(file);
+  };
+
+  // Handle URL change from upload component - modify to just log for now
+  const handleImageUrlChange = (url: string | null) => {
+    console.log("Image uploaded:", url);
   };
 
   if (loading) {
@@ -621,11 +717,10 @@ const ForumDetailPage = () => {
             <Swiper
               spaceBetween={10}
               slidesPerView={1}
-              pagination={{ clickable: true }}
-              navigation
+              pagination={false}
+              navigation={false}
             >
               {post.images.map((image, index) => {
-                // Kiểm tra URL hợp lệ
                 const imageUrl = isValidURL(image.url) ? image.url : FALLBACK_IMAGE;
                 
                 return (
@@ -726,13 +821,22 @@ const ForumDetailPage = () => {
             rows={3}
           />
           
+          {/* Add image upload button */}
+          <div className={styles.imageUploadContainer}>
+            <UploadButton 
+              onImageChange={handleImageChange}
+              onUrlChange={handleImageUrlChange}
+              className={styles.uploadButton}
+            />
+          </div>
+          
           <button type="submit">Đăng bình luận</button>
         </form>
 
         {/* Use updated CommentSection */}
         <CommentSection 
-          comments={Array.isArray(comments) ? comments : []} 
-          formatDate={formatDate} 
+          comments={Array.isArray(comments) ? comments : []}
+          formatDate={formatDate}
           currentUserId={userInfo?.id}
           onDeleteComment={handleDeleteComment}
         />

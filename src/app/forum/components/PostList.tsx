@@ -88,34 +88,88 @@ const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages
   const [isEditing, setIsEditing] = useState(false);
   const [editPost, setEditPost] = useState<Post | null>(null);
 
-  // const fetchPosts = async () => {
-  //   setLoading(true);
-  //   console.log("Page number fetch", currentPage);
-  //   try {
-  //     let url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/paginated?pageNumber=${currentPage}&pageSize=${postsPerPage}`;
+  // Add state for real-time post stats
+  const [postStats, setPostStats] = useState<{[key: string]: {likes: number, comments: number}}>({});
+  
+  // Function to fetch fresh post stats
+  const fetchPostStats = async (forceReload = true) => {
+    try {
+      // Luôn buộc làm mới và bỏ qua cache
+      const cacheBuster = `?t=${new Date().getTime()}`;
+      const response = await axios.get(
+        `https://api-mnyt.purintech.id.vn/api/Posts/forums${cacheBuster}`,
+        {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          }
+        }
+      );
       
-  //     if (category !== "all") {
-  //       url = `https://api-mnyt.purintech.id.vn/api/Posts/forums/by-category/paginated?category=${category}&pageNumber=${currentPage}&pageSize=${postsPerPage}`;
-  //     }
+      if (response.data && response.data.success && response.data.data) {
+        const statsMap: {[key: string]: {likes: number, comments: number}} = {};
+        
+        // Create a map of post ID -> stats
+        response.data.data.forEach((post: any) => {
+          statsMap[post.id] = {
+            likes: post.likeCount || 0,
+            comments: post.commentCount || 0
+          };
+        });
+        
+        setPostStats(statsMap);
+        console.log(`Cập nhật thống kê bài viết:`, statsMap);
+      }
+    } catch (error) {
+      console.error("Error fetching post stats:", error);
+    }
+  };
 
-  //     if (searchQuery) {
-  //       url += `&search=${encodeURIComponent(searchQuery)}`;
-  //     }
+  // Force refresh từ server
+  const forceRefresh = async () => {
+    try {
+      // Gọi fetchPosts với force refresh
+      fetchPosts();
+      // Gọi fetchPostStats với force refresh
+      await fetchPostStats(true);
+      // Thông báo cho người dùng
+      alert("Đã cập nhật dữ liệu mới nhất từ máy chủ!");
+    } catch (error) {
+      console.error("Error during force refresh:", error);
+    }
+  };
 
-  //     const response = await axios.get(url);
-  //     if (response.data?.success) {
-  //       console.log("response forum 2", response.data.data);
-  //       setPosts(response.data.data.items || []);
-  //       setTotalPages(Math.max(response.data.data.totalPages || 1, 1));
-  //       setError(null);
-  //     }
-  //   } catch (err) {
-  //     console.error("Error fetching posts:", err);
-  //     setError("Không thể tải bài viết. Vui lòng thử lại sau.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  // Fetch post stats when component mounts and whenever posts change
+  useEffect(() => {
+    if (Array.isArray(posts) && posts.length > 0) {
+      fetchPostStats();
+      
+      // Set interval to refresh stats every 3 seconds
+      const intervalId = setInterval(() => {
+        fetchPostStats();
+      }, 3000); // Reduced to 3 seconds for more frequent updates
+      
+      return () => clearInterval(intervalId);
+    }
+  }, [posts]);
+
+  // Add focus event listener to refresh stats when returning to the page
+  useEffect(() => {
+    const handleFocus = () => {
+      // Force refresh stats when window gets focus
+      if (Array.isArray(posts) && posts.length > 0) {
+        fetchPostStats(true);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [posts]);
+
   useEffect(() => {
     
 
@@ -157,7 +211,9 @@ const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages
         });
 
         if (hasUpdates) {
-          setPosts(currentPosts);
+          // Instead of directly setting posts (which we can't do with props)
+          // Let's refresh the stats
+          fetchPostStats();
         }
       } finally {
         isCheckingRef.current = false;
@@ -178,38 +234,7 @@ const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages
     return () => {
       window.removeEventListener("focus", handleFocus);
     };
-  }, []); // FIXED: Removed localPosts from dependency array
-
-  //Thêm effect để chạy checkForUpdates khi posts thay đổi
-  // useEffect(() => {
-  //   // Manually check for localStorage updates when posts change
-  //   const checkLocalStorageUpdates = () => {
-  //     const updatedPosts = [...posts];
-  //     let hasUpdates = false;
-
-  //     updatedPosts.forEach((post, index) => {
-  //       const likeStatus = localStorage.getItem(`forum-liked-${post.id}`);
-  //       if (likeStatus) {
-  //         const isLiked = JSON.parse(likeStatus);
-  //         if (isLiked && updatedPosts[index].likes !== post.likes + 1) {
-  //           updatedPosts[index] = {
-  //             ...post,
-  //             likes: post.likes + 1,
-  //           };
-  //           hasUpdates = true;
-  //         }
-  //       }
-  //     });
-
-  //     if (hasUpdates) {
-  //       setPosts(updatedPosts);
-  //     } else {
-  //       setPosts(posts);
-  //     }
-  //   };
-
-  //   checkLocalStorageUpdates();
-  // }, [posts]);
+  }, []);
 
   // Tải danh sách tài khoản khi component được khởi tạo
   useEffect(() => {
@@ -231,8 +256,6 @@ const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages
     fetchAccounts();
   }, []);
 
-  
-
   // Hàm lấy tên người dùng dựa trên authorId
   const getAuthorName = (authorId: number, isAnonymous: boolean) => {
     if (isAnonymous) return "Người dùng ẩn danh";
@@ -247,10 +270,6 @@ const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages
 
     return `Người dùng ${authorId}`;
   };
-
-  // Reduced logging to avoid console spam
-  // console.log("Posts received:", posts);
-  // console.log("Accounts loaded:", accounts);
 
   // Sắp xếp bài viết theo thời gian tạo (mới nhất lên đầu)
   const sortedPosts = [...posts].sort((a, b) => {
@@ -306,18 +325,33 @@ const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages
   // Áp dụng phân trang cho các bài viết đã lọc
   //const displayedPosts = paginatePosts(filteredPosts, currentPage);
 
-  // Hàm để lấy số lượt like thực tế của bài viết (kết hợp từ API và localStorage)
+  // Modify getPostLikeCount to use the fresh stats when available
   const getPostLikeCount = (post: Post) => {
-    // Kiểm tra localStorage xem người dùng đã like bài viết này chưa
+    // First check if we have fresh stats from the API
+    if (postStats[post.id]) {
+      return postStats[post.id].likes;
+    }
+    
+    // Fall back to the existing logic if no fresh stats
     const likeStatus = localStorage.getItem(`forum-liked-${post.id}`);
     if (likeStatus) {
       const isLiked = JSON.parse(likeStatus);
-      // Nếu trong localStorage ghi nhận là đã like, cộng thêm 1 vào số like từ API
       if (isLiked) {
         return (post.likes || 0) + 1;
       }
     }
     return post.likes || 0;
+  };
+  
+  // Add a function to get the comment count
+  const getPostCommentCount = (post: Post) => {
+    // Use fresh stats from API when available
+    if (postStats[post.id]) {
+      return postStats[post.id].comments;
+    }
+    
+    // Fall back to post data
+    return post.comments?.length || 0;
   };
 
   // Hàm xử lý khi người dùng nhấn nút Chỉnh sửa
@@ -382,7 +416,7 @@ const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages
       <div className={styles.errorState}>
         <h3>Đã xảy ra lỗi</h3>
         <p>{error}</p>
-        <button onClick={setPosts} className={styles.createPostButton}>
+        <button onClick={fetchPosts} className={styles.createPostButton}>
           Thử lại
         </button>
       </div>
@@ -396,7 +430,7 @@ const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages
           Không có bài viết nào trong danh mục {categoryNames[category]}
         </h3>
         <p>Hãy là người đầu tiên chia sẻ kinh nghiệm của bạn!</p>
-        <button onClick={setPosts} className={styles.createPostButton}>
+        <button onClick={fetchPosts} className={styles.createPostButton}>
           Làm mới
         </button>
       </div>
@@ -424,8 +458,9 @@ const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages
             ? "?"
             : authorName.charAt(0).toUpperCase();
 
-          // Lấy số lượt like thực tế, bao gồm cả cập nhật từ localStorage
+          // Use the updated functions to get real-time stats
           const actualLikes = getPostLikeCount(post);
+          const actualComments = getPostCommentCount(post);
 
           return (
             <div key={id} className={styles.postCard}>
@@ -479,7 +514,7 @@ const PostList = ({ category, searchQuery, fetchPosts, posts, loading,totalPages
                 <div className={styles.postStats}>
                   <div className={styles.commentCount}>
                     <span className={styles.icon}>💬</span>
-                    {post.comments?.length || 0} bình luận
+                    {actualComments} bình luận
                   </div>
                   <div className={styles.likeCount}>
                     <span className={styles.icon}>❤️</span>

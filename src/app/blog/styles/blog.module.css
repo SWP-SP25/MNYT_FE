@@ -2,10 +2,25 @@
 .blogContainer {
     display: flex;
     gap: 2rem;
-    max-width: 1140px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 2.5rem;
     min-height: calc(100vh - 80px);
+    background-color: #f7f9f8;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    position: relative;
+}
+
+.blogContainer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: #279357;
+    border-radius: 5px 5px 0 0;
 }
 
 .mainContent {
@@ -13,26 +28,38 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    position: relative;
+    transition: box-shadow 0.3s ease;
+}
+
+.mainContent:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
 .filterBar {
-    background: white;
-    padding: 1rem;
+    background: #ffffff;
+    padding: 1.5rem;
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(39, 147, 87, 0.1);
     border: 1px solid #eef5f1;
+    margin-bottom: 1.5rem;
 }
 
 /* Responsive Design */
 @media (max-width: 1200px) {
     .blogContainer {
-        max-width: 960px;
+        max-width: 95%;
+        padding: 2rem;
     }
 }
 
 @media (max-width: 992px) {
     .blogContainer {
-        max-width: 720px;
+        max-width: 95%;
         flex-direction: column;
     }
 
@@ -43,12 +70,17 @@
 
 @media (max-width: 768px) {
     .blogContainer {
-        max-width: 540px;
+        max-width: 95%;
         padding: 1rem;
     }
 
     .filterBar {
         padding: 0.8rem;
+    }
+    
+    .sidebar {
+        position: static;
+        width: 100%;
     }
 }
 

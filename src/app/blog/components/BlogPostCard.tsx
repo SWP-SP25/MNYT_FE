@@ -1,29 +1,28 @@
-const BlogPostCard = ({ post, onRefresh }) => {
-  // ... existing code ...
+import styles from "./components.module.css";
+import { BlogPost } from "@/types/blog";
 
+interface BlogPostCardProps {
+  post: BlogPost;
+  onRefresh: () => void;
+}
+
+const BlogPostCard = ({ post, onRefresh }: BlogPostCardProps) => {
   return (
     <div className={styles.postCard}>
-      {/* ... other post content ... */}
+      <div className={styles.postContent}>
+        <h2 className={styles.postTitle}>{post.title}</h2>
+        <p className={styles.postDescription}>{post.description}</p>
+      </div>
 
       <div className={styles.postFooter}>
-        {/* Giữ lại các nút tương tác khác */}
         <div className={styles.commentCount}>
           <span className={styles.icon}>💬</span>
-          {post.comments?.length || 0} bình luận
+          {post.commentCount} bình luận
         </div>
         <div className={styles.likeCount}>
           <span className={styles.icon}>❤️</span>
-          {post.likes || 0} lượt thích
+          {post.likeCount} lượt thích
         </div>
-
-        {/* XÓA BỎ điều kiện kiểm tra quyền xóa và nút Xóa */}
-        {/* Ví dụ: 
-        {isAdmin && (
-          <button onClick={() => handleDelete(post.id)} className={styles.deleteButton}>
-            Xóa
-          </button>
-        )} 
-        */}
       </div>
     </div>
   );

@@ -6,6 +6,8 @@ import Sidebar from "./sidebar/Sidebar";
 import Pagination from "./Pagination/Pagination";
 import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
+import { useAuth } from "@/hooks/useAuth";
+import { getUserInfo } from "@/utils/getUserInfo";
 
 const BlogPage = () => {
   // State management
@@ -17,6 +19,8 @@ const BlogPage = () => {
   const [blogs, setBlogs] = useState([]);
   const blogsPerPage = 10;
   const [posts, setPosts] = useState([]);
+  const { user } = useAuth();
+  const userInfo = getUserInfo(user);
 
   const fetchBlogs = async () => {
     try {
@@ -26,10 +30,15 @@ const BlogPage = () => {
       );
 
       if (response.data) {
-        setFetchedBlogs(response.data.data);
-        setBlogs(response.data.data); // Set the blogs directly from the response
-        console.log("full post", response.data.data);
-        setTotalPages(Math.ceil(response.data.data.length / blogsPerPage)); // Adjust total pages based on the length of the response
+        // Filter blogs to only show published posts or posts by current user
+        const filteredBlogs = response.data.data.filter((blog: any) => 
+          blog.status === "Published" || 
+          (userInfo && blog.accountId === userInfo.id)
+        );
+        
+        setFetchedBlogs(filteredBlogs);
+        setBlogs(filteredBlogs);
+        setTotalPages(Math.ceil(filteredBlogs.length / blogsPerPage));
       } else {
         setFetchedBlogs([]);
         setBlogs([]);
@@ -43,7 +52,7 @@ const BlogPage = () => {
 
   useEffect(() => {
     fetchBlogs();
-  }, [currentPage]);
+  }, [currentPage, userInfo]); // Add userInfo as dependency to refetch when user changes
 
   // Khôi phục trạng thái từ localStorage khi component mount
   useEffect(() => {

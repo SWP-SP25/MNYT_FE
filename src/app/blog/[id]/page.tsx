@@ -14,16 +14,12 @@ import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale/vi";
 import { blogService } from "@/app/services/api";
 import useAxios from "@/hooks/useFetchAxios";
-import { BlogDetail, BlogPostDetailResponse } from "@/types/blogDetail";
+import { BlogPostDetailResponse } from "@/types/blog";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { uploadImage } from "@/utils/uploadImage";
-<<<<<<< Updated upstream
-
-=======
 import { useAuth } from "@/hooks/useAuth";
 import { getUserInfo } from "@/utils/getUserInfo";
->>>>>>> Stashed changes
 // Thêm interface để type checking
 interface Comment {
   id: number;
@@ -88,13 +84,10 @@ const BlogDetail = () => {
   const [tableOfContents, setTableOfContents] = useState<TableOfContentsItem[]>(
     []
   );
-<<<<<<< Updated upstream
-=======
   const [loadingInteractions, setLoadingInteractions] = useState(false);
 
   const { user } = useAuth();
   const userInfo = getUserInfo(user);
->>>>>>> Stashed changes
 
   const {
     response: blogPostDetailResponse,
@@ -104,7 +97,7 @@ const BlogDetail = () => {
     url: `https://api-mnyt.purintech.id.vn/api/Posts/${id}`,
     method: "get",
   });
-
+  console.log("BlogPostDetailResponse", blogPostDetailResponse);
   useEffect(() => {
     if (blogPostDetailResponse) {
       setPost(blogPostDetailResponse.data);
@@ -444,16 +437,16 @@ const BlogDetail = () => {
         </div>
       </div>
 
-      {/* Cover Image
+      {/* Cover Image */}
       <div className={styles.coverImageContainer}>
         <Image
-          src={post.coverImage || "/images/ads2.jpg"}
+          src={post.images[0].url || "/images/ads2.jpg"}
           alt={post.title}
           width={1200}
           height={600}
           className={styles.coverImage}
         />
-      </div> */}
+      </div>
 
       {/* Introduction */}
       <div className={styles.introduction}>

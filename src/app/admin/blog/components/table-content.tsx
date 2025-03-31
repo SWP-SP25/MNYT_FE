@@ -32,6 +32,7 @@ import axios from "axios";
 import { Blogmanage, Blog, Category } from "@/types/blogAdmin";
 import { useAuth } from "@/hooks/useAuth";
 import UploadButton from "@/app/components/upload-button/upload";
+import { getUserInfo } from "@/utils/getUserInfo";
 
 interface FormData {
   category: string;
@@ -69,6 +70,7 @@ export const TableContent = () => {
   const [activeTab, setActiveTab] = useState('blogs');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string>('');
+  const userInfo = getUserInfo(user);
   const [formData, setFormData] = useState<FormData>({
     category: '',
     isAnonymous: false,
@@ -158,7 +160,7 @@ export const TableContent = () => {
     try {
       console.log('Form data trước khi tải ảnh:', formData);
 
-      if (!user?.id) {
+      if (!userInfo?.id) {
         console.error('Không có ID người dùng');
         return;
       }
@@ -194,7 +196,7 @@ export const TableContent = () => {
       console.log('Form data sau khi xử lý:', blogData);
 
       const response = await axios.post(
-        `https://api-mnyt.purintech.id.vn/api/Posts/blog?authorId=${user?.id}`,
+        `https://api-mnyt.purintech.id.vn/api/Posts/blog?authorId=${userInfo?.id}`,
         blogData,
         {
           headers: {
@@ -240,7 +242,7 @@ export const TableContent = () => {
 
   const handleForumOk = async () => {
     try {
-      if (!user?.id) {
+      if (!userInfo?.id) {
         console.error('No user ID available');
         return;
       }
@@ -267,7 +269,7 @@ export const TableContent = () => {
       };
 
       const response = await axios.post(
-        `https://api-mnyt.purintech.id.vn/api/Posts/forum?authorId=${user.id}`,
+        `https://api-mnyt.purintech.id.vn/api/Posts/forum?authorId=${userInfo?.id}`,
         forumData,
         {
           headers: {
@@ -320,12 +322,12 @@ export const TableContent = () => {
 
   const handleStatusChange = async (blogId: number, newStatus: string) => {
     try {
-      if (!user?.id) {
+      if (!userInfo?.id) {
         console.error('No user ID available');
         return;
       }
       await axios.patch(
-        `https://api-mnyt.purintech.id.vn/api/Posts/${blogId}/change-status?accountId=${user.id}&status=${newStatus}`,
+        `https://api-mnyt.purintech.id.vn/api/Posts/${blogId}/change-status?accountId=${userInfo?.id}&status=${newStatus}`,
         {},
         {
           headers: {
@@ -353,6 +355,20 @@ export const TableContent = () => {
   const getFilteredData = () => {
     const data = activeTab === 'forums' ? forumView?.data : blogView?.data;
 
+<<<<<<< Updated upstream
+=======
+    if (!data) return [];
+
+    // First filter out Draft status posts from other accounts
+    const filteredData = data.filter((blog: Blog) => {
+      // Keep posts that are either:
+      // 1. Not in Draft status, OR
+      // 2. In Draft status but belong to the current user
+      return blog.status !== Status.Draft || (blog.status === Status.Draft && blog.authorId === Number(userInfo?.id));
+    });
+
+    // Then apply search filter if there's search text
+>>>>>>> Stashed changes
     if (!searchText) {
       return data;
     }
@@ -423,7 +439,7 @@ export const TableContent = () => {
       key: 'category',
       filters: blogView?.data
         ? [...new Set(blogView.data.map((blog: Blog) => blog.category))]
-            .map(category => ({ text: category as string, value: category as string }))
+          .map(category => ({ text: category as string, value: category as string }))
         : [],
       onFilter: (value, record) => record.category === value
     },

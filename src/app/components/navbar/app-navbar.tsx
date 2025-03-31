@@ -3,17 +3,16 @@ import { useState, useRef, useEffect } from 'react';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import Button from 'react-bootstrap/Button';
 import Link from 'next/link';
 import Image from 'next/image';
 import Logo from '@/app/img/Logo.ico';
 import './app-navbar.css';
 import { BsBell, BsGear, BsChevronDown, BsBoxArrowRight } from 'react-icons/bs';
-import { FaBabyCarriage, FaHeart, FaCrown, FaBaby } from 'react-icons/fa';
+import { FaHeart, FaCrown, FaBaby } from 'react-icons/fa';
 import { Overlay, Popover } from 'react-bootstrap';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthRequired } from '@/app/components/AuthRequired';
-
+import { getUserInfo } from '@/utils/getUserInfo';
 const AppNavBar = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationTarget = useRef(null);
@@ -26,24 +25,8 @@ const AppNavBar = () => {
   const [membershipLoading, setMembershipLoading] = useState(false);
   const [membershipId, setMembershipId] = useState(1); // Mặc định là gói cơ bản
   const [membershipEndDate, setMembershipEndDate] = useState('');
-
+  const userInfo = getUserInfo(user);
   // Helper function to get the user name
-  const getUserName = () => {
-    if (!user) return 'Người dùng';
-
-    // Try user.user structure first (as defined in interface)
-    if (user.user && (user.user.fullName || user.user.userName)) {
-      return user.user.fullName || user.user.userName;
-    }
-
-    // Fall back to direct properties if they exist
-    if ((user as any).fullName || (user as any).userName) {
-      return (user as any).fullName || (user as any).userName;
-    }
-
-    return 'Người dùng';
-  };
-
   // Function to get membership icon based on plan
   const getMembershipIcon = () => {
     switch (membershipId) {
@@ -59,7 +42,7 @@ const AppNavBar = () => {
   };
 
   // Function to format date for display
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: any) => {
     if (!dateString) return '';
 
     const date = new Date(dateString);
@@ -71,7 +54,7 @@ const AppNavBar = () => {
   };
 
   // Function to fetch and format membership data
-  const fetchMembershipData = async (userId: string) => {
+  const fetchMembershipData = async (userId: number) => {
     if (!userId) return;
 
     setMembershipLoading(true);
@@ -130,7 +113,7 @@ const AppNavBar = () => {
   useEffect(() => {
     if (user) {
       console.log('User object:', user); // Log user object để kiểm tra cấu trúc
-      const userId = user.user?.id || (user as any).id;
+      const userId = userInfo?.id;
       console.log('Extracted user ID:', userId); // Log ID đã trích xuất
       if (userId) {
         fetchMembershipData(userId);
@@ -212,7 +195,7 @@ const AppNavBar = () => {
                 <div className="user-account-section">
                   <div className="user-greeting">
                     Xin chào<span className="user-name">
-                      {getUserName()}
+                      {userInfo?.fullName || "Người dùng mới"}
                     </span>
                   </div>
                   <div ref={notificationTarget} className="notification-icon">
@@ -356,7 +339,7 @@ const AppNavBar = () => {
           <Popover.Body>
             <div className="user-info-details">
               <div className="info-row">
-                <strong>Tên:</strong> {getUserName()}
+                <strong>Tên:</strong> {userInfo?.userName}
               </div>
               <div className="info-row">
                 <strong>Gói hội viên:</strong> {membershipPlan}

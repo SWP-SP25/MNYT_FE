@@ -20,7 +20,12 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import CommentList from "@/app/blog/components/CommentList";
 import { uploadImage } from "@/utils/uploadImage";
+<<<<<<< Updated upstream
 
+=======
+import { useAuth } from "@/hooks/useAuth";
+import { getUserInfo } from "@/utils/getUserInfo";
+>>>>>>> Stashed changes
 // Thêm interface để type checking
 interface Comment {
   id: number;
@@ -85,6 +90,13 @@ const BlogDetail = () => {
   const [tableOfContents, setTableOfContents] = useState<TableOfContentsItem[]>(
     []
   );
+<<<<<<< Updated upstream
+=======
+  const [loadingInteractions, setLoadingInteractions] = useState(false);
+
+  const { user } = useAuth();
+  const userInfo = getUserInfo(user);
+>>>>>>> Stashed changes
 
   const {
     response: blogPostDetailResponse,
@@ -105,11 +117,72 @@ const BlogDetail = () => {
 
   // Lưu trạng thái thích và lưu bài vào localStorage
   useEffect(() => {
+<<<<<<< Updated upstream
     const liked = localStorage.getItem(`liked-${id}`);
     const saved = localStorage.getItem(`saved-${id}`);
     if (liked) setIsLiked(true);
     if (saved) setIsSaved(true);
   }, [id]);
+=======
+    const fetchInteractionStatus = async () => {
+      if (!user || !id) return;
+
+      try {
+        setLoadingInteractions(true);
+        const userId = userInfo?.id || 1;
+
+        // Sử dụng endpoint GET /api/Interactions/likes để lấy danh sách bài viết đã like
+        const likesResponse = await axios.get(
+          `https://api-mnyt.purintech.id.vn/api/Interactions/likes?accountId=${userId}`
+        );
+
+        // Sử dụng endpoint GET /api/Interactions/bookmarks để lấy danh sách bài viết đã bookmark
+        const bookmarksResponse = await axios.get(
+          `https://api-mnyt.purintech.id.vn/api/Interactions/bookmarks?accountId=${userId}`
+        );
+
+        // Kiểm tra xem bài viết hiện tại có nằm trong danh sách đã like hay không
+        let isLikedFromAPI = false;
+        if (likesResponse.data && likesResponse.data.data) {
+          // Kiểm tra xem bài viết có ID trùng với ID hiện tại không
+          isLikedFromAPI = likesResponse.data.data.some(
+            (item: any) => item.id === Number(id) || item.postId === Number(id)
+          );
+        }
+
+        // Kiểm tra xem bài viết hiện tại có nằm trong danh sách đã bookmark hay không
+        let isSavedFromAPI = false;
+        if (bookmarksResponse.data && bookmarksResponse.data.data) {
+          // Kiểm tra xem bài viết có ID trùng với ID hiện tại không
+          isSavedFromAPI = bookmarksResponse.data.data.some(
+            (item: any) => item.id === Number(id) || item.postId === Number(id)
+          );
+        }
+
+        console.log("Like status from API:", isLikedFromAPI);
+        console.log("Save status from API:", isSavedFromAPI);
+
+        // Cập nhật state và localStorage
+        setIsLiked(isLikedFromAPI);
+        setIsSaved(isSavedFromAPI);
+
+        localStorage.setItem(`liked-${id}`, JSON.stringify(isLikedFromAPI));
+        localStorage.setItem(`saved-${id}`, JSON.stringify(isSavedFromAPI));
+      } catch (error) {
+        console.error("Error fetching interaction status:", error);
+        // Fallback to localStorage if API fails
+        const liked = localStorage.getItem(`liked-${id}`);
+        const saved = localStorage.getItem(`saved-${id}`);
+        if (liked) setIsLiked(JSON.parse(liked));
+        if (saved) setIsSaved(JSON.parse(saved));
+      } finally {
+        setLoadingInteractions(false);
+      }
+    };
+
+    fetchInteractionStatus();
+  }, [id, user]);
+>>>>>>> Stashed changes
 
   // Thêm vào useEffect
   useEffect(() => {
@@ -160,11 +233,110 @@ const BlogDetail = () => {
 
     // Giả lập API
     try {
+<<<<<<< Updated upstream
       await axios.post(
         `https://api-mnyt.purintech.id.vn/api/Interactions/like/17?accountId=1`
       );
       localStorage.setItem(`liked-${id}`, JSON.stringify(!isLiked));
       setPost((prev) => ({ ...prev, likeCount: newLikeCount }));
+=======
+      // Get user ID
+      const userId = userInfo?.id || 1;
+
+      // Make API call based on the new status
+      if (newLikeStatus) {
+        // Add like
+        await axios.post(
+          `https://api-mnyt.purintech.id.vn/api/Interactions/like/${id}?accountId=${userId}`
+        );
+        console.log("Post liked successfully");
+
+        // Update like count on UI
+        setPost((prev: any) => {
+          if (!prev) return null;
+          return { ...prev, likeCount: prev.likeCount + 1 };
+        });
+      } else {
+        // Remove like
+        await axios.delete(
+          `https://api-mnyt.purintech.id.vn/api/Interactions/like/${id}?accountId=${userId}`
+        );
+        console.log("Post unliked successfully");
+
+        // Update like count on UI
+        setPost((prev: any) => {
+          if (!prev) return null;
+          // Ensure we don't go below 0
+          return { ...prev, likeCount: Math.max(0, prev.likeCount - 1) };
+        });
+      }
+
+      // Update localStorage to match the new state
+      localStorage.setItem(`liked-${id}`, JSON.stringify(newLikeStatus));
+
+      // Fetch the true count from server after a short delay
+      // to ensure server has processed our request
+      setTimeout(() => {
+        fetchUpdatedLikeCount(userId);
+      }, 500);
+    } catch (error) {
+      console.error("Error updating like status:", error);
+
+      // Revert UI changes if API call fails
+      setIsLiked(originalLikeStatus);
+      setPost((prev: any) => {
+        if (!prev) return null;
+        return { ...prev, likeCount: originalLikeCount };
+      });
+
+      alert("Không thể cập nhật trạng thái yêu thích. Vui lòng thử lại sau.");
+    }
+  };
+
+  const fetchUpdatedLikeCount = async (userId: any) => {
+    try {
+      console.log("Fetching updated like count from server...");
+
+      // Fetch the post data
+      const response = await axios.get(
+        `https://api-mnyt.purintech.id.vn/api/Posts/${id}`
+      );
+
+      if (response.data && response.data.data) {
+        const updatedPost = response.data.data;
+        console.log("Server post data:", updatedPost);
+        console.log("Server like count:", updatedPost.likeCount);
+
+        // Only update the state if the value is different
+        if (post && updatedPost.likeCount !== post.likeCount) {
+          console.log("Updating like count from server");
+          setPost((prev: any) => {
+            if (!prev) return null;
+            return { ...prev, likeCount: updatedPost.likeCount };
+          });
+        }
+
+        // Also check if our like status matches what the server thinks
+        const likesResponse = await axios.get(
+          `https://api-mnyt.purintech.id.vn/api/Interactions/likes?accountId=${userId}`
+        );
+
+        if (likesResponse.data && likesResponse.data.data) {
+          const serverLikeStatus = likesResponse.data.data.some(
+            (item: any) => item.id === Number(id) || item.postId === Number(id)
+          );
+
+          if (isLiked !== serverLikeStatus) {
+            console.log("Correcting like status from server");
+            setIsLiked(serverLikeStatus);
+            localStorage.setItem(
+              `liked-${id}`,
+              JSON.stringify(serverLikeStatus)
+            );
+          }
+        }
+      }
+>>>>>>> Stashed changes
     } catch (error) {
       console.error("Error liking post:", error);
     }
@@ -175,8 +347,36 @@ const BlogDetail = () => {
 
     // Giả lập API
     try {
+<<<<<<< Updated upstream
       await axios.post(
         `https://api-mnyt.purintech.id.vn/api/Interactions/bookmark/17?accountId=1`
+=======
+      // Lấy ID người dùng thực tế
+      const userId = userInfo?.id || 1;
+
+      if (newSaveStatus) {
+        // Nếu là save (thêm mới) - Sử dụng POST
+        await axios.post(
+          `https://api-mnyt.purintech.id.vn/api/Interactions/bookmark/${id}?accountId=${userId}`
+        );
+        console.log("Post bookmarked successfully");
+      } else {
+        // Nếu là unsave (xóa) - Sử dụng DELETE
+        await axios.delete(
+          `https://api-mnyt.purintech.id.vn/api/Interactions/bookmark/${id}?accountId=${userId}`
+        );
+        console.log("Post unbookmarked successfully");
+      }
+
+      // Cập nhật localStorage sau khi API thành công
+      localStorage.setItem(`saved-${id}`, JSON.stringify(newSaveStatus));
+    } catch (error) {
+      console.error("Error updating bookmark status:", error);
+      // Rollback UI nếu API thất bại
+      setIsSaved(!newSaveStatus);
+      alert(
+        "Không thể cập nhật trạng thái lưu bài viết. Vui lòng thử lại sau."
+>>>>>>> Stashed changes
       );
       localStorage.setItem(`saved-${id}`, JSON.stringify(!isSaved));
     } catch (error) {
@@ -338,9 +538,8 @@ const BlogDetail = () => {
       {/* Interaction Bar */}
       <div className={styles.interactionBar}>
         <button
-          className={`${styles.interactionButton} ${
-            isLiked ? styles.active : ""
-          }`}
+          className={`${styles.interactionButton} ${isLiked ? styles.active : ""
+            }`}
           onClick={handleLike}
         >
           {isLiked ? <FaHeart /> : <FaRegHeart />}
@@ -352,9 +551,8 @@ const BlogDetail = () => {
           <span>Chia sẻ</span>
         </button>
         <button
-          className={`${styles.interactionButton} ${
-            isSaved ? styles.active : ""
-          }`}
+          className={`${styles.interactionButton} ${isSaved ? styles.active : ""
+            }`}
           onClick={handleSave}
         >
           <FaBookmark />

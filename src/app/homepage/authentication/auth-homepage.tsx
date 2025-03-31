@@ -11,7 +11,7 @@ import { BirthType, FormFetusData } from '@/types/form';
 import { Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 import axios from 'axios';
 import { styled } from '@mui/material/styles';
-
+import { getUserInfo } from "@/utils/getUserInfo";
 interface FormSubmitData {
     birthType: BirthType;
     lastMenstrualPeriod: string;
@@ -82,6 +82,7 @@ const ConfirmButton = styled(Button)(({ theme }) => ({
 
 const AuthenticatedHomePage = () => {
     const { user } = useAuth();
+    const userInfo = getUserInfo(user);
     const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
     const [hasActivePregnancy, setHasActivePregnancy] = useState(false);
     const [activePregnancyId, setActivePregnancyId] = useState<string | null>(null);
@@ -101,10 +102,10 @@ const AuthenticatedHomePage = () => {
     useEffect(() => {
         // Kiểm tra xem người dùng có thai kỳ active không
         const checkActivePregnancy = async () => {
-            if (user?.id) {
+            if (userInfo?.id) {
                 try {
                     // Sử dụng API của bạn để lấy thông tin thai kỳ
-                    const response = await axios.get(`https://api-mnyt.purintech.id.vn/api/Pregnancy/accountId/${user.id}`);
+                    const response = await axios.get(`https://api-mnyt.purintech.id.vn/api/Pregnancy/accountId/${userInfo.id}`);
 
                     // Kiểm tra xem có thai kỳ active không
                     const pregnancies = response.data;
@@ -199,7 +200,7 @@ const AuthenticatedHomePage = () => {
             // Mở form tạo mới
             setIsFormOpen(true);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Update request failed:', error);
 
             // Log chi tiết lỗi để debug
@@ -245,7 +246,7 @@ const AuthenticatedHomePage = () => {
                 {/* Hero Section */}
                 <section className={styles.hero}>
                     <div className={styles.heroContent}>
-                        <h1>Chào Mừng Bạn Đã Quay Trở Lại {user.fullName}</h1>
+                        <h1>Chào Mừng Bạn Đã Quay Trở Lại {userInfo?.fullName}</h1>
                         <p>Đồng hành cùng mẹ trong hành trình thai kỳ và chăm sóc em bé</p>
                         <div className={styles.heroButtons}>
                             <button

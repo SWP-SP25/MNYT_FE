@@ -4,9 +4,10 @@ import styles from './fetus-form.module.css';
 import { FormFetusData, BirthTypeFormProps, BirthType } from '@/types/form';
 import { useAuth } from "@/hooks/useAuth";
 import axios from 'axios';
-
+import { getUserInfo } from '@/utils/getUserInfo';
 const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit }) => {
     const { user } = useAuth();
+    const userInfo = getUserInfo(user);
     const [birthType, setBirthType] = useState<BirthType>('singletons');
     const [formData, setFormData] = useState<FormFetusData>({
         lastMenstrualPeriod: '',
@@ -40,12 +41,12 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
         try {
             console.log('Form data before submission:', formData);
             console.log('Birth type:', birthType);
-            console.log('User ID:', user?.id);
+            console.log('User ID:', userInfo?.id);
             console.log('Auth token exists:', !!localStorage.getItem('token'));
 
             // 1. Tạo pregnancy trước
             const pregnancyData = {
-                accountId: user?.id,
+                accountId: userInfo?.id,
                 type: birthType,
                 status: "active",
                 startDate: formData.lastMenstrualPeriod
@@ -213,16 +214,20 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
                     bpd: parseInt(formData.bpd2) || 0,
                     length: parseInt(formData.length2) || 0,
                     hc: parseInt(formData.hc2) || 0,
-                    date: new Date().toISOString().split('T')[0],
+                    date: formData.lastMenstrualPeriod,
                     fetusId: fetusId2
                 };
 
                 console.log('Second FetusRecord data to be sent (converted to numbers):', fetusRecordData2);
 
+                // Gói dữ liệu thành mảng như API yêu cầu
+                const fetusRecordPayload2 = [fetusRecordData2];
+                console.log('Second FetusRecord payload (as array):', fetusRecordPayload2);
+
                 console.log('Calling FetusRecord API for second baby...');
                 const fetusRecordResponse2 = await axios.post(
                     'https://api-mnyt.purintech.id.vn/api/FetusRecord',
-                    fetusRecordData2,
+                    fetusRecordPayload2, // Gửi dưới dạng mảng
                     {
                         headers: {
                             'Content-Type': 'application/json',
@@ -252,7 +257,7 @@ const BirthTypeForm: React.FC<BirthTypeFormProps> = ({ isOpen, onClose, onSubmit
                 pregnancy: {
                     id: pregnancyId,
                     type: birthType,
-                    accountId: user?.id,
+                    accountId: userInfo?.id,
                     startDate: formData.lastMenstrualPeriod
                 },
                 firstFetus: {

@@ -22,7 +22,7 @@ interface ReminderFormProps {
     onSubmit: (reminder: Omit<Reminder, 'id'>, refreshAfterDelay?: boolean) => void;
     onCancel: () => void;
     initialDate?: string | null;
-    addUserReminder?: (title: string, description: string, date: string, status?: string, type?: string) => Promise<boolean>;
+    addUserReminder?: (title: string, description: string, date: string, status?: string, tag?: string) => Promise<boolean>;
 }
 const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initialDate, addUserReminder }) => {
     const [formData, setFormData] = useState<FormReminderDataType>({
@@ -46,8 +46,12 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
             return;
         }
 
-        const dateStr = formData.date.format('DD-MM-YYYY');
-        const timeStr = formData.time.format('hh:mm A');
+        // ĐẢM BẢO format đúng dữ liệu trước khi gửi đi
+        const dateStr = formData.date.format('YYYY-MM-DD');
+        const timeStr = formData.time.format('HH:mm');
+
+        // Tạo chuỗi datetime theo đúng định dạng ISO để API hiểu được
+        const dateTimeStr = `${dateStr}T${timeStr}:00`;
 
         // Tạo đối tượng reminder cho UI
         const reminder: Omit<Reminder, 'id'> = {
@@ -55,30 +59,29 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
             date: dateStr,
             time: timeStr,
             description: formData.description || '',
-            start: `${dateStr}T${timeStr}`,
             tag: formData.tag,
             status: 'pending',
-            color: REMINDER_TAGS.find(t => t.value === formData.tag)?.color,
-            type: 'user'
+            color: REMINDER_TAGS.find(t => t.value === formData.tag)?.color || '#ff9800'
         };
 
         // Nếu có hàm addUserReminder (từ API), sử dụng nó
         if (addUserReminder) {
             try {
                 setSubmitting(true);
-                console.log('Calling API to create reminder:', reminder);
+
+                // Đảm bảo tag không bao giờ là undefined
+                const finalTag = formData.tag || 'prenental_checkup';
 
                 // Gọi API để tạo reminder mới với đúng các tham số
                 const success = await addUserReminder(
                     reminder.title,      // Tiêu đề reminder
                     reminder.description, // Mô tả
-                    dateStr,              // Ngày dạng YYYY-MM-DD
-                    'pending',            // Trạng thái mặc định
-                    'user'                // Loại reminder (do user tạo)
+                    dateTimeStr,         // Ngày giờ dạng ISO: YYYY-MM-DDThh:mm:ss
+                    'pending',           // Trạng thái mặc định
+                    finalTag             // Tag đã được thiết lập
                 );
 
                 if (success) {
-                    console.log('Reminder created successfully via API');
                     onSubmit(reminder, true); // Truyền tham số true để refresh sau 4s
                     setFormData({ title: '', date: null, time: null, description: '', tag: '' });
                 } else {
@@ -94,7 +97,6 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSubmit, onCancel, initial
             }
         } else {
             // Nếu không có API, chỉ sử dụng hàm onSubmit
-            console.log('No API function provided, using local handler only');
             onSubmit(reminder, true); // Truyền tham số true để refresh sau 4s
             setFormData({ title: '', date: null, time: null, description: '', tag: '' });
         }

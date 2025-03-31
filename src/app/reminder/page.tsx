@@ -13,18 +13,19 @@ import { useAuth } from '@/hooks/useAuth';
 import { useReminders } from '@/hooks/useReminder';
 import styles from './page.module.css';
 import moment from 'moment';
-
+import { getUserInfo } from '@/utils/getUserInfo';
 const REMINDER_TAGS = [
     { value: 'prenental_checkup', label: 'Khám thai', color: '#f44336' },
     { value: 'ultrasound', label: 'Siêu âm', color: '#4caf50' },
     { value: 'lab_tests', label: 'Xét nghiệm', color: '#2196f3' },
-    { value: 'vaccination', label: 'Tiêm chủng', color: '#ff9800' },
+    { value: 'image.png', label: 'Tiêm chủng', color: '#ff9800' },
 ];
 
 export default function ReminderPage() {
     // Lấy thông tin người dùng
     const { user } = useAuth();
-    const userId = user && (user as any).id ? parseInt((user as any).id) : undefined;
+    const userInfo = getUserInfo(user);
+    const userId = userInfo?.id;
 
     // Sử dụng hook useReminders để giao tiếp với API Backend
     const {
@@ -36,12 +37,11 @@ export default function ReminderPage() {
         addUserReminder                // Hàm gọi API để tạo reminder mới
     } = useReminders({ userId });
 
-    // Log kết quả từ hook trả về
+    // Log kết quả từ hook trả về - XÓA BỎ
     useEffect(() => {
-        console.log('API Reminders from hook:', apiReminders);
-        console.log('API Loading state:', apiLoading);
-        console.log('API Error state:', apiError);
+        // Không làm gì
     }, [apiReminders, apiLoading, apiError]);
+
     // Ref cho container chính
     const mainContainerRef = useRef<HTMLDivElement>(null);
 
@@ -89,26 +89,22 @@ export default function ReminderPage() {
             // Chuyển đổi dữ liệu từ định dạng API sang định dạng phù hợp với UI
             const convertedReminders = apiReminders.map(apiReminder => {
                 const date = apiReminder.date || moment().format('YYYY-MM-DD');
-                const time = "09:00";
 
-                let tag: 'prenental_checkup' | 'ultrasound' | 'lab_tests' | 'vaccination' | 'user';
-
-                if (apiReminder.period === 'user') {
-                    tag = 'user';
-                } else if (apiReminder.period) {
-                    if (apiReminder.period < 12) {
-                        tag = 'prenental_checkup';
-                    } else if (apiReminder.period >= 12 && apiReminder.period < 24) {
-                        tag = 'ultrasound';
-                    } else if (apiReminder.period >= 24 && apiReminder.period < 36) {
-                        tag = 'lab_tests';
-                    } else {
-                        tag = 'vaccination';
+                // Xác định time cho reminder:
+                // - Nếu là user reminder và date có định dạng datetime (chứa 'T'), thì lấy thời gian từ đó
+                // - Nếu không, sử dụng mặc định là 09:00
+                let time = "09:00";
+                if (apiReminder.type === 'user' && apiReminder.date && apiReminder.date.includes('T')) {
+                    try {
+                        time = moment(apiReminder.date).format('HH:mm');
+                    } catch (e) {
+                        console.error('Lỗi khi parse thời gian:', e);
+                        time = "09:00"; // Fallback nếu parse lỗi
                     }
-                } else {
-                    tag = 'prenental_checkup';
                 }
 
+                // Sử dụng tag từ API hoặc giá trị mặc định
+                const tag = apiReminder.tag || 'prenental_checkup';
                 const color = REMINDER_TAGS.find(t => t.value === tag)?.color || '#ff9800';
 
                 return {
@@ -163,7 +159,7 @@ export default function ReminderPage() {
         if (refreshAfterDelay) {
             setTimeout(() => {
                 refreshReminders(); // Gọi API để lấy lại dữ liệu mới nhất
-            }, 4000);
+            }, 6000); // Tăng thời gian chờ từ 4000ms lên 6000ms
         }
     };
 
@@ -213,31 +209,28 @@ export default function ReminderPage() {
             .sort((a, b) => a.time.localeCompare(b.time))
         : [];
 
-    // Xoá hoặc vô hiệu hóa các handler này
-    const handleEventMouseEnter = () => {
-        // Không làm gì cả
-    };
-
-    const handleEventMouseLeave = () => {
-        // Không làm gì cả
-    };
-
-    const events = userReminders.map(reminder => ({
-        id: reminder.id,
-        title: reminder.title,
-        start: `${reminder.date}T${reminder.time}:00`,
-        end: moment(`${reminder.date}T${reminder.time}:00`).add(30, 'minutes').format('YYYY-MM-DDTHH:mm:ss'),
-        description: reminder.description,
-        allDay: false,
-        color: statusColors[reminder.status],
-        textColor: '#ffffff',
-        display: 'block',
-        extendedProps: {
-            status: reminder.status || 'pending',
-            tag: reminder.tag,
-            originalColor: reminder.color
-        }
-    }));
+    // Tạo events từ reminders cho FullCalendar
+    const events = userReminders.map(reminder => {
+        // BỎ TẠO BIẾN TRUNG GIAN, sử dụng trực tiếp reminder.time để đảm bảo giá trị được giữ nguyên 
+        return {
+            id: reminder.id,
+            title: reminder.title,
+            start: `${reminder.date}T${reminder.time}:00`,
+            end: moment(`${reminder.date}T${reminder.time}:00`).add(30, 'minutes').format('YYYY-MM-DDTHH:mm:ss'),
+            description: reminder.description,
+            allDay: false,
+            color: statusColors[reminder.status || 'pending'],
+            textColor: '#ffffff',
+            display: 'block',
+            extendedProps: {
+                status: reminder.status || 'pending',
+                tag: reminder.tag,
+                originalColor: reminder.color,
+                // Thêm time vào extendedProps để đảm bảo giá trị được giữ nguyên
+                time: reminder.time
+            }
+        };
+    });
 
     useEffect(() => {
         const syncHeight = () => {
@@ -468,10 +461,19 @@ export default function ReminderPage() {
                     }}
                 >
                     <ReminderForm
-                        onSubmit={handleAddReminder as (reminder: Omit<Reminder, 'id'>, refreshAfterDelay?: boolean) => void}
+                        onSubmit={(reminder, refreshAfterDelay) => {
+                            const userReminder: Omit<UserReminder, 'id'> = {
+                                ...reminder,
+                                type: 'user'  // Thêm trường type vì nó bị thiếu
+                            };
+                            handleAddReminder(userReminder, refreshAfterDelay);
+                        }}
                         onCancel={() => setIsFormOpen(false)}
                         initialDate={selectedDate}
-                        addUserReminder={addUserReminder}
+                        addUserReminder={(title, description, date, status, tag) => {
+                            // Đảm bảo tag không bao giờ là undefined
+                            return addUserReminder(title, description, date, status || 'pending', tag || 'prenental_checkup');
+                        }}
                     />
                 </Dialog>
 

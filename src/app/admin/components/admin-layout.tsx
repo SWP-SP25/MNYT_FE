@@ -8,7 +8,7 @@ import { BsBell, BsChevronDown, BsBoxArrowRight } from "react-icons/bs";
 import styles from "./admin-layout.module.css";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
-import { Nav, Overlay, Popover } from "react-bootstrap";
+import { Nav, Navbar, Overlay, Popover } from "react-bootstrap";
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, logout } = useAuth();
@@ -40,11 +40,20 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       <main className={styles.mainContent}>
         {/* Admin Header */}
         <header className={styles.adminHeader}>
-          <div className={styles.headerLeft}>
-            <div className={styles.logo}>
-              <Image src={Logo} alt="Logo" width={40} height={40} />
-              <span>Mầm Non Yêu Thương</span>
-            </div>
+          <div className="brand">
+            <Link href="/" passHref legacyBehavior>
+              <a>
+                <Image
+                  src={Logo}
+                  alt="Logo"
+                  width={40}
+                  height={40}
+                />
+              </a>
+            </Link>
+            <Link href="/" passHref legacyBehavior>
+              <Navbar.Brand>Mầm Non Yêu Thương</Navbar.Brand>
+            </Link>
           </div>
           <div className={styles.headerRight}>
             <div className="d-flex align-items-center gap-3">

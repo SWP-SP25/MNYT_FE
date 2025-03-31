@@ -206,9 +206,9 @@ export const MainContent: React.FC = () => {
         // Thêm dữ liệu thực tế từ fetus records
         if (sortedFetusRecords?.length > 0) {
             sortedFetusRecords.forEach(record => {
-                if (record.length && record.inputPeriod) {
+                if (record.length && record.period) {
                     actualDataPoints.push({
-                        week: record.inputPeriod,
+                        week: record.period,
                         length: record.length
                     });
                     console.log("record.period", record.period);
@@ -217,13 +217,13 @@ export const MainContent: React.FC = () => {
 
 
                     // Cập nhật tuần và giá trị mới nhất
-                    if (record.inputPeriod > lastActualWeek) {
-                        lastActualWeek = record.inputPeriod;
+                    if (record.period > lastActualWeek) {
+                        lastActualWeek = record.period;
                         lastActualLength = record.length;
                     }
 
                     FetusStandard.push({
-                        week: record.inputPeriod,
+                        week: record.period,
                         length: record.length,
                         category: 'Chiều dài thực tế'
                     });
@@ -321,15 +321,15 @@ export const MainContent: React.FC = () => {
         // Thêm dữ liệu thực tế từ fetus records
         if (sortedFetusRecords?.length > 0) {
             sortedFetusRecords.forEach(record => {
-                if (record.hc && record.inputPeriod) {
+                if (record.hc && record.period) {
                     // Cập nhật tuần và giá trị mới nhất
-                    if (record.inputPeriod > lastActualWeek) {
-                        lastActualWeek = record.inputPeriod;
+                    if (record.period > lastActualWeek) {
+                        lastActualWeek = record.period;
                         lastActualHC = record.hc;
                     }
 
                     FetusStandard.push({
-                        week: record.inputPeriod,
+                        week: record.period,
                         head: record.hc,
                         category: 'Chu vi vòng đầu thực tế'
                     });
@@ -427,15 +427,15 @@ export const MainContent: React.FC = () => {
         // Thêm dữ liệu thực tế từ fetus records
         if (sortedFetusRecords?.length > 0) {
             sortedFetusRecords.forEach(record => {
-                if (record.weight && record.inputPeriod) {
+                if (record.weight && record.period) {
                     // Cập nhật tuần và giá trị mới nhất
-                    if (record.inputPeriod > lastActualWeek) {
-                        lastActualWeek = record.inputPeriod;
+                    if (record.period > lastActualWeek) {
+                        lastActualWeek = record.period;
                         lastActualWeight = record.weight;
                     }
 
                     FetusStandard.push({
-                        week: record.inputPeriod,
+                        week: record.period,
                         weight: record.weight,
                         category: 'Cân nặng thực tế'
                     });
@@ -662,8 +662,8 @@ export const MainContent: React.FC = () => {
         if (sortedFetusRecords?.length > 0) {
             // Tìm bản ghi cuối cùng cho từng loại đo lường
             sortedFetusRecords.forEach(record => {
-                if (record.inputPeriod > lastActualWeek) {
-                    lastActualWeek = record.inputPeriod;
+                if (record.period > lastActualWeek) {
+                    lastActualWeek = record.period;
 
                     // Chỉ cập nhật giá trị nếu nó tồn tại trong bản ghi
                     if (record.weight) lastActualValues.weight = record.weight;
@@ -870,7 +870,7 @@ export const MainContent: React.FC = () => {
                                 let currentPeriod = 0;
                                 if (sortedFetusRecords?.length > 0) {
                                     const latestRecord = sortedFetusRecords[sortedFetusRecords.length - 1];
-                                    currentPeriod = latestRecord?.inputPeriod || 0;
+                                    currentPeriod = latestRecord?.period || 0;
                                 }
 
                                 return post ? (

@@ -109,7 +109,7 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, isTwins = false
 
             // Tìm record với inputPeriod trùng khớp
             const existingRecord = recordsResponse.data.find((record: any) =>
-                record.inputPeriod === period
+                record.period === period
             );
 
             if (existingRecord) {
@@ -127,7 +127,7 @@ export const UpdateForm: React.FC<UpdateFormProps> = ({ onClose, isTwins = false
 
                 // Cập nhật form với dữ liệu hiện có
                 form.setFieldsValue({
-                    period: existingRecord.inputPeriod,
+                    period: existingRecord.period,
                     bpd: existingRecord.bpd,
                     hc: existingRecord.hc,
                     length: existingRecord.length,

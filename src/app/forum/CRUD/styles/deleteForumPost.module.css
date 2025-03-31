@@ -68,11 +68,17 @@
     cursor: pointer;
     font-weight: 500;
     transition: all 0.2s ease;
+    color: #2d3748;
   }
   
   .cancelButton:hover {
     background-color: #edf2f7;
     border-color: #cbd5e0;
+  }
+  
+  .cancelButton:focus {
+    outline: 2px solid #279357;
+    outline-offset: 2px;
   }
   
   .deleteButton {

@@ -698,7 +698,7 @@ const ForumDetailPage = () => {
             <span className={styles.authorName}>
               {post.isAnonymous
                 ? "Người dùng ẩn danh"
-                : userInfo?.fullName || post.authorName || post.accountName}
+                : post.authorName || post.accountName || "Người dùng"}
             </span>
             <span className={styles.postDate}>
               <FaClock /> {formatDate(post.createDate)}
